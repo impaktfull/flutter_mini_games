@@ -10,7 +10,7 @@ class HomeScreen extends StatelessWidget {
       child: ImpaktfullUiListView(
         children: [
           ImpaktfullUiListItem(
-            title: "2048",
+            title: "Flappy Bird",
             onTap: () {},
           ),
         ],

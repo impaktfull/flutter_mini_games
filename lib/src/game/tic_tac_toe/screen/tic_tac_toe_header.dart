@@ -18,26 +18,19 @@ class TicTacToeHeader extends StatelessWidget {
       if (isDraw) {
         return Text(
           "It's a draw!",
-          style: TicTacToeTheme.of(context).textStyles.headerTextStyle.copyWith(
-            fontWeight: FontWeight.bold,
-            color: Colors.grey,
-          ),
+          style: TicTacToeTheme.of(context).textStyles.headerDraw,
         );
       }
       return Text(
         'Player ${controller.winner} wins!',
-        style: TicTacToeTheme.of(context).textStyles.headerTextStyle.copyWith(
-          fontWeight: FontWeight.bold,
-          color: controller.winner == 'X' ? Colors.blue : Colors.red,
-        ),
+        style: controller.winner == 'X'
+            ? TicTacToeTheme.of(context).textStyles.headerWinnerX
+            : TicTacToeTheme.of(context).textStyles.headerWinnerO,
       );
     }
     return Text(
       'Player ${controller.isXTurn ? 'X' : 'O'}\'s turn',
-      style: TicTacToeTheme.of(context).textStyles.headerTextStyle.copyWith(
-        fontWeight: FontWeight.bold,
-        color: Theme.of(context).colorScheme.primary,
-      ),
+      style: TicTacToeTheme.of(context).textStyles.header,
     );
   }
 }

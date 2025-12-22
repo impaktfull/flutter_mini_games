@@ -3,10 +3,12 @@ import 'package:flutter/material.dart';
 class FlutterMiniGamesScreen extends StatelessWidget {
   final String title;
   final Widget child;
+  final EdgeInsets padding;
   const FlutterMiniGamesScreen({
     super.key,
     required this.title,
     required this.child,
+    this.padding = const EdgeInsets.all(16.0),
   });
 
   @override
@@ -52,7 +54,10 @@ class FlutterMiniGamesScreen extends StatelessWidget {
                 removeRight: true,
                 removeTop: true,
                 removeBottom: true,
-                child: child,
+                child: Padding(
+                  padding: padding,
+                  child: child,
+                ),
               ),
             ),
           ),

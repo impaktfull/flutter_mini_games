@@ -21,7 +21,10 @@ class HomeScreen extends StatelessWidget {
               child: ImpaktfullUiListItem(
                 title: game.name,
                 subtitle: game.description,
-                onTap: () => FlutterMiniGamesController().launchGameBuilder(context, game),
+                onTap: () => FlutterMiniGamesController().launchGameBuilder(
+                  context,
+                  game,
+                ),
               ),
             ),
           ],

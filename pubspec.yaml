@@ -10,7 +10,6 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flame: ^1.34.0
   provider: any
 
 dev_dependencies:

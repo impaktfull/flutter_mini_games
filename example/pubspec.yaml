@@ -11,6 +11,8 @@ dependencies:
   flutter:
     sdk: flutter
   impaktfull_ui: ^0.73.0
+  flutter_mini_games:
+    path: ../
 
 dev_dependencies:
   flutter_lints: ^5.0.0

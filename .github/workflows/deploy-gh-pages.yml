@@ -25,17 +25,20 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
+      # No subosito/flutter-action: the runner is persistent and keeps fvm's
+      # Flutter SDKs, so fvm installs the version pinned in .fvmrc once.
+      - name: Configure PATH
+        run: |
+          source ~/.impaktfull/impaktfull_cli/.zshrc-ci
+          echo "PATH=$PATH" >> "$GITHUB_ENV"
+      - run: fvm install
+      - run: fvm flutter pub get
       - name: Get dependencies
         working-directory: example
-        run: flutter pub get
+        run: fvm flutter pub get
       - name: Build web
         working-directory: example
-        run: flutter build web --release --base-href "/flutter_mini_games/"
+        run: fvm flutter build web --release --base-href "/flutter_mini_games/"
       - name: Setup Pages
         uses: actions/configure-pages@v4
       # upload-pages-artifact needs GNU tar (gtar) on macOS

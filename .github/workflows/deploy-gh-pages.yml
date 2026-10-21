@@ -20,7 +20,8 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+    # Self-hosted runners of the impaktfull organisation (macOS, no Docker)
+    runs-on: impaktfull-ci
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,6 +38,9 @@ jobs:
         run: flutter build web --release --base-href "/flutter_mini_games/"
       - name: Setup Pages
         uses: actions/configure-pages@v4
+      # upload-pages-artifact needs GNU tar (gtar) on macOS
+      - name: Install GNU tar
+        run: brew list gnu-tar >/dev/null 2>&1 || brew install gnu-tar
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

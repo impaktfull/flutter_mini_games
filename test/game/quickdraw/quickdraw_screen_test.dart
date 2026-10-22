@@ -29,6 +29,8 @@ void main() {
     expect(tester.widget<QuickdrawHalf>(find.byType(QuickdrawHalf).first).player, equals(DuelPlayer.top));
 
     expect(find.text('Tap when ready'), findsNWidgets(2));
+    // Both halves show how to play while getting ready
+    expect(find.text('First to tap after GO wins the round'), findsNWidgets(2));
     await tester.tap(find.text('Tap when ready').first);
     await tester.tap(find.text('Tap when ready').last);
     await tester.pump();
@@ -57,8 +59,8 @@ void main() {
     expect(controller().roundWins(DuelPlayer.top), equals(1));
     expect(controller().roundWins(DuelPlayer.bottom), equals(0));
     final ms = controller().roundReactionMs!;
-    expect(find.text('$ms ms'), findsOneWidget);
-    expect(find.text('Player 2: $ms ms'), findsOneWidget);
+    expect(find.text('Your reaction: $ms ms'), findsOneWidget);
+    expect(find.text('Player 2 reacted in $ms ms'), findsOneWidget);
     expect(results, isEmpty);
 
     // Next round: the bottom player taps too early

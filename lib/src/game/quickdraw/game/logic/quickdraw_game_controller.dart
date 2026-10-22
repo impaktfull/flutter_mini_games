@@ -4,7 +4,6 @@ import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 import 'package:flutter_mini_games/src/game/quickdraw/game/model/quickdraw_signal.dart';
 
 /// Quickdraw: a reaction duel for two players on one device, best of 5.
@@ -79,10 +78,7 @@ class QuickdrawGameController extends GameController with RealtimeGameController
 
   @override
   void tick(Duration delta) {
-    final wasPlaying = phase == DuelPhase.playing;
-    tickDuel(delta);
-    // The frame that ends the countdown starts the wait, the rest of it belongs to the countdown
-    if (!wasPlaying || phase != DuelPhase.playing) return;
+    if (!tickDuel(delta)) return;
     switch (_signal) {
       case QuickdrawSignal.waiting:
         _waited += delta;
@@ -114,20 +110,11 @@ class QuickdrawGameController extends GameController with RealtimeGameController
     }
   }
 
-  /// Adds each player's best reaction time to the result of the duel core
+  /// Each player's best reaction time
   @override
-  GameResult finish(
-    GameOutcome outcome, {
-    int? score,
-    Map<String, Object?> data = const {},
-  }) => super.finish(
-    outcome,
-    score: score,
-    data: {
-      ...data,
-      'bestReactionMs': {for (final player in DuelPlayer.values) player.name: _bestReactionMs[player]},
-    },
-  );
+  Map<String, Object?> get duelResultData => {
+    'bestReactionMs': {for (final player in DuelPlayer.values) player.name: _bestReactionMs[player]},
+  };
 
   @override
   void rematch() {

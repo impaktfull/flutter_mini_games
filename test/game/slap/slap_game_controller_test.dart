@@ -125,6 +125,17 @@ void main() {
       expect(controller.attack, equals(SlapAttackState.armed));
     });
 
+    test('the frame that ends the countdown does not use attack time', () {
+      final controller = SlapGameController(random: Random(1))
+        ..setReady(DuelPlayer.bottom)
+        ..setReady(DuelPlayer.top)
+        ..press(DuelPlayer.top, 1)
+        ..tick(DuelGameController.countdownDuration + const Duration(seconds: 1));
+
+      expect(controller.attack, equals(SlapAttackState.armed));
+      expect(controller.attackTimeLeft, equals(1));
+    });
+
     test('ignores attacks outside a playing round', () {
       final controller = SlapGameController()
         ..press(DuelPlayer.top, 1)

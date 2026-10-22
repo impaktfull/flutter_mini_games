@@ -361,6 +361,16 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Minesweeper (`lib/src/game/minesweeper/`)
+
+- Single-player puzzle, id `minesweeper`: reveal every safe cell without hitting a mine
+- `MinesweeperDifficulty` (cols x rows, mines), sized for a portrait phone: easy 8x8/10, medium 10x12/20, hard 12x16/40; switchable in the game
+- Mines are placed on the first reveal (injectable `Random`), never on the tapped cell or its neighbours, so the first tap always opens an area
+- Tap = reveal (flood fill for cells without adjacent mines), long press = flag, a flag-mode button toggles what a tap does; tapping a revealed number whose flags match reveals its neighbours (chord)
+- Header shows the remaining mines counter (mines - flags); number colours come from `MinesweeperColors.numbers` (core tokens only)
+- Lose on a mine: all mines are shown, `finish(lost)` without score. Win when all safe cells are revealed: `finish(won)`
+  - Score: `mines * 100 - seconds * 5`, never lower than `mines * 10` (`MinesweeperGameController.calculateScore`)
+- Turn based, no `GameLoop`
 ### Snake (`lib/src/game/snake/`)
 
 - Single-player real-time game, id `snake`: steer the snake to the food, it grows with every bite

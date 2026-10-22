@@ -53,6 +53,7 @@ Shared code lives in `lib/src/core/` and `lib/src/flutter_mini_games.dart` (the 
 - Calls `registerMove()` for every move: it counts moves and starts the timer
 - Calls `finish(outcome, score: ..., data: ...)` when the game ends: the result is stored and reported to the host
 - Calls `restartSession()` in `resetGame()` / `nextPuzzle()`
+- Calls `startSession()` to start the timer without counting a move (e.g. "Tap to start")
 - Leaving a game while playing is reported as `GameOutcome.abandoned` automatically
 - Calls `notifyListeners()` after state changes
 
@@ -125,7 +126,7 @@ class MyGameTheme extends GameTheme {
 
 **CoreGameTheme** (`CoreGameTheme.light()`, `.dark()`, `.fromMaterial(ThemeData)`, `.fromColors(...)`, `copyWith`):
 
-- Colors: `primary` / `onPrimary`, `secondary` / `onSecondary`, `background` (screen), `surface` (cells, panels), `text`, `textMuted`, `shadow` (use with alpha)
+- Colors: `primary` / `onPrimary`, `secondary` / `onSecondary`, `background` (screen), `surface` (cells, panels), `text`, `textMuted`, `error` / `onError` (mistakes), `shadow` (use with alpha)
 - Text styles: `title` (bold 24), `body` (16), `label` (bold 16), `caption` (12, muted)
 - Dimens: `radiusLarge`, `radiusSmall`, `padding`
 
@@ -247,7 +248,10 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
 - The controller mixes in `RealtimeGameController`: `isRunning` and `tick(Duration delta)`
 - The simulation lives in `tick` and is frame-rate independent: move by `speed * seconds`, never per frame
 - Wrap the playing field in `GameLoop(controller: ...)`: it only ticks while `isRunning` and the app is in the foreground, and clamps long frames to `GameLoop.maxDelta`
-- Use `GameInputDetector(onTap: ..., onSwipe: ...)` for taps, swipes and the keyboard (web/desktop)
+- Use `GameInputDetector` for all input, never your own gesture or key handling:
+  - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
+  - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
+  - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
 - Draw with `CustomPaint` using theme colors, use world coordinates (e.g. 0..1 or cells) and scale to the canvas size
 - Inject `Random` in the controller so tests are reproducible; test the controller by calling `tick` directly
@@ -367,6 +371,24 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 - Lose on a mine: all mines are shown, `finish(lost)` without score. Win when all safe cells are revealed: `finish(won)`
   - Score: `mines * 100 - seconds * 5`, never lower than `mines * 10` (`MinesweeperGameController.calculateScore`)
 - Turn based, no `GameLoop`
+### Snake (`lib/src/game/snake/`)
+
+- Single-player real-time game, id `snake`: steer the snake to the food, it grows with every bite
+- Square grid (15x15 by default, `gridSize` on the builder), the snake moves one cell per step
+- Step interval starts at 180 ms and gets 5 ms shorter per food, down to 80 ms (time accumulator in `tick`)
+- Swipes / arrow keys via `GameInputDetector`; up to 2 direction changes are queued, reversing is ignored
+- The first swipe starts the game and takes the first step right away; the snake is drawn one step behind and interpolated with `stepProgress` (head and tail glide, corners stay sharp)
+- Food spawns on a random empty cell (injectable `Random`)
+- Score: 10 points per food. Hitting a wall or itself finishes with `GameOutcome.lost` and the score; filling the board is `GameOutcome.won`
+### 2048 (`lib/src/game/twenty_forty_eight/`)
+
+- Single-player puzzle, id `twenty_forty_eight` (classes `TwentyFortyEight*`, Dart identifiers can't start with a digit)
+- 4x4 board, swipe (or arrow keys/WASD via `GameInputDetector`) to slide all tiles; equal tiles merge once per move
+- After every move that changed the board a tile spawns on a random empty cell (2 with 90%, 4 with 10%), `Random` is injectable
+- Score: sum of the merged tile values. Reaching 2048 finishes as `won`, no moves left finishes as `lost` (both with the score)
+- `initialBoard` on the controller sets up a board for tests
+- Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
+- Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
 
 ## Testing
 

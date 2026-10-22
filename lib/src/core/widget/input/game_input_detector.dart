@@ -4,23 +4,35 @@ import 'package:flutter/widgets.dart';
 
 enum GameDirection { up, down, left, right }
 
-/// Shared input for all games: taps, swipes and the keyboard (web and desktop).
+/// Shared input for all games: taps, swipes, holds and the keyboard (web and desktop).
 ///
-/// - Tap or space/enter: [onTap] (fires on touch down for a fast response)
-/// - Swipe or arrow keys/WASD: [onSwipe]. Several swipes can be made in one drag.
-/// - When [onSwipe] is null, arrow up and W also trigger [onTap] (jump games)
+/// - Tap or space/enter: [onTap] (fires on touch down for a fast response), [onRelease] when let go
+/// - Swipe or arrow keys/WASD: [onSwipe]. Several swipes can be made in one drag unless
+///   [repeatSwipes] is false.
+/// - When [onSwipe] is null, arrow up and W also trigger [onTap] / [onRelease] (jump games)
+/// - Holding the left or right half of the area, or arrow left/right and A/D: [onHorizontalHold]
+///   with the held direction, or null when nothing is held. The last press wins.
+///   When set, left/right keys are used for holding instead of [onSwipe].
 class GameInputDetector extends StatefulWidget {
   /// Distance a finger has to move before it counts as a swipe
   static const swipeThreshold = 24.0;
 
   final VoidCallback? onTap;
+  final VoidCallback? onRelease;
   final ValueChanged<GameDirection>? onSwipe;
+  final ValueChanged<GameDirection?>? onHorizontalHold;
+
+  /// Whether one drag can report several swipes (Snake) or only the first (2048)
+  final bool repeatSwipes;
   final Widget child;
 
   const GameInputDetector({
     required this.child,
     this.onTap,
+    this.onRelease,
     this.onSwipe,
+    this.onHorizontalHold,
+    this.repeatSwipes = true,
     super.key,
   });
 
@@ -30,10 +42,15 @@ class GameInputDetector extends StatefulWidget {
 
 class _GameInputDetectorState extends State<GameInputDetector> {
   Offset _dragDistance = Offset.zero;
+  bool _swipedThisDrag = false;
+
+  /// Active holds in press order: pointer ids or keys with their direction
+  final List<(Object, GameDirection)> _holds = [];
+  GameDirection? _heldDirection;
 
   void _onPanUpdate(DragUpdateDetails details) {
     final onSwipe = widget.onSwipe;
-    if (onSwipe == null) return;
+    if (onSwipe == null || (_swipedThisDrag && !widget.repeatSwipes)) return;
     _dragDistance += details.delta;
     final dx = _dragDistance.dx;
     final dy = _dragDistance.dy;
@@ -44,10 +61,38 @@ class _GameInputDetectorState extends State<GameInputDetector> {
       onSwipe(dy > 0 ? GameDirection.down : GameDirection.up);
     }
     _dragDistance = Offset.zero;
+    _swipedThisDrag = true;
+  }
+
+  void _startHold(Object id, GameDirection direction) {
+    _holds
+      ..removeWhere((hold) => hold.$1 == id)
+      ..add((id, direction));
+    _notifyHold();
+  }
+
+  void _endHold(Object id) {
+    _holds.removeWhere((hold) => hold.$1 == id);
+    _notifyHold();
+  }
+
+  void _notifyHold() {
+    final direction = _holds.isEmpty ? null : _holds.last.$2;
+    if (direction == _heldDirection) return;
+    _heldDirection = direction;
+    widget.onHorizontalHold?.call(direction);
+  }
+
+  void _onPointerDown(PointerDownEvent event) {
+    final box = context.findRenderObject() as RenderBox?;
+    if (box == null) return;
+    final isLeft = box.globalToLocal(event.position).dx < box.size.width / 2;
+    _startHold(event.pointer, isLeft ? GameDirection.left : GameDirection.right);
   }
 
   KeyEventResult _onKeyEvent(FocusNode node, KeyEvent event) {
-    if (event is! KeyDownEvent) return KeyEventResult.ignored;
+    if (event is KeyRepeatEvent) return KeyEventResult.ignored;
+    final isDown = event is KeyDownEvent;
     final key = event.logicalKey;
     final direction = switch (key) {
       LogicalKeyboardKey.arrowUp || LogicalKeyboardKey.keyW => GameDirection.up,
@@ -56,15 +101,23 @@ class _GameInputDetectorState extends State<GameInputDetector> {
       LogicalKeyboardKey.arrowRight || LogicalKeyboardKey.keyD => GameDirection.right,
       _ => null,
     };
-    final onSwipe = widget.onSwipe;
-    if (direction != null && onSwipe != null) {
-      onSwipe(direction);
+
+    final isHorizontal = direction == GameDirection.left || direction == GameDirection.right;
+    if (isHorizontal && widget.onHorizontalHold != null) {
+      isDown ? _startHold(key, direction!) : _endHold(key);
       return KeyEventResult.handled;
     }
+
+    final onSwipe = widget.onSwipe;
+    if (direction != null && onSwipe != null) {
+      if (isDown) onSwipe(direction);
+      return KeyEventResult.handled;
+    }
+
     final isTapKey = key == LogicalKeyboardKey.space || key == LogicalKeyboardKey.enter || direction == GameDirection.up;
     final onTap = widget.onTap;
     if (isTapKey && onTap != null) {
-      onTap();
+      isDown ? onTap() : widget.onRelease?.call();
       return KeyEventResult.handled;
     }
     return KeyEventResult.ignored;
@@ -72,16 +125,30 @@ class _GameInputDetectorState extends State<GameInputDetector> {
 
   @override
   Widget build(BuildContext context) {
+    final hasHold = widget.onHorizontalHold != null;
     return Focus(
       autofocus: true,
       onKeyEvent: _onKeyEvent,
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTapDown: widget.onTap == null ? null : (_) => widget.onTap!(),
-        onPanStart: widget.onSwipe == null ? null : (_) => _dragDistance = Offset.zero,
-        onPanUpdate: widget.onSwipe == null ? null : _onPanUpdate,
-        dragStartBehavior: DragStartBehavior.down,
-        child: widget.child,
+      child: Listener(
+        // Raw pointers: holds must not compete with taps and swipes in the gesture arena
+        onPointerDown: hasHold ? _onPointerDown : null,
+        onPointerUp: hasHold ? (event) => _endHold(event.pointer) : null,
+        onPointerCancel: hasHold ? (event) => _endHold(event.pointer) : null,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: widget.onTap == null ? null : (_) => widget.onTap!(),
+          onTapUp: widget.onRelease == null ? null : (_) => widget.onRelease!(),
+          onTapCancel: widget.onRelease,
+          onPanStart: widget.onSwipe == null
+              ? null
+              : (_) {
+                  _dragDistance = Offset.zero;
+                  _swipedThisDrag = false;
+                },
+          onPanUpdate: widget.onSwipe == null ? null : _onPanUpdate,
+          dragStartBehavior: DragStartBehavior.down,
+          child: widget.child,
+        ),
       ),
     );
   }

@@ -8,6 +8,8 @@ class HomeScreen extends StatelessWidget {
     TicTacToeGameBuilder(),
     TrailGameBuilder(),
     MinesweeperGameBuilder(),
+    SnakeGameBuilder(),
+    TwentyFortyEightGameBuilder(),
   ];
   const HomeScreen({super.key});
 

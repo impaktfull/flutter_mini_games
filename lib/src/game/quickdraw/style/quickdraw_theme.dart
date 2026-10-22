@@ -74,7 +74,7 @@ class QuickdrawColors {
   final Color tooEarly;
   final Color onTooEarly;
 
-  /// Round result banner (reaction time, too early) on top of each half
+  /// Best reaction time banner on top of each half at the end of a match
   final Color banner;
   final Color onBanner;
 
@@ -132,7 +132,7 @@ class QuickdrawTextStyles {
   /// Smaller line below the message
   final TextStyle hint;
 
-  /// Round result banner
+  /// Best reaction time banner
   final TextStyle banner;
 
   const QuickdrawTextStyles({
@@ -162,10 +162,10 @@ class QuickdrawDimens {
   /// Icon next to "GO!"
   final double signalIconSize;
 
-  /// Corner radius of the round result banner
+  /// Corner radius of the best reaction time banner
   final double bannerRadius;
 
-  /// Icon in the round result banner
+  /// Icon in the best reaction time banner
   final double bannerIconSize;
 
   /// Thickness of the line between the halves

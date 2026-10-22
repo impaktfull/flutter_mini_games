@@ -71,6 +71,11 @@ class PuckGameController extends GameController with RealtimeGameController, Due
   int goals(DuelPlayer player) => roundWins(player);
 
   @override
+  Map<String, Object?> get duelResultData => {
+    'goals': {for (final player in DuelPlayer.values) player.name: goals(player)},
+  };
+
+  @override
   bool get isRunning => duelIsRunning;
 
   /// Start position of a mallet, in the middle in front of its own goal
@@ -94,8 +99,7 @@ class PuckGameController extends GameController with RealtimeGameController, Due
 
   @override
   void tick(Duration delta) {
-    tickDuel(delta);
-    if (phase != DuelPhase.playing) return;
+    if (!tickDuel(delta)) return;
     final seconds = delta.inMicroseconds / Duration.microsecondsPerSecond;
     if (seconds <= 0) return;
 

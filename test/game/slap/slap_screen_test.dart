@@ -27,6 +27,8 @@ void main() {
 
     expect(find.text('Attack'), findsOneWidget);
     expect(find.text('Defend'), findsOneWidget);
+    // Both halves show how to play while getting ready
+    expect(find.text('Defend: hold your target, lift to dodge a slap'), findsNWidgets(2));
     await tester.tap(find.text('Tap when ready').first);
     await tester.tap(find.text('Tap when ready').last);
     await tester.pump();
@@ -59,6 +61,8 @@ void main() {
     expect(controller().roundEnd, equals(SlapRoundEnd.slapped));
     expect(controller().roundWins(DuelPlayer.bottom), equals(1));
     expect(find.text('You win the round'), findsOneWidget);
+    expect(find.text('Your slap landed!'), findsOneWidget);
+    expect(find.text('Slapped!'), findsOneWidget);
     await hold.up();
 
     // Next round: roles swap, the bottom player defends and dodges
@@ -75,6 +79,8 @@ void main() {
     await tester.pump();
     expect(controller().roundEnd, equals(SlapRoundEnd.dodged));
     expect(controller().roundWins(DuelPlayer.bottom), equals(2));
+    expect(find.text('Dodged!'), findsOneWidget);
+    expect(find.text('Player 1 dodged your slap'), findsOneWidget);
     expect(tester.takeException(), isNull);
 
     await tester.pumpWidget(const SizedBox());

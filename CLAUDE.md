@@ -514,6 +514,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Puck (`lib/src/game/puck/`)
+
+- Two-player air hockey on one device, id `puck`: drag your mallet in your own half and shoot the puck into the other goal
+- `PuckGameController` = `GameController` + `RealtimeGameController` + `DuelGameController`; every goal is a round, first to `goalsToWin` (5, configurable on the builder)
+- World: one shared portrait table, 1.0 wide and 1.8 high, y down; `DuelPlayer.top` defends the goal at y = 0, `bottom` the goal at y = 1.8 (goal mouth 0.36 wide in the middle)
+- Input: one raw `Listener` on the table; every pointer belongs to the half it went down in (`halfAt`) and sets the target of that player's mallet (`moveMallet`, only while playing); targets are clamped to the player's half (`clampToHalf`)
+- Physics in `tick` (after `tickDuel`, only while `DuelPhase.playing`): mallets follow their target at most `maxMalletSpeed`, spread evenly over sub steps; sub steps keep every move below `maxStep` (half the puck radius) so nothing tunnels; exponential friction; wall and goal post bounces with `wallRestitution`; puck–mallet circle collision reflects the relative velocity (`malletRestitution`), so the mallet's velocity transfers to the puck; speed capped at `maxPuckSpeed`; a puck pinned against a wall pushes the mallet back
+- Goal when the puck's center crosses a goal line inside the mouth; the next round serves the puck `serveOffset` from the center line in the half of the player who conceded (center for the first round), mallets back at their start
+- Screen: `FlutterMiniGamesScreen` with a `GameBoard` table that fills the space; `DuelLayout` with `DuelPhaseOverlay` per player stacked over the table (lets touches through while playing); goals painted next to the center line, the top one upside down
+- Result: `GameOutcome.won` with `data['winner']` and the goals in `data['rounds']`, no score
 ### Breaker (`lib/src/game/breaker/`)
 
 - Single-player brick breaker, id `breaker`, real-time (`RealtimeGameController` + `GameLoop`): bounce the ball off the paddle to break all the bricks, 3 lives

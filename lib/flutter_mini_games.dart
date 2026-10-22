@@ -15,3 +15,6 @@ export 'src/game/trail/game/model/trail_difficulty.dart';
 export 'src/game/trail/game/model/trail_puzzle.dart';
 export 'src/game/trail/game/model/trail_puzzle_generator.dart';
 export 'src/game/trail/style/trail_theme.dart';
+export 'src/game/minesweeper/game/minesweeper_game_builder.dart';
+export 'src/game/minesweeper/game/model/minesweeper_difficulty.dart';
+export 'src/game/minesweeper/style/minesweeper_theme.dart';

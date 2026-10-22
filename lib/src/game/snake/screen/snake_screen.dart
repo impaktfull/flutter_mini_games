@@ -9,6 +9,7 @@ import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
 import 'package:flutter_mini_games/src/core/widget/input/game_input_detector.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/snake/game/logic/snake_game_controller.dart';
 import 'package:flutter_mini_games/src/game/snake/screen/snake_header.dart';
@@ -38,41 +39,40 @@ class SnakeScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Snake',
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 16,
-          children: [
-            SnakeHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Flexible(
-              child: GameBoard(
-                child: GameLoop(
-                  controller: controller,
-                  child: GameInputDetector(
-                    onSwipe: controller.changeDirection,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        SnakeBoard(controller: controller),
-                        ?_buildOverlay(controller),
-                      ],
-                    ),
-                  ),
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              SnakeHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          board: GameBoard(
+            child: GameLoop(
+              controller: controller,
+              child: GameInputDetector(
+                onSwipe: controller.changeDirection,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    SnakeBoard(controller: controller),
+                    ?_buildOverlay(controller),
+                  ],
                 ),
               ),
             ),
-            GameButton(
-              onTap: controller.status == GameStatus.ready ? null : controller.resetGame,
-              icon: Icons.refresh,
-              label: controller.isFinished ? 'Play again' : 'Restart',
-            ),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.swipe, text: 'Swipe or use the\narrow keys to turn'),
-                GameHowToPlayItem(icon: Icons.restaurant, text: 'Eat to grow,\navoid walls and yourself'),
-              ],
-            ),
-          ],
+          ),
+          controls: GameButton(
+            onTap: controller.status == GameStatus.ready ? null : controller.resetGame,
+            icon: Icons.refresh,
+            label: controller.isFinished ? 'Play again' : 'Restart',
+          ),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.swipe, text: 'Swipe or use the\narrow keys to turn'),
+              GameHowToPlayItem(icon: Icons.restaurant, text: 'Eat to grow,\navoid walls and yourself'),
+            ],
+          ),
         ),
       ),
     );

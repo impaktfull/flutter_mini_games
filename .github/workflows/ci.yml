@@ -33,6 +33,9 @@ jobs:
         run: fvm dart analyze --fatal-infos
       - name: Test
         run: fvm flutter test
+      - name: Test example
+        working-directory: example
+        run: fvm flutter test
       # Unused games must never end up in a host app
       - name: Tree shaking
         run: FLUTTER="fvm flutter" ./tool/check_tree_shaking.sh

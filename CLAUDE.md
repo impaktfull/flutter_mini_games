@@ -361,6 +361,15 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Hop (`lib/src/game/hop/`)
+
+- Single-player endless vertical jumper, id `hop`, real-time (`RealtimeGameController` + `GameLoop`)
+- The character bounces automatically when it falls onto a platform (passes through from below); hold the left/right half of the board or the arrow keys / A-D to steer, the screen wraps horizontally
+- World units: 1.0 wide, y grows upwards, the view is 4/3 high (3:4 `GameBoard`); the camera only moves up
+- `HopPlatformGenerator` (injectable `Random`): gaps grow with the height but stay below 75% of the jump height; the reachable platform of every step is never breakable; moving and breakable platforms appear as the height grows
+- Hold input lives in the game (`HopPlayfield`: `Listener` per half + `Focus` key down/up) because `GameInputDetector` only reports presses
+- Score: max height × 100; falling below the view finishes with `GameOutcome.lost` and the score
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

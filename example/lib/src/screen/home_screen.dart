@@ -21,6 +21,7 @@ class HomeScreen extends StatefulWidget {
     PairsGameBuilder(),
     WhackGameBuilder(),
     ReflexGameBuilder(),
+    BreakerGameBuilder(),
     FourUpGameBuilder(),
     QuickdrawGameBuilder(),
     PushGameBuilder(),

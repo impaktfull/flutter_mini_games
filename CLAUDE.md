@@ -514,6 +514,17 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Breaker (`lib/src/game/breaker/`)
+
+- Single-player brick breaker, id `breaker`, real-time (`RealtimeGameController` + `GameLoop`): bounce the ball off the paddle to break all the bricks, 3 lives
+- World of 1.0 x 1.4 units (5:7 `GameBoard`), y grows downwards; 8 columns of bricks, level 1 has 4 rows and every level adds one, clearing level 5 (8 rows) wins
+- The ball moves in sub-steps of at most half its radius with circle-rectangle collision (reflection on the contact normal, pushed out of the brick), so it never tunnels through a brick or the paddle at any speed; one brick breaks per sub-step
+- Paddle bounce angle: the hit offset from the paddle center maps linearly to up to 60° from vertical; walls and bricks keep the ball at least 15° from horizontal
+- Speed: 0.75 units/s at launch (+0.07 per level), grows by 0.012 units/s every second up to 1.6; the launch angle is random (injectable `Random`)
+- Input: `GameInputDetector(onTap:, onHorizontalHold:)` for arrow keys / A-D, holding a half of the board and space / enter (launch); a raw `Listener` inside it drags the paddle with the finger's horizontal movement once it moved 8 px (holds are ignored while dragging), and a short touch without drag launches the ball on release so the paddle can be positioned first
+- Phases (`BreakerPhase`): ready → playing → serving (ball lost) / level cleared → ... → game over / won; the ball rests on the paddle until launched, the GameLoop only ticks while the ball moves or the paddle is steered
+- Brick colors blend per row along `BreakerColors.bricks` (`error` → `primary` → `secondary` by default)
+- Every launch is a move. Score: 10 per brick. Losing the last life finishes with `GameOutcome.lost`, clearing the last level with `GameOutcome.won`, both with the score and `data` (`level`, `bricks`, `lives`)
 ### Four Up (`lib/src/game/four_up/`)
 
 - Two-player four in a row on one device, id `four_up`, turn based (no game loop, no `DuelGameController` rounds)

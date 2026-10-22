@@ -3,7 +3,8 @@ import 'package:impaktfull_ui/impaktfull_ui.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 
 class HomeScreen extends StatelessWidget {
-  static final List<FlutterMiniGameBuilder> _games = [
+  // Only the games referenced here are compiled into the app
+  static const List<FlutterMiniGameBuilder> _games = [
     TicTacToeGameBuilder(),
     TrailGameBuilder(),
   ];
@@ -23,10 +24,7 @@ class HomeScreen extends StatelessWidget {
               child: ImpaktfullUiListItem(
                 title: game.name,
                 subtitle: game.description,
-                onTap: () => FlutterMiniGamesController().launchGameBuilder(
-                  context,
-                  game,
-                ),
+                onTap: () => FlutterMiniGames.launch(context, game),
               ),
             ),
           ],

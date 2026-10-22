@@ -17,16 +17,19 @@ class TicTacToeHeader extends StatelessWidget {
       final isDraw = controller.winner == null;
       if (isDraw) {
         return Text(
+          textAlign: TextAlign.center,
           "It's a draw!",
           style: TicTacToeTheme.of(context).textStyles.headerDraw,
         );
       }
       return Text(
+        textAlign: TextAlign.center,
         'Player ${controller.winner} wins!',
         style: controller.winner == 'X' ? TicTacToeTheme.of(context).textStyles.headerWinnerX : TicTacToeTheme.of(context).textStyles.headerWinnerO,
       );
     }
     return Text(
+      textAlign: TextAlign.center,
       'Player ${controller.isXTurn ? 'X' : 'O'}\'s turn',
       style: TicTacToeTheme.of(context).textStyles.header,
     );

@@ -1,11 +1,15 @@
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
+import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 
 class TicTacToeGameController extends GameController {
+  static const id = 'tic_tac_toe';
+
   List<List<String?>> _board = List.generate(3, (_) => List.filled(3, null));
   bool _isXTurn = true;
   String? _winner;
   bool _isGameOver = false;
-  int _moveCount = 0;
+
+  TicTacToeGameController() : super(gameId: id);
 
   List<List<String?>> get board => _board;
 
@@ -15,15 +19,20 @@ class TicTacToeGameController extends GameController {
 
   bool get isGameOver => _isGameOver;
 
-  int get moveCount => _moveCount;
-
   void makeMove(int row, int col) {
     if (_board[row][col] != null || _isGameOver) return;
 
     _board[row][col] = _isXTurn ? 'X' : 'O';
-    _moveCount++;
+    registerMove();
     _isXTurn = !_isXTurn;
     _checkWinner();
+    if (_isGameOver) {
+      // Multiplayer: the winning player is passed in the result data
+      finish(
+        _winner == null ? GameOutcome.draw : GameOutcome.won,
+        data: {if (_winner != null) 'winner': _winner},
+      );
+    }
     notifyListeners();
   }
 
@@ -32,7 +41,7 @@ class TicTacToeGameController extends GameController {
     _isXTurn = true;
     _winner = null;
     _isGameOver = false;
-    _moveCount = 0;
+    restartSession();
     notifyListeners();
   }
 
@@ -96,7 +105,7 @@ class TicTacToeGameController extends GameController {
     }
 
     // Check for draw
-    if (_moveCount == 9) {
+    if (moves == 9) {
       _isGameOver = true;
     }
   }

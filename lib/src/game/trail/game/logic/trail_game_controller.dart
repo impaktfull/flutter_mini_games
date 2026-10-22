@@ -1,10 +1,15 @@
+import 'dart:math';
+
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
+import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_difficulty.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_direction.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_puzzle.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_puzzle_generator.dart';
 
 class TrailGameController extends GameController {
+  static const id = 'trail';
+
   final List<TrailPuzzle> _puzzles;
   final TrailDifficulty _difficulty;
   int _currentPuzzleIndex = 0;
@@ -13,15 +18,16 @@ class TrailGameController extends GameController {
   List<List<int?>> _grid = []; // null = empty, number = order in trail
   final List<(int row, int col)> _path = [];
   int _currentTargetCheckpoint = 1;
-  bool _isGameOver = false;
-  bool _isWon = false;
+  bool _isStuck = false;
+  int _undos = 0;
 
   TrailGameController({
     List<TrailPuzzle>? puzzles,
     TrailDifficulty difficulty = TrailDifficulty.hard,
   }) : _puzzles = puzzles ?? [],
        _difficulty = difficulty,
-       _puzzle = (puzzles != null && puzzles.isNotEmpty) ? puzzles.first : _generatePuzzle(difficulty) {
+       _puzzle = (puzzles != null && puzzles.isNotEmpty) ? puzzles.first : _generatePuzzle(difficulty),
+       super(gameId: id) {
     _startPuzzle();
   }
 
@@ -44,11 +50,14 @@ class TrailGameController extends GameController {
   List<List<int?>> get grid => _grid;
   List<(int row, int col)> get path => _path;
   int get currentTargetCheckpoint => _currentTargetCheckpoint;
-  bool get isGameOver => _isGameOver;
-  bool get isWon => _isWon;
+  bool get isWon => result?.outcome == GameOutcome.won;
+
+  /// No valid move left without winning. Recoverable with [undo] or [resetGame].
+  bool get isStuck => _isStuck;
+  int get undos => _undos;
   int get totalCells => _puzzle.rows * _puzzle.cols;
   int get filledCells => _path.length;
-  bool get canUndo => _path.length > 1 && !_isWon;
+  bool get canUndo => _path.length > 1 && !isFinished;
   int get currentPuzzleIndex => _currentPuzzleIndex;
   int get totalPuzzles => _puzzles.length;
   bool get hasMorePuzzles => _puzzles.isNotEmpty && _currentPuzzleIndex < _puzzles.length - 1;
@@ -60,8 +69,9 @@ class TrailGameController extends GameController {
     _grid = List.generate(_puzzle.rows, (_) => List.filled(_puzzle.cols, null));
     _path.clear();
     _currentTargetCheckpoint = 1;
-    _isGameOver = false;
-    _isWon = false;
+    _isStuck = false;
+    _undos = 0;
+    restartSession();
 
     final start = _puzzle.checkpoints[1];
     if (start != null) {
@@ -94,7 +104,7 @@ class TrailGameController extends GameController {
   }
 
   bool canMoveTo(int row, int col) {
-    if (_isGameOver) return false;
+    if (isFinished || _isStuck) return false;
     if (_grid[row][col] != null) return false;
     if (_path.isEmpty) return false;
 
@@ -107,6 +117,7 @@ class TrailGameController extends GameController {
 
     _path.add((row, col));
     _grid[row][col] = _path.length;
+    registerMove();
 
     if (_puzzle.checkpoints[_currentTargetCheckpoint] == (row, col)) {
       _currentTargetCheckpoint++;
@@ -125,7 +136,8 @@ class TrailGameController extends GameController {
     if (_puzzle.checkpoints[_currentTargetCheckpoint - 1] == (row, col)) {
       _currentTargetCheckpoint--;
     }
-    _isGameOver = false;
+    _undos++;
+    _isStuck = false;
     notifyListeners();
   }
 
@@ -139,12 +151,25 @@ class TrailGameController extends GameController {
     final endsAtLastCheckpoint = _path.last == _puzzle.checkpoints[_puzzle.checkpoints.length];
 
     if (allCellsFilled && allCheckpointsVisited && endsAtLastCheckpoint) {
-      _isWon = true;
-      _isGameOver = true;
+      finish(
+        GameOutcome.won,
+        score: calculateScore(totalCells: totalCells, elapsed: elapsed, undos: _undos),
+        data: {'puzzle': _puzzle.name, 'rows': _puzzle.rows, 'cols': _puzzle.cols},
+      );
     } else if (allCellsFilled || !_hasValidMoves()) {
-      // Filled every cell without meeting the other conditions, or stuck
-      _isGameOver = true;
+      // Filled every cell without meeting the other conditions, or no move left
+      _isStuck = true;
     }
+  }
+
+  /// Bigger grids are worth more points, every second and every undo costs points
+  static int calculateScore({
+    required int totalCells,
+    required Duration elapsed,
+    required int undos,
+  }) {
+    final penalty = elapsed.inSeconds + undos * 5;
+    return max(totalCells, totalCells * 20 - penalty);
   }
 
   bool _hasValidMoves() {

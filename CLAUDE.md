@@ -6,6 +6,19 @@ This document provides guidance for AI assistants working on this codebase.
 
 A Flutter library providing reusable mini games. Each game follows a consistent architecture with controllers, themes, builders, and widgets.
 
+## Principles
+
+Every change must keep these four goals intact:
+
+1. **Minimal game code in the host app.** A host only creates game builders and calls `FlutterMiniGames.launch(context, game)`. The optional `FlutterMiniGames` root widget configures theme, score store and `onGameFinished` for all games at once. Never require per-game setup in the host beyond the builder.
+2. **Unused games are never shipped.** Dart removes games the host does not reference. Keep it that way:
+   - Never add a list, registry, enum or picker that references all games inside the library.
+   - Shared (core) code must never import anything from `lib/src/game/`.
+   - Never declare assets or fonts in the package `pubspec.yaml`: they are always bundled. A game that needs assets or heavy dependencies gets its own package.
+   - `tool/check_tree_shaking.sh` (runs on CI) builds one app per game and fails when another game is compiled in.
+3. **One scores system for all games.** Games report results through `GameController` (`registerMove()`, `finish()`, `restartSession()`). Results go to the `GameScoreStore` and the host callback; never build game-specific score storage.
+4. **Theming is easy and identical between games.** Every game theme has the same shape (see below) and is customised with `theme: (theme) => theme.copyWith(...)` on the builder.
+
 ## Architecture
 
 ### Directory Structure for Games
@@ -29,159 +42,157 @@ lib/src/game/{game_name}/
     └── {game}_*.dart                      # Game-specific widgets
 ```
 
+Shared code lives in `lib/src/core/` and `lib/src/flutter_mini_games.dart` (the `FlutterMiniGames` root widget).
+
 ### Core Patterns
 
 #### 1. Game Controller
 
-- Extends `GameController` (which extends `ChangeNotifier`)
+- Extends `GameController` (which extends `ChangeNotifier`) and passes a stable `static const id`
 - Contains all game state as private fields with public getters
+- Calls `registerMove()` for every move: it counts moves and starts the timer
+- Calls `finish(outcome, score: ..., data: ...)` when the game ends: the result is stored and reported to the host
+- Calls `restartSession()` in `resetGame()` / `nextPuzzle()`
+- Leaving a game while playing is reported as `GameOutcome.abandoned` automatically
 - Calls `notifyListeners()` after state changes
-- Provides methods for game actions (e.g., `makeMove()`, `resetGame()`, `nextPuzzle()`)
 
 ```dart
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
+import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 
 class MyGameController extends GameController {
-  // Private state
-  bool _isGameOver = false;
+  static const id = 'my_game';
 
-  // Public getters
-  bool get isGameOver => _isGameOver;
+  MyGameController() : super(gameId: id);
 
-  // Actions
+  bool get isWon => result?.outcome == GameOutcome.won;
+
   void makeMove() {
-    // Update state
-    _isGameOver = true;
+    registerMove();
+    if (_isSolved()) {
+      finish(GameOutcome.won, score: 100);
+    }
     notifyListeners();
   }
 
   void resetGame() {
-    _isGameOver = false;
+    restartSession();
     notifyListeners();
   }
 }
 ```
 
+- Score: higher is better, `null` when the game has no score (e.g. multiplayer)
+- Multiplayer games put the winner in `data` (e.g. `{'winner': 'X'}`)
+
 #### 2. Game Theme
 
+Every game theme has exactly this shape:
+
 - Extends `GameTheme`
-- Contains `{Game}Colors` and `{Game}TextStyles` classes
-- Static `getDefault({required CoreGameTheme coreTheme})` factory
+- Fields `colors`, `textStyles`, `dimens` ({Game}Colors, {Game}TextStyles, {Game}Dimens)
+- `factory {Game}Theme.fromCore(CoreGameTheme core)` derives all defaults from the core theme
+- `copyWith` on the theme and on each of `colors`, `textStyles`, `dimens`
 - Static `of(BuildContext context)` for retrieval
-- **IMPORTANT**: Only use colors from `CoreGameTheme` - do NOT invent new colors
+- **IMPORTANT**: Only use values from `CoreGameTheme` - no hardcoded colors
+- Shared UI (screen, buttons, stats bar, how to play) uses `CoreGameTheme` directly; game themes only contain tokens for the game board
 
 ```dart
-import 'package:flutter/material.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
-
 class MyGameTheme extends GameTheme {
   final MyGameColors colors;
   final MyGameTextStyles textStyles;
+  final MyGameDimens dimens;
 
   static MyGameTheme of(BuildContext context) => GameTheme.of<MyGameTheme>(context);
 
-  MyGameTheme({required this.colors, required this.textStyles});
+  const MyGameTheme({required this.colors, required this.textStyles, required this.dimens});
 
-  static MyGameTheme getDefault({required CoreGameTheme coreTheme}) {
-    // Use ONLY colors from coreTheme - no hardcoded colors!
-    return MyGameTheme(
-      colors: MyGameColors(
-        background: coreTheme.colors.background,
-        primary: coreTheme.colors.primary,
-        secondary: coreTheme.colors.secondary,
-      ),
-      textStyles: MyGameTextStyles(
-        header: coreTheme.textStyles.title,
-        body: coreTheme.textStyles.body,
-      ),
-    );
-  }
+  factory MyGameTheme.fromCore(CoreGameTheme core) => MyGameTheme(
+    colors: MyGameColors(cell: core.colors.surface, highlight: core.colors.primary),
+    textStyles: MyGameTextStyles(header: core.textStyles.title),
+    dimens: MyGameDimens(cellRadius: core.dimens.radiusSmall),
+  );
+
+  MyGameTheme copyWith({MyGameColors? colors, MyGameTextStyles? textStyles, MyGameDimens? dimens}) => MyGameTheme(
+    colors: colors ?? this.colors,
+    textStyles: textStyles ?? this.textStyles,
+    dimens: dimens ?? this.dimens,
+  );
 }
+// + MyGameColors, MyGameTextStyles, MyGameDimens, each with copyWith
 ```
 
-**CoreGameTheme available colors:**
+**CoreGameTheme** (`CoreGameTheme.light()`, `.dark()`, `.fromMaterial(ThemeData)`, `.fromColors(...)`, `copyWith`):
 
-- `primary` - Main accent color (purple by default)
-- `secondary` - Secondary color (dark by default)
-- `background` - Background color
-- `card` / `card2` - Card background colors
-- `text` - Primary text color
-- `textInverted` - Inverted text color (for dark backgrounds)
-- `onPrimaryText` - Text on primary color
-
-**CoreGameTheme available text styles:**
-
-- `title` - Bold 24px title text
-- `body` - Regular 16px body text
+- Colors: `primary` / `onPrimary`, `secondary` / `onSecondary`, `background` (screen), `surface` (cells, panels), `text`, `textMuted`, `shadow` (use with alpha)
+- Text styles: `title` (bold 24), `body` (16), `label` (bold 16), `caption` (12, muted)
+- Dimens: `radiusLarge`, `radiusSmall`, `padding`
 
 #### 3. Game Builder
 
-- Extends `FlutterMiniGameBuilder`
-- Implements `isMultiPlayer` getter
-- Implements `build(BuildContext context)` returning the screen widget
-- Accepts optional `theme` and `coreTheme` parameters
-- Can accept puzzle lists or difficulty for procedural generation
+- Extends `FlutterMiniGameBuilder`, `const` constructor
+- Implements `id` (the controller's `id`), `isMultiPlayer` and a synchronous `build(BuildContext context)`
+- Accepts optional `coreTheme` (overrides the app-wide one) and `theme` (`GameThemeOverride<{Game}Theme>`)
 
 ```dart
 class MyGameBuilder extends FlutterMiniGameBuilder {
   @override
+  String get id => MyGameController.id;
+
+  @override
   bool get isMultiPlayer => false;
 
   final CoreGameTheme? coreTheme;
-  final MyGameTheme? theme;
-  final List<MyPuzzle>? puzzles;  // Optional puzzle list
-  final int difficulty;            // For procedural generation
+  final GameThemeOverride<MyGameTheme>? theme;
 
-  MyGameBuilder({
+  const MyGameBuilder({
     super.name = 'My Game',
     super.description = 'Description of the game',
-    this.theme,
     this.coreTheme,
-    this.puzzles,
-    this.difficulty = 3,
+    this.theme,
   });
 
   @override
-  Future<Widget> build(BuildContext context) async {
-    return MyGameScreen(
-      coreTheme: coreTheme ?? CoreGameTheme.getDefault(),
-      themeBuilder: (coreTheme) => theme ?? MyGameTheme.getDefault(coreTheme: coreTheme),
-      puzzles: puzzles,
-      difficulty: difficulty,
-    );
-  }
+  Widget build(BuildContext context) => MyGameScreen(coreTheme: coreTheme, theme: theme);
 }
 ```
 
 #### 4. Game Screen
 
-- Stateless widget
-- Wraps content in `GameControllerProvider`
-- Uses `FlutterMiniGamesScreen` for consistent layout
-- Builder pattern provides controller and themes
-- Show different buttons based on game state (e.g., "Next Puzzle" when won, "Reset" otherwise)
+- Stateless widget wrapping its content in `GameControllerProvider`
+- Uses `FlutterMiniGamesScreen` for the layout, `GameStatsBar` for time/moves/best score and `GameHowToPlay` for the rules
+- Shows different buttons based on game state (e.g., "Next Puzzle" when won, "Reset" otherwise)
+- Rows that can grow use `Wrap` (or `Flexible` text) so they never overflow on small phones
 
 ```dart
 class MyGameScreen extends StatelessWidget {
-  final MyGameTheme Function(CoreGameTheme) themeBuilder;
-  final CoreGameTheme coreTheme;
+  final CoreGameTheme? coreTheme;
+  final GameThemeOverride<MyGameTheme>? theme;
+
+  const MyGameScreen({this.coreTheme, this.theme, super.key});
 
   @override
   Widget build(BuildContext context) {
     return GameControllerProvider(
-      controller: MyGameController(),
-      themeBuilder: themeBuilder,
+      create: MyGameController.new,
       coreTheme: coreTheme,
+      theme: (core) {
+        final defaults = MyGameTheme.fromCore(core);
+        return theme?.call(defaults) ?? defaults;
+      },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'My Game',
         child: Column(
+          spacing: 24,
           children: [
+            MyGameHeader(controller: controller),
+            GameStatsBar(controller: controller),
             // Game UI here
-            // Show contextual buttons based on state
             if (controller.isWon)
               GameButton(onTap: controller.nextPuzzle, icon: Icons.arrow_forward, label: 'Next Puzzle')
             else
               GameButton(onTap: controller.resetGame, icon: Icons.refresh, label: 'Reset'),
+            const GameHowToPlay(items: [GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap to play')]),
           ],
         ),
       ),
@@ -200,7 +211,7 @@ class _CellPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
       ..color = lineColor  // Use solid color, NO alpha (avoids overlap artifacts)
-      ..strokeWidth = 16
+      ..strokeWidth = lineThickness  // From the game theme dimens
       ..strokeCap = StrokeCap.round
       ..style = PaintingStyle.stroke;
 
@@ -226,14 +237,15 @@ class _CellPainter extends CustomPainter {
 - Use solid colors (no alpha) to avoid overlap artifacts
 - Add overshoot (4px) to extend lines past cell boundaries for seamless connections
 - Use `StrokeCap.round` for smooth line ends
+- Compare sets by content in `shouldRepaint`, a new set is created on every build
 
 ## Adding a New Game - Checklist
 
 1. **Create directory structure** under `lib/src/game/{game_name}/`
 
 2. **Create game controller** (`game/logic/{game}_game_controller.dart`)
-   - Extend `GameController`
-   - Add state management with `notifyListeners()`
+   - Extend `GameController` with a unique `static const id`
+   - Call `registerMove()`, `finish()` and `restartSession()`
    - Include `resetGame()` and optionally `nextPuzzle()` methods
 
 3. **Create game models** (optional, `game/model/`)
@@ -241,17 +253,16 @@ class _CellPainter extends CustomPainter {
    - Puzzle generator if procedural content is needed
 
 4. **Create theme** (`style/{game}_theme.dart`)
-   - Extend `GameTheme`
-   - **Only use colors from CoreGameTheme** - no hardcoded colors!
+   - Same shape as every other game theme: `colors`, `textStyles`, `dimens`, `fromCore`, `copyWith`
+   - **Only use values from CoreGameTheme** - no hardcoded colors!
 
 5. **Create game builder** (`game/{game}_game_builder.dart`)
-   - Extend `FlutterMiniGameBuilder`
-   - Set `name`, `description`, `isMultiPlayer`
-   - Support both custom puzzles and procedural generation
+   - Extend `FlutterMiniGameBuilder`, `const` constructor
+   - Set `id`, `name`, `description`, `isMultiPlayer`, accept `coreTheme` and `theme`
+   - Support both custom puzzles and procedural generation where it applies
 
 6. **Create screen** (`screen/{game}_screen.dart`)
-   - Use `GameControllerProvider` wrapper
-   - Use `FlutterMiniGamesScreen` for layout
+   - Use `GameControllerProvider`, `FlutterMiniGamesScreen`, `GameStatsBar`, `GameHowToPlay`
 
 7. **Create header** (`screen/{game}_header.dart`)
    - Display game status/progress
@@ -263,37 +274,47 @@ class _CellPainter extends CustomPainter {
 
    ```dart
    export 'src/game/{game_name}/game/{game}_game_builder.dart';
+   export 'src/game/{game_name}/style/{game}_theme.dart';
    // Also export any public models users might need
    ```
 
 10. **Add to example app** (`example/lib/src/screen/home_screen.dart`)
+
     ```dart
-    static final List<FlutterMiniGameBuilder> _games = [
+    static const List<FlutterMiniGameBuilder> _games = [
       TicTacToeGameBuilder(),
       TrailGameBuilder(),
       MyGameBuilder(),  // Add new game here
     ];
     ```
 
+11. **Run `tool/check_tree_shaking.sh`** - it picks up the new game automatically
+
 ## Available Core Components
 
-- `GameController` - Base class for game controllers (extends ChangeNotifier)
-- `GameTheme` / `CoreGameTheme` - Theme system with colors and text styles
+- `FlutterMiniGames` - Optional root widget: core theme (light/dark), `GameScoreStore`, `onGameFinished`, and `FlutterMiniGames.launch`
+- `FlutterMiniGameBuilder` - Entry point of a game (`id`, `name`, `description`, `isMultiPlayer`, `build`)
+- `GameController` - Base class for game controllers: status, timer, moves, `finish()`
+- `GameResult` / `GameStats` / `GameScoreStore` / `InMemoryGameScoreStore` - Shared scores system
+- `GameTheme` / `CoreGameTheme` / `GameThemeOverride<T>` - Theme system
 - `GameThemeBuilder<T>` - Widget for accessing themes
-- `GameControllerProvider` - Provider wrapper for controllers and themes
+- `GameControllerProvider` - Provides controller and themes, reports results
 - `FlutterMiniGamesScreen` - Standard screen layout with app bar
 - `GameButton` - Styled button component
+- `GameStatsBar` - Time, moves and best score
+- `GameHowToPlay` - Rules panel
 
 ## Existing Games
 
 ### Tic Tac Toe (`lib/src/game/tic_tac_toe/`)
 
-- Two-player classic game
+- Two-player classic game, id `tic_tac_toe`
 - Simple state: board, current turn, winner
+- Reports `won` (winner in `data['winner']`) or `draw`, no score
 
 ### Trail (`lib/src/game/trail/`)
 
-- Single-player puzzle: draw one trail through every cell, passing the numbered checkpoints in order
+- Single-player puzzle, id `trail`: draw one trail through every cell, passing the numbered checkpoints in order
 - Trail must START at checkpoint 1 and END at the last checkpoint
 - Features:
   - `TrailPuzzleGenerator` for random solvable puzzle generation
@@ -301,6 +322,7 @@ class _CellPainter extends CustomPainter {
   - 5 difficulty levels (3x3 to 7x7 grids)
   - Support for custom puzzle lists OR auto-generation
   - `nextPuzzle()` method for progression, `undo()` to step back (also when stuck)
+  - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
 ## Testing
@@ -318,24 +340,24 @@ flutter test test/game/trail/trail_puzzle_generator_test.dart
 
 # Run with compact reporter
 flutter test --reporter compact
+
+# Verify that unused games are tree-shaken (slow, builds one web app per game)
+tool/check_tree_shaking.sh
 ```
 
 ### Writing Tests for Games
 
-When adding a new game with procedural content generation:
-
 1. Create tests in `test/game/{game_name}/`
-2. Test that generated content is valid
-3. Test that generated content is solvable/playable
-4. Use seeded random for reproducible tests: `Random(42)`
-5. Test edge cases (min/max sizes, boundary conditions)
-6. Verify win conditions (e.g., path starts AND ends at correct positions)
+2. Test the controller: moves, win/lose conditions and the reported `GameResult`
+3. For procedural content: test that it is valid and solvable, with seeded random (`Random(42)`)
+4. Test edge cases (min/max sizes, boundary conditions)
+5. Verify win conditions (e.g., path starts AND ends at correct positions)
 
 ## Code Style
 
 - Use `super.key` in widget constructors
-- Use `spacing` parameter in `Column`/`Row` instead of `SizedBox` between children (Flutter 3.10+)
+- Use `spacing` parameter in `Column`/`Row` instead of `SizedBox` between children
 - Prefer `const` constructors where possible
-- Run `dart analyze` before committing
+- Run `tool/format.sh` and `dart analyze --fatal-infos` before committing (CI checks both)
 - **No hardcoded colors** - always use CoreGameTheme
 - **No alpha on overlapping paint** - use solid colors to avoid artifacts

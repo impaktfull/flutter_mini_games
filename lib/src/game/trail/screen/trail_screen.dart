@@ -4,6 +4,7 @@ import 'package:flutter_mini_games/src/core/widget/components/button.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/trail/game/logic/trail_game_controller.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_difficulty.dart';
@@ -40,41 +41,37 @@ class TrailScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Trail',
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 24,
-          children: [
-            TrailHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Flexible(
-              fit: FlexFit.loose,
-              child: AspectRatio(
-                aspectRatio: controller.puzzle.cols / controller.puzzle.rows,
-                child: Container(
-                  decoration: BoxDecoration(
-                    color: theme.colors.gridBackground,
-                    borderRadius: BorderRadius.circular(theme.dimens.gridRadius),
-                    boxShadow: [
-                      BoxShadow(
-                        color: theme.colors.gridShadow.withValues(alpha: 0.1),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
-                      ),
-                    ],
-                  ),
-                  padding: const EdgeInsets.all(8),
-                  child: TrailGrid(controller: controller),
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              TrailHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          boardAspectRatio: controller.puzzle.cols / controller.puzzle.rows,
+          board: Container(
+            decoration: BoxDecoration(
+              color: theme.colors.gridBackground,
+              borderRadius: BorderRadius.circular(theme.dimens.gridRadius),
+              boxShadow: [
+                BoxShadow(
+                  color: theme.colors.gridShadow.withValues(alpha: 0.1),
+                  blurRadius: 10,
+                  offset: const Offset(0, 4),
                 ),
-              ),
-            ),
-            _buildButtons(controller),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.swipe, text: 'Pass the checkpoints\nin order'),
-                GameHowToPlayItem(icon: Icons.grid_on, text: 'Fill every cell'),
               ],
             ),
-          ],
+            padding: const EdgeInsets.all(8),
+            child: TrailGrid(controller: controller),
+          ),
+          controls: _buildButtons(controller),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.swipe, text: 'Pass the checkpoints\nin order'),
+              GameHowToPlayItem(icon: Icons.grid_on, text: 'Fill every cell'),
+            ],
+          ),
         ),
       ),
     );

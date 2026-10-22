@@ -5,12 +5,15 @@ import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 /// The two players of a game played on one device.
 /// [bottom] holds the phone, [top] sits opposite and sees a rotated half.
 enum DuelPlayer {
-  bottom('Player 1'),
-  top('Player 2');
+  bottom('Player 1', '1'),
+  top('Player 2', '2');
 
   final String label;
 
-  const DuelPlayer(this.label);
+  /// Short mark of the player on boards, so ownership never depends on color only
+  final String symbol;
+
+  const DuelPlayer(this.label, this.symbol);
 
   DuelPlayer get opponent => this == bottom ? top : bottom;
 }

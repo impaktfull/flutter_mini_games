@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/puck/game/logic/puck_game_controller.dart';
 import 'package:flutter_mini_games/src/game/puck/widget/puck_table.dart';
 import 'package:flutter_test/flutter_test.dart';

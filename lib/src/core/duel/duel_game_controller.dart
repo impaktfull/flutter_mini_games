@@ -19,9 +19,12 @@ enum DuelPhase {
 /// Shared match flow for two players on one device: ready → countdown → rounds
 /// (best of N) → winner, with rematch.
 ///
-/// Real-time duels call [tickDuel] from `tick` and only simulate while [phase] is
-/// [DuelPhase.playing]; use [duelIsRunning] for `isRunning`. The game resets its round
-/// state in [resetRound] and calls [endRound] with the round winner.
+/// Real-time duels call [tickDuel] from `tick` and only simulate when it returns true;
+/// use [duelIsRunning] for `isRunning`. The game resets its round state in [resetRound]
+/// and calls [endRound] with the round winner.
+///
+/// Optional hooks: [duelCountdownDuration] / [duelRoundOverDuration], [duelScore] (the score the
+/// overlay shows, e.g. points instead of rounds) and [duelResultData] (extra result data).
 mixin DuelGameController on GameController {
   static const countdownDuration = Duration(seconds: 3);
   static const roundOverDuration = Duration(milliseconds: 1500);
@@ -34,6 +37,18 @@ mixin DuelGameController on GameController {
 
   /// Rounds a player needs to win the match, e.g. 2 for best of 3
   int get roundsToWin;
+
+  /// 3-2-1 before every round
+  Duration get duelCountdownDuration => countdownDuration;
+
+  /// Pause that shows who won a round
+  Duration get duelRoundOverDuration => roundOverDuration;
+
+  /// Score of a player shown by the overlay, rounds won by default
+  int duelScore(DuelPlayer player) => roundWins(player);
+
+  /// Extra data added to the result of the match, e.g. goals or reaction times
+  Map<String, Object?> get duelResultData => const {};
 
   DuelPhase get phase => _phase;
   bool isReady(DuelPlayer player) => _ready.contains(player);
@@ -67,18 +82,21 @@ mixin DuelGameController on GameController {
   void _startCountdown() {
     resetRound();
     _phase = DuelPhase.countdown;
-    _phaseRemaining = countdownDuration;
+    _phaseRemaining = duelCountdownDuration;
   }
 
-  /// Advances the countdown and the pause after a round
+  /// Advances the countdown and the pause after a round. Returns whether the game may
+  /// simulate this frame: only when the whole frame was part of a playing round, so the
+  /// frame that ends the countdown is not simulated as play time.
   @protected
-  void tickDuel(Duration delta) {
-    if (_phase != DuelPhase.countdown && _phase != DuelPhase.roundOver) return;
+  bool tickDuel(Duration delta) {
+    if (_phase == DuelPhase.playing) return true;
+    if (_phase != DuelPhase.countdown && _phase != DuelPhase.roundOver) return false;
     final secondsBefore = countdownSeconds;
     _phaseRemaining -= delta;
     if (_phaseRemaining > Duration.zero) {
       if (countdownSeconds != secondsBefore) notifyListeners();
-      return;
+      return false;
     }
     if (_phase == DuelPhase.countdown) {
       _phase = DuelPhase.playing;
@@ -87,6 +105,7 @@ mixin DuelGameController on GameController {
       _startCountdown();
     }
     notifyListeners();
+    return false;
   }
 
   /// Called when a round starts playing, after the countdown
@@ -106,11 +125,12 @@ mixin DuelGameController on GameController {
         data: {
           'winner': winner.name,
           'rounds': {for (final player in DuelPlayer.values) player.name: _roundWins[player]},
+          ...duelResultData,
         },
       );
     } else {
       _phase = DuelPhase.roundOver;
-      _phaseRemaining = roundOverDuration;
+      _phaseRemaining = duelRoundOverDuration;
     }
     notifyListeners();
   }

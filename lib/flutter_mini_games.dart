@@ -2,6 +2,7 @@
 export 'src/core/model/data/flutter_mini_game_builder.dart';
 export 'src/core/model/data/game_result.dart';
 export 'src/core/model/data/game_stats.dart';
+export 'src/core/duel/duel_player.dart' show DuelPlayer;
 export 'src/core/score/game_score_store.dart' show GameScoreStore, InMemoryGameScoreStore;
 export 'src/core/theme/game_theme.dart' show CoreGameTheme, CoreGameColors, CoreGameTextStyles, CoreGameDimens, GameTheme, GameThemeOverride;
 export 'src/flutter_mini_games.dart' show FlutterMiniGames;

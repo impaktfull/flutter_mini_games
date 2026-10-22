@@ -22,6 +22,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Pairs: flip two cards at a time and find all matching pairs | `PairsGameBuilder` | 1 |
 | Whack: tap the critters before they hide, skip the spiky decoys | `WhackGameBuilder` | 1 |
 | Reflex: tap as soon as the color changes and measure your reaction time | `ReflexGameBuilder` | 1 |
+| Push: sumo ring, tap to push the other disc out of the shrinking ring (best of 3) | `PushGameBuilder` | 2 |
 | Slap: one player slaps, the other pulls their finger away in time | `SlapGameBuilder` | 2 |
 | Tiles: tap the dark tile in every row before it scrolls away | `TilesGameBuilder` | 1 |
 | Flip: reversi, outflank the discs of your opponent to flip them | `FlipGameBuilder` | 2 |

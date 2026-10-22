@@ -29,7 +29,7 @@ class QuickdrawHalf extends StatelessWidget {
       _ when isTooEarly => (colors.tooEarly, colors.onTooEarly),
       _ => (colors.idle, colors.onIdle),
     };
-    // Outside a playing round DuelPhaseOverlay and QuickdrawResultBanner show the messages,
+    // Outside a playing round DuelPhaseOverlay shows the messages,
     // the half only keeps its color (too early stays red behind the round result)
     if (controller.phase != DuelPhase.playing) return ColoredBox(color: background);
     return ColoredBox(

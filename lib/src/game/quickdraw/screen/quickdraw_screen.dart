@@ -10,7 +10,6 @@ import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/quickdraw/game/logic/quickdraw_game_controller.dart';
 import 'package:flutter_mini_games/src/game/quickdraw/style/quickdraw_theme.dart';
 import 'package:flutter_mini_games/src/game/quickdraw/widget/quickdraw_half.dart';
-import 'package:flutter_mini_games/src/game/quickdraw/widget/quickdraw_result_banner.dart';
 
 class QuickdrawScreen extends StatelessWidget {
   /// How to play, shown while the players get ready
@@ -60,14 +59,20 @@ class QuickdrawScreen extends StatelessWidget {
                   player: player,
                   rules: rules,
                   roundMessage: _roundMessage(controller, player),
+                  finishMessage: _finishMessage(controller, player),
                 ),
-                QuickdrawResultBanner(controller: controller, player: player),
               ],
             ),
           ),
         ),
       ),
     );
+  }
+
+  /// Best reaction time of [player] over the match
+  static String _finishMessage(QuickdrawGameController controller, DuelPlayer player) {
+    final best = controller.bestReactionMs(player);
+    return best == null ? 'Your best: –' : 'Your best: $best ms';
   }
 
   /// Reaction time or "Too early!" of the last round, from the point of view of [player]

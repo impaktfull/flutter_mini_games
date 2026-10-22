@@ -26,21 +26,16 @@ class QuickdrawTheme extends GameTheme {
         onGo: colors.background,
         tooEarly: colors.error,
         onTooEarly: colors.onError,
-        banner: colors.surface,
-        onBanner: colors.text,
         divider: colors.textMuted,
       ),
       textStyles: QuickdrawTextStyles(
         signal: core.textStyles.title.copyWith(fontSize: 72, height: 1),
         message: core.textStyles.title,
         hint: core.textStyles.body,
-        banner: core.textStyles.label,
       ),
-      dimens: QuickdrawDimens(
+      dimens: const QuickdrawDimens(
         iconSize: 56,
         signalIconSize: 72,
-        bannerRadius: core.dimens.radiusLarge,
-        bannerIconSize: 20,
         dividerThickness: 2,
       ),
     );
@@ -74,10 +69,6 @@ class QuickdrawColors {
   final Color tooEarly;
   final Color onTooEarly;
 
-  /// Best reaction time banner on top of each half at the end of a match
-  final Color banner;
-  final Color onBanner;
-
   /// Line between the two halves
   final Color divider;
 
@@ -90,8 +81,6 @@ class QuickdrawColors {
     required this.onGo,
     required this.tooEarly,
     required this.onTooEarly,
-    required this.banner,
-    required this.onBanner,
     required this.divider,
   });
 
@@ -104,8 +93,6 @@ class QuickdrawColors {
     Color? onGo,
     Color? tooEarly,
     Color? onTooEarly,
-    Color? banner,
-    Color? onBanner,
     Color? divider,
   }) => QuickdrawColors(
     idle: idle ?? this.idle,
@@ -116,8 +103,6 @@ class QuickdrawColors {
     onGo: onGo ?? this.onGo,
     tooEarly: tooEarly ?? this.tooEarly,
     onTooEarly: onTooEarly ?? this.onTooEarly,
-    banner: banner ?? this.banner,
-    onBanner: onBanner ?? this.onBanner,
     divider: divider ?? this.divider,
   );
 }
@@ -132,26 +117,20 @@ class QuickdrawTextStyles {
   /// Smaller line below the message
   final TextStyle hint;
 
-  /// Best reaction time banner
-  final TextStyle banner;
-
   const QuickdrawTextStyles({
     required this.signal,
     required this.message,
     required this.hint,
-    required this.banner,
   });
 
   QuickdrawTextStyles copyWith({
     TextStyle? signal,
     TextStyle? message,
     TextStyle? hint,
-    TextStyle? banner,
   }) => QuickdrawTextStyles(
     signal: signal ?? this.signal,
     message: message ?? this.message,
     hint: hint ?? this.hint,
-    banner: banner ?? this.banner,
   );
 }
 
@@ -162,34 +141,22 @@ class QuickdrawDimens {
   /// Icon next to "GO!"
   final double signalIconSize;
 
-  /// Corner radius of the best reaction time banner
-  final double bannerRadius;
-
-  /// Icon in the best reaction time banner
-  final double bannerIconSize;
-
   /// Thickness of the line between the halves
   final double dividerThickness;
 
   const QuickdrawDimens({
     required this.iconSize,
     required this.signalIconSize,
-    required this.bannerRadius,
-    required this.bannerIconSize,
     required this.dividerThickness,
   });
 
   QuickdrawDimens copyWith({
     double? iconSize,
     double? signalIconSize,
-    double? bannerRadius,
-    double? bannerIconSize,
     double? dividerThickness,
   }) => QuickdrawDimens(
     iconSize: iconSize ?? this.iconSize,
     signalIconSize: signalIconSize ?? this.signalIconSize,
-    bannerRadius: bannerRadius ?? this.bannerRadius,
-    bannerIconSize: bannerIconSize ?? this.bannerIconSize,
     dividerThickness: dividerThickness ?? this.dividerThickness,
   );
 }

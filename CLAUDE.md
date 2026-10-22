@@ -357,6 +357,16 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Flit (`lib/src/game/flit/`)
+
+- Single-player endless side-scroller, id `flit`: tap (or space / arrow up) to flap and fly through the gaps between the columns
+- Real-time: `FlitGameController` mixes in `RealtimeGameController`, physics in world units (`worldWidth` 0.75 x height 1.0, board 3:4)
+- Gravity pulls the flyer down, a flap sets its vertical velocity; the flyer tilts with its velocity
+- Columns scroll at a constant speed and are recycled once they leave the board; gap centers are random (injectable `Random`), within margins and at most `maxGapShift` from the previous gap so every gap is reachable; the gap shrinks slightly per column down to `minGapSize`
+- Forgiving circular hitbox (`hitboxRadius` < `flyerRadius`)
+- Score: columns passed; hitting a column, the ground or the top finishes with `GameOutcome.lost` and the score
+- `registerMove()` per flap; states: ready ("Tap to start", flyer hovers), playing, game over ("Play again")
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
+import 'package:flutter_mini_games/src/game/flip/style/flip_theme.dart';
+import 'package:flutter_mini_games/src/game/flip/widget/flip_disc.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_turn_banner.dart';
 import 'package:flutter_mini_games/src/game/flip/game/logic/flip_game_controller.dart';
@@ -36,6 +39,20 @@ class FlipHeader extends StatelessWidget {
       isActive: controller.isGameOver ? controller.winner == player : controller.currentPlayer == player,
       status: status,
       trailing: '${controller.countOf(player)}',
+      leading: Container(
+        width: 24,
+        height: 24,
+        padding: const EdgeInsets.all(3),
+        // Backdrop, so the disc stays visible on the filled banner
+        decoration: BoxDecoration(color: CoreGameTheme.of(context).colors.background, shape: BoxShape.circle),
+        child: CustomPaint(
+          painter: FlipDiscPainter(
+            player: player,
+            color: FlipTheme.of(context).colors.player(player),
+            ringWidth: FlipTheme.of(context).dimens.ringWidth,
+          ),
+        ),
+      ),
     );
   }
 }

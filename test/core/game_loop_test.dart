@@ -166,6 +166,19 @@ void main() {
       );
     });
 
+    testWidgets('reports where a tap landed', (tester) async {
+      final positions = <Offset>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameInputDetector(onTapAt: positions.add, child: const SizedBox.expand()),
+        ),
+      );
+
+      await tester.tapAt(const Offset(120, 80));
+
+      expect(positions, equals([const Offset(120, 80)]));
+    });
+
     testWidgets('maps arrow keys to swipes', (tester) async {
       final swipes = <GameDirection>[];
       await tester.pumpWidget(detector(onSwipe: swipes.add));

@@ -53,8 +53,8 @@ class StackScreen extends StatelessWidget {
                       fit: StackFit.expand,
                       children: [
                         StackTower(controller: controller),
-                        if (controller.isReady) _buildOverlay(const GameOverlay(title: 'Tap to start', subtitle: 'Build the highest tower')),
-                        if (controller.isGameOver) _buildOverlay(GameOverlay(title: 'Game over', subtitle: 'Score: ${controller.score}')),
+                        if (controller.isReady) const GameOverlay(title: 'Tap to start', subtitle: 'Build the highest tower'),
+                        if (controller.isGameOver) GameOverlay(title: 'Game over', subtitle: 'Score: ${controller.score}'),
                       ],
                     ),
                   ),
@@ -76,9 +76,4 @@ class StackScreen extends StatelessWidget {
       ),
     );
   }
-
-  /// Scales the message down when the board is small
-  Widget _buildOverlay(Widget overlay) => IgnorePointer(
-    child: FittedBox(fit: BoxFit.scaleDown, child: overlay),
-  );
 }

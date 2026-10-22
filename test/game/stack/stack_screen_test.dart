@@ -24,6 +24,7 @@ void main() {
     await tester.pump();
     expect(find.text('Tap to start'), findsNothing);
     expect(controller.isRunning, isTrue);
+    expect(controller.moves, equals(0));
 
     await tester.pump(const Duration(milliseconds: 16));
     await tester.pump(const Duration(milliseconds: 16));
@@ -31,7 +32,7 @@ void main() {
 
     await tester.tap(find.byType(StackTower));
     await tester.pump();
-    expect(controller.moves, equals(2));
+    expect(controller.moves, equals(1));
     expect(tester.takeException(), isNull);
 
     // Leaving the screen stops the loop

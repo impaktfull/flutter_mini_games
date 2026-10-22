@@ -369,7 +369,7 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 - A drop within `perfectTolerance` snaps to the block below (perfect); speed grows by `speedIncrement` per block up to `maxSpeed`
 - The view follows the tower (`cameraY`), block colours cycle between `primary` and `secondary` (`StackTheme.blockColor`)
 - Score: 1 per block + `min(streak, 5)` for a streak of perfect drops; finishes with `lost` and the score, `data` holds `blocks` and `perfects`
-- The start tap is counted as a move (the core only starts a session on `registerMove()`), every drop is a move
+- The start tap calls `startSession()` (not a move), every drop is a move
 
 ## Testing
 

@@ -137,8 +137,7 @@ class StackGameController extends GameController with RealtimeGameController {
   /// Starts the game, the block starts sliding
   void start() {
     if (!isReady) return;
-    // The core starts a session on the first move, so the start tap counts as a move
-    registerMove();
+    startSession();
     notifyListeners();
   }
 

@@ -50,6 +50,7 @@ void main() {
       final b = StackGameController(random: Random(1))..onTap();
       expect(a.isRunning, isTrue);
       expect(a.status, equals(GameStatus.playing));
+      expect(a.moves, equals(0));
 
       a.tick(const Duration(milliseconds: 200));
       for (var i = 0; i < 20; i++) {
@@ -198,7 +199,7 @@ void main() {
       expect(result.gameId, equals(StackGameController.id));
       expect(result.outcome, equals(GameOutcome.lost));
       expect(result.score, equals(2));
-      expect(result.moves, equals(4)); // start + 3 drops
+      expect(result.moves, equals(3)); // 3 drops, the start tap is not a move
       expect(result.data, equals({'blocks': 2, 'perfects': 0}));
 
       // Taps and ticks are ignored after game over
@@ -206,7 +207,7 @@ void main() {
       controller
         ..onTap()
         ..tick(const Duration(milliseconds: 100));
-      expect(controller.moves, equals(4));
+      expect(controller.moves, equals(3));
       expect(controller.current.left, equals(left));
       expect(reported, hasLength(1));
     });

@@ -525,6 +525,15 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every tile is its own raw `Listener` (both players can tap at once); every tap during play is a move
 - First to 7 points wins: `GameOutcome.won` with `data['winner']`, `data['points']`, `data['penalties']` (and the core's `rounds`), no score
 
+### Tug (`lib/src/game/tug/`)
+
+- Two-player tug of war on one device, id `tug`, built on the duel core (`DuelGameController` + `RealtimeGameController`), best of 3
+- Both players mash their half (`DuelTapArea`, both at once); each tap (`pull(player)`) is a move and pulls the marker one step toward the tapping player
+- The marker position is kept in whole steps (`position`, -`stepsToWin`..`stepsToWin`, `progress` -1..1); the first to reach `stepsToWin` (15) steps from the middle wins the round
+- Screen: `DuelLayout` with a vertical rope as `center` (`TugRope`, `CustomPaint`, `ropeLengthFraction` of the height) between the halves; each half is a `TugSide` (`DuelTapArea` + `DuelPhaseOverlay`)
+- Every pull slides the marker (`TweenAnimationBuilder`), pulses the "Tap!" hint and gives a selection haptic; the marker takes the color of the leading player
+- The result is `GameOutcome.won` with `data['winner']` and `data['rounds']`, no score
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

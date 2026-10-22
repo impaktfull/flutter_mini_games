@@ -361,6 +361,15 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Snake (`lib/src/game/snake/`)
+
+- Single-player real-time game, id `snake`: steer the snake to the food, it grows with every bite
+- Square grid (15x15 by default, `gridSize` on the builder), the snake moves one cell per step
+- Step interval starts at 180 ms and gets 5 ms shorter per food, down to 80 ms (time accumulator in `tick`)
+- Swipes / arrow keys via `GameInputDetector`; up to 2 direction changes are queued, reversing is ignored
+- The first swipe starts the game and takes the first step right away; the snake is drawn one step behind and interpolated with `stepProgress` (head and tail glide, corners stay sharp)
+- Food spawns on a random empty cell (injectable `Random`)
+- Score: 10 points per food. Hitting a wall or itself finishes with `GameOutcome.lost` and the score; filling the board is `GameOutcome.won`
 ### 2048 (`lib/src/game/twenty_forty_eight/`)
 
 - Single-player puzzle, id `twenty_forty_eight` (classes `TwentyFortyEight*`, Dart identifiers can't start with a digit)

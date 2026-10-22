@@ -514,6 +514,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Tiles (`lib/src/game/tiles/`)
+
+- Single-player real-time game, id `tiles` (`RealtimeGameController` + `GameLoop`): rows of 4 tiles scroll down, exactly one dark tile per row (column from an injectable `Random`)
+- Positions in rows: the 3:4 board is 4 columns wide and 4 rows high, `topOf(row)` gives a row's top; rows are created just above the board and dropped below it (`TilesRow`)
+- Tap the dark tile of the lowest unplayed row; dark tiles that are already tapped or not next yet are ignored. A light tile or a dark tile leaving the bottom ends the game (`TilesMistake`: `wrongTile` / `missedTile`); on a miss the board scrolls back so the missed tile is visible
+- Before the start only the "Start" tile (dark tile of row 0) reacts; that tap starts the game (it is a move and scores)
+- Speed starts at 2 rows/s and grows by 0.05 rows/s per second up to 7; the scroll is the closed-form integral of the speed over game time (`scrollAt`), so it does not depend on the frame rate
+- Input: one raw `Listener` on the board (every finger counts, fast players tap with two fingers), mapped to column and row; every tap on a tile is a move
+- Feedback: a tapped tile flashes `primary` and fades to `tappedTile`; the mistake tile is drawn in `error` with a cross (wrong tile) or a ring (missed tile), the overlay moves to the other half of the board
+- Score: tiles tapped; game over finishes with `GameOutcome.lost`, the score and `data` with `reason` and `speed`
 ### Flip (`lib/src/game/flip/`)
 
 - Two-player reversi on one device, id `flip`, turn based (no `GameLoop`, no rounds): 8x8 board, standard 4-disc start, `DuelPlayer.bottom` (Player 1) moves first

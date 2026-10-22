@@ -15,3 +15,5 @@ export 'src/game/trail/game/model/trail_difficulty.dart';
 export 'src/game/trail/game/model/trail_puzzle.dart';
 export 'src/game/trail/game/model/trail_puzzle_generator.dart';
 export 'src/game/trail/style/trail_theme.dart';
+export 'src/game/snake/game/snake_game_builder.dart';
+export 'src/game/snake/style/snake_theme.dart';

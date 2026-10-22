@@ -16,6 +16,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Minesweeper: reveal every safe cell without hitting a mine | `MinesweeperGameBuilder` | 1 |
 | Snake: eat the food to grow, without hitting the walls or yourself | `SnakeGameBuilder` | 1 |
 | 2048: slide the tiles and merge equal numbers until you reach 2048 | `TwentyFortyEightGameBuilder` | 1 |
+| Pairs: flip two cards at a time and find all matching pairs | `PairsGameBuilder` | 1 |
 
 Only the games you reference are compiled into your app.
 

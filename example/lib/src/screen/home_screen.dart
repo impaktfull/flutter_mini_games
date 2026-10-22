@@ -15,6 +15,7 @@ class HomeScreen extends StatelessWidget {
     MinesweeperGameBuilder(),
     SnakeGameBuilder(),
     TwentyFortyEightGameBuilder(),
+    PairsGameBuilder(),
   ];
   const HomeScreen({super.key});
 

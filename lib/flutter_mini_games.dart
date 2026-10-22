@@ -3,3 +3,7 @@ export 'src/controller.dart';
 
 // Games
 export 'src/game/tic_tac_toe/game/tic_tac_toe_game_builder.dart';
+export 'src/game/trail/game/trail_game_builder.dart';
+export 'src/game/trail/game/model/trail_difficulty.dart';
+export 'src/game/trail/game/model/trail_puzzle.dart';
+export 'src/game/trail/game/model/trail_puzzle_generator.dart';

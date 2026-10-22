@@ -23,9 +23,7 @@ class TicTacToeHeader extends StatelessWidget {
       }
       return Text(
         'Player ${controller.winner} wins!',
-        style: controller.winner == 'X'
-            ? TicTacToeTheme.of(context).textStyles.headerWinnerX
-            : TicTacToeTheme.of(context).textStyles.headerWinnerO,
+        style: controller.winner == 'X' ? TicTacToeTheme.of(context).textStyles.headerWinnerX : TicTacToeTheme.of(context).textStyles.headerWinnerO,
       );
     }
     return Text(

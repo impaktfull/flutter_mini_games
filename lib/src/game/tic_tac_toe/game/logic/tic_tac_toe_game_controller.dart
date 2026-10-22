@@ -41,32 +41,22 @@ class TicTacToeGameController extends GameController {
 
     // Check if this cell is part of the winning line
     // Check row
-    if (_board[row][0] == _winner &&
-        _board[row][1] == _winner &&
-        _board[row][2] == _winner) {
+    if (_board[row][0] == _winner && _board[row][1] == _winner && _board[row][2] == _winner) {
       return true;
     }
 
     // Check column
-    if (_board[0][col] == _winner &&
-        _board[1][col] == _winner &&
-        _board[2][col] == _winner) {
+    if (_board[0][col] == _winner && _board[1][col] == _winner && _board[2][col] == _winner) {
       return true;
     }
 
     // Check main diagonal
-    if (row == col &&
-        _board[0][0] == _winner &&
-        _board[1][1] == _winner &&
-        _board[2][2] == _winner) {
+    if (row == col && _board[0][0] == _winner && _board[1][1] == _winner && _board[2][2] == _winner) {
       return true;
     }
 
     // Check anti-diagonal
-    if (row + col == 2 &&
-        _board[0][2] == _winner &&
-        _board[1][1] == _winner &&
-        _board[2][0] == _winner) {
+    if (row + col == 2 && _board[0][2] == _winner && _board[1][1] == _winner && _board[2][0] == _winner) {
       return true;
     }
 
@@ -76,9 +66,7 @@ class TicTacToeGameController extends GameController {
   void _checkWinner() {
     // Check rows
     for (int i = 0; i < 3; i++) {
-      if (_board[i][0] != null &&
-          _board[i][0] == _board[i][1] &&
-          _board[i][1] == _board[i][2]) {
+      if (_board[i][0] != null && _board[i][0] == _board[i][1] && _board[i][1] == _board[i][2]) {
         _winner = _board[i][0];
         _isGameOver = true;
         return;
@@ -87,9 +75,7 @@ class TicTacToeGameController extends GameController {
 
     // Check columns
     for (int i = 0; i < 3; i++) {
-      if (_board[0][i] != null &&
-          _board[0][i] == _board[1][i] &&
-          _board[1][i] == _board[2][i]) {
+      if (_board[0][i] != null && _board[0][i] == _board[1][i] && _board[1][i] == _board[2][i]) {
         _winner = _board[0][i];
         _isGameOver = true;
         return;
@@ -97,17 +83,13 @@ class TicTacToeGameController extends GameController {
     }
 
     // Check diagonals
-    if (_board[0][0] != null &&
-        _board[0][0] == _board[1][1] &&
-        _board[1][1] == _board[2][2]) {
+    if (_board[0][0] != null && _board[0][0] == _board[1][1] && _board[1][1] == _board[2][2]) {
       _winner = _board[0][0];
       _isGameOver = true;
       return;
     }
 
-    if (_board[0][2] != null &&
-        _board[0][2] == _board[1][1] &&
-        _board[1][1] == _board[2][0]) {
+    if (_board[0][2] != null && _board[0][2] == _board[1][1] && _board[1][1] == _board[2][0]) {
       _winner = _board[0][2];
       _isGameOver = true;
       return;

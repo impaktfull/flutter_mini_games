@@ -5,6 +5,7 @@ import 'package:flutter_mini_games/flutter_mini_games.dart';
 class HomeScreen extends StatelessWidget {
   static final List<FlutterMiniGameBuilder> _games = [
     TicTacToeGameBuilder(),
+    TrailGameBuilder(),
   ];
   const HomeScreen({super.key});
 
@@ -14,6 +15,7 @@ class HomeScreen extends StatelessWidget {
       title: 'Flutter Mini Games',
       child: ImpaktfullUiListView(
         padding: const EdgeInsets.all(16),
+        spacing: 8,
         children: [
           for (final game in _games) ...[
             ImpaktfullUiCard(

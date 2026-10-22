@@ -5,8 +5,7 @@ class TicTacToeTheme extends GameTheme {
   final TicTacToeColors colors;
   final TicTacToeTextStyles textStyles;
 
-  static TicTacToeTheme of(BuildContext context) =>
-      GameTheme.of<TicTacToeTheme>(context);
+  static TicTacToeTheme of(BuildContext context) => GameTheme.of<TicTacToeTheme>(context);
 
   TicTacToeTheme({
     required this.colors,

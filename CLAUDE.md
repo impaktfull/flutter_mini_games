@@ -361,6 +361,16 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Stack (`lib/src/game/stack/`)
+
+- Single-player real-time game, id `stack`: a block slides back and forth above the tower, tap (or space/enter) drops it
+- World is 1 wide and `viewHeight` (4/3) high, blocks are `blockHeight` high; `StackBlock` (level, left, width) and `StackFallingPiece` model blocks and cut off parts
+- The overhang is cut off and falls away, the next block gets the remaining width; missing the block below completely is game over
+- A drop within `perfectTolerance` snaps to the block below (perfect); speed grows by `speedIncrement` per block up to `maxSpeed`
+- The view follows the tower (`cameraY`), block colours cycle between `primary` and `secondary` (`StackTheme.blockColor`)
+- Score: 1 per block + `min(streak, 5)` for a streak of perfect drops; finishes with `lost` and the score, `data` holds `blocks` and `perfects`
+- The start tap is counted as a move (the core only starts a session on `registerMove()`), every drop is a move
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

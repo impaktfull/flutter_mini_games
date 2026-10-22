@@ -7,6 +7,7 @@ class HomeScreen extends StatelessWidget {
   static const List<FlutterMiniGameBuilder> _games = [
     TicTacToeGameBuilder(),
     TrailGameBuilder(),
+    StackGameBuilder(),
   ];
   const HomeScreen({super.key});
 

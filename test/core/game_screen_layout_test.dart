@@ -62,7 +62,8 @@ void main() {
       await _pump(tester, const Size(320, 400));
 
       expect(tester.takeException(), isNull);
-      expect(tester.getSize(find.byKey(_boardKey)).height, greaterThan(300));
+      // The page keeps its minimum height: header 80, controls 48 and 2 x 16 spacing
+      expect(tester.getSize(find.byKey(_boardKey)).height, equals(GameScreenLayout.minPageHeight - 80 - 48 - 32));
     });
   });
 }

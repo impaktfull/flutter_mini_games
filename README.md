@@ -22,6 +22,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Pairs: flip two cards at a time and find all matching pairs | `PairsGameBuilder` | 1 |
 | Whack: tap the critters before they hide, skip the spiky decoys | `WhackGameBuilder` | 1 |
 | Reflex: tap as soon as the color changes and measure your reaction time | `ReflexGameBuilder` | 1 |
+| Puck: air hockey, drag your mallet and shoot the puck into the other goal, first to 5 | `PuckGameBuilder` | 2 |
 
 Only the games you reference are compiled into your app.
 

@@ -23,6 +23,8 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Whack: tap the critters before they hide, skip the spiky decoys | `WhackGameBuilder` | 1 |
 | Reflex: tap as soon as the color changes and measure your reaction time | `ReflexGameBuilder` | 1 |
 | Flip: reversi, outflank the discs of your opponent to flip them | `FlipGameBuilder` | 2 |
+| Snatch: be the first to tap the symbol shown in the middle, first to 7 points wins | `SnatchGameBuilder` | 2 |
+| Tug: tug of war, mash your half to pull the rope to your side (best of 3) | `TugGameBuilder` | 2 |
 
 Only the games you reference are compiled into your app.
 

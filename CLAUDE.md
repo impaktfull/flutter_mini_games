@@ -514,6 +514,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Push (`lib/src/game/push/`)
+
+- Two-player sumo ring on one device, id `push`, best of 3: push the other disc out of the ring
+- `PushGameController` = `GameController` + `RealtimeGameController` + `DuelGameController`; `tick` calls `tickDuel` first and only simulates while playing (the frame that ends the countdown is not simulated)
+- World units: ring centered at (0, 0) with radius 1, y down; discs (radius 0.13) start at y = ±0.45 (bottom player below the center)
+- Controls per half (`PushTouchArea`, a raw `Listener` per half, both players at once): every finger down = impulse of 0.3 towards the opponent's disc (a move); the horizontal tap position aims, middle = straight, edges = up to 60° to the player's left / right (aim -1..1, from the player's view); holding a finger keeps a weak push (0.5 units/s²) in the aimed direction, shown as an aim line
+- Physics in substeps of at most 1/120 s: exponential friction (`e^(-1.2 t)`), max speed 2, equal-mass impulse collision with restitution 0.8 plus overlap separation
+- The ring shrinks by 0.05 units/s after 3 s until a disc is out (no stalemates); a disc whose center leaves the ring loses the round, both at once is a drawn round (replayed)
+- Screen: the ring (`PushPainter`) fills the space below `DuelLayout`, each half has `DuelPhaseOverlay`; disc colors = `coreTheme.playerColor(player)` via `PushColors.disc`
+- Result: `GameOutcome.won`, `data['winner']` and `data['rounds']`, no score
 ### Slap (`lib/src/game/slap/`)
 
 - Two-player palm slap on one device, id `slap`, real-time (`RealtimeGameController` + `DuelGameController` + `GameLoop`), first to 5 points (`roundsToWin = 5`, one slap attempt per round)

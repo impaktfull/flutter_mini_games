@@ -3,9 +3,9 @@
     "short_name": "Mini Games",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A Flutter package for adding mini games to your app",
+    "background_color": "#FFFFFF",
+    "theme_color": "#7D64F2",
+    "description": "Play all Flutter Mini Games in your browser",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

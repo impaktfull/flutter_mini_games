@@ -162,9 +162,11 @@ class MyGameBuilder extends FlutterMiniGameBuilder {
 #### 4. Game Screen
 
 - Stateless widget wrapping its content in `GameControllerProvider`
-- Uses `FlutterMiniGamesScreen` for the layout, `GameStatsBar` for time/moves/best score and `GameHowToPlay` for the rules
+- Uses `FlutterMiniGamesScreen` with a `GameScreenLayout` inside: `header` (game header + `GameStatsBar`), `board` (+ `boardAspectRatio`), `controls` (buttons, number pad) and `footer` (`GameHowToPlay`)
+- `GameScreenLayout` gives the board the largest size that fits next to header and controls; the footer sits below the first screen height and scrolls, so it never shrinks the board. Never build your own screen column or scroll view
 - Shows different buttons based on game state (e.g., "Next Puzzle" when won, "Reset" otherwise)
 - Rows that can grow use `Wrap` (or `Flexible` text) so they never overflow on small phones
+- Check the screen at 360x640 and 390x844 (light and dark) with a temporary golden test before opening a PR
 
 ```dart
 class MyGameScreen extends StatelessWidget {
@@ -184,18 +186,17 @@ class MyGameScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'My Game',
-        child: Column(
-          spacing: 24,
-          children: [
-            MyGameHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            // Game UI here
-            if (controller.isWon)
-              GameButton(onTap: controller.nextPuzzle, icon: Icons.arrow_forward, label: 'Next Puzzle')
-            else
-              GameButton(onTap: controller.resetGame, icon: Icons.refresh, label: 'Reset'),
-            const GameHowToPlay(items: [GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap to play')]),
-          ],
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [MyGameHeader(controller: controller), GameStatsBar(controller: controller)],
+          ),
+          boardAspectRatio: 1,
+          board: MyGameBoard(controller: controller),
+          controls: controller.isWon
+              ? GameButton(onTap: controller.nextPuzzle, icon: Icons.arrow_forward, label: 'Next Puzzle')
+              : GameButton(onTap: controller.resetGame, icon: Icons.refresh, label: 'Reset'),
+          footer: const GameHowToPlay(items: [GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap to play')]),
         ),
       ),
     );
@@ -331,7 +332,8 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 - `GameTheme` / `CoreGameTheme` / `GameThemeOverride<T>` - Theme system
 - `GameThemeBuilder<T>` - Widget for accessing themes
 - `GameControllerProvider` - Provides controller and themes, reports results
-- `FlutterMiniGamesScreen` - Standard screen layout with app bar
+- `FlutterMiniGamesScreen` - Standard screen with app bar
+- `GameScreenLayout` - Header, largest-fitting board, controls, and a footer below the fold
 - `GameButton` - Styled button component
 - `GameStatsBar` - Time, moves and best score
 - `GameHowToPlay` - Rules panel

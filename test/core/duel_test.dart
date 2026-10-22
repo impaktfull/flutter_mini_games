@@ -4,12 +4,19 @@ import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_theme_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _TestDuelController extends GameController with DuelGameController {
   _TestDuelController() : super(gameId: 'duel');
+
+  int points = 0;
+
+  @override
+  int duelScore(DuelPlayer player) => player == DuelPlayer.bottom ? points : 0;
+
+  @override
+  Map<String, Object?> get duelResultData => {'points': points};
 
   int resets = 0;
   int starts = 0;
@@ -23,7 +30,7 @@ class _TestDuelController extends GameController with DuelGameController {
   @override
   void onRoundStarted() => starts++;
 
-  void tick(Duration delta) => tickDuel(delta);
+  bool tick(Duration delta) => tickDuel(delta);
 
   void win(DuelPlayer? player) => endRound(player);
 }
@@ -71,6 +78,35 @@ void main() {
       expect(results.single.outcome, equals(GameOutcome.won));
       expect(results.single.data['winner'], equals('top'));
       expect(results.single.data['rounds'], equals({'bottom': 0, 'top': 2}));
+    });
+
+    test('only lets the game simulate frames that are fully part of a round', () {
+      final controller = _TestDuelController()
+        ..setReady(DuelPlayer.bottom)
+        ..setReady(DuelPlayer.top);
+
+      expect(controller.tick(const Duration(seconds: 1)), isFalse);
+      expect(controller.tick(const Duration(seconds: 2)), isFalse, reason: 'the frame that ends the countdown');
+      expect(controller.phase, equals(DuelPhase.playing));
+      expect(controller.tick(const Duration(milliseconds: 16)), isTrue);
+    });
+
+    test('adds the game result data and shows the game score', () {
+      final results = <GameResult>[];
+      final controller = _TestDuelController()
+        ..resultListener = results.add
+        ..points = 7
+        ..setReady(DuelPlayer.bottom)
+        ..setReady(DuelPlayer.top)
+        ..tick(DuelGameController.countdownDuration)
+        ..win(DuelPlayer.bottom)
+        ..tick(DuelGameController.roundOverDuration)
+        ..tick(DuelGameController.countdownDuration)
+        ..win(DuelPlayer.bottom);
+
+      expect(controller.duelScore(DuelPlayer.bottom), equals(7));
+      expect(results.single.data['points'], equals(7));
+      expect(results.single.data['winner'], equals('bottom'));
     });
 
     test('ignores round results outside a playing round', () {
@@ -153,7 +189,7 @@ void main() {
         ..win(DuelPlayer.bottom);
       await tester.pump();
 
-      expect(find.text('🏆 You win!'), findsOneWidget);
+      expect(find.text('You win!'), findsOneWidget);
       expect(find.text('You lose'), findsOneWidget);
       await tester.tap(find.text('Rematch').first);
       await tester.pump();

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/four_up/game/logic/four_up_game_controller.dart';
 import 'package:flutter_mini_games/src/game/four_up/widget/four_up_board.dart';
 import 'package:flutter_test/flutter_test.dart';

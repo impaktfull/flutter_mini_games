@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
+import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 
 /// Match flow on one player's half: ready button, countdown, round result, winner and
 /// rematch, plus the round score. Shared by all two-player games.
@@ -12,9 +13,21 @@ class DuelPhaseOverlay extends StatelessWidget {
   final DuelGameController controller;
   final DuelPlayer player;
 
+  /// Rules shown while waiting for the players to be ready
+  final List<GameHowToPlayItem> rules;
+
+  /// Why the last round ended, from the point of view of [player] (e.g. "Dodged!")
+  final String? roundMessage;
+
+  /// Whether to show the score caption; off when the game draws its own score
+  final bool showScore;
+
   const DuelPhaseOverlay({
     required this.controller,
     required this.player,
+    this.rules = const [],
+    this.roundMessage,
+    this.showScore = true,
     super.key,
   });
 
@@ -37,18 +50,19 @@ class DuelPhaseOverlay extends StatelessWidget {
               ),
             ),
           ),
-        Align(
-          alignment: Alignment.bottomCenter,
-          child: IgnorePointer(
-            child: Padding(
-              padding: EdgeInsets.all(theme.dimens.padding / 2),
-              child: Text(
-                '${player.label}  ${controller.roundWins(player)} – ${controller.roundWins(player.opponent)}',
-                style: theme.textStyles.caption,
+        if (showScore)
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: IgnorePointer(
+              child: Padding(
+                padding: EdgeInsets.all(theme.dimens.padding / 2),
+                child: Text(
+                  '${player.label}  ${controller.duelScore(player)} – ${controller.duelScore(player.opponent)}',
+                  style: theme.textStyles.caption,
+                ),
               ),
             ),
           ),
-        ),
       ],
     );
   }
@@ -57,11 +71,23 @@ class DuelPhaseOverlay extends StatelessWidget {
     switch (controller.phase) {
       case DuelPhase.ready:
         final isReady = controller.isReady(player);
-        return _ReadyButton(
+        final button = _ReadyButton(
           label: isReady ? 'Waiting for ${player.opponent.label}' : 'Tap when ready',
           color: theme.playerColor(player),
           onColor: theme.onPlayerColor(player),
           onTap: isReady ? null : () => controller.setReady(player),
+        );
+        if (rules.isEmpty) return button;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: theme.dimens.padding,
+          children: [
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 360),
+              child: GameHowToPlay(items: rules),
+            ),
+            button,
+          ],
         );
       case DuelPhase.countdown:
         return Text('${controller.countdownSeconds}', style: theme.textStyles.title.copyWith(fontSize: 64));
@@ -70,14 +96,23 @@ class DuelPhaseOverlay extends StatelessWidget {
       case DuelPhase.roundOver:
         final winner = controller.roundWinner;
         final text = winner == null ? 'Draw' : (winner == player ? 'You win the round' : '${winner.label} wins the round');
-        return Text(text, textAlign: TextAlign.center, style: theme.textStyles.title);
+        final message = roundMessage;
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4,
+          children: [
+            Text(text, textAlign: TextAlign.center, style: theme.textStyles.title),
+            if (message != null) Text(message, textAlign: TextAlign.center, style: theme.textStyles.body),
+          ],
+        );
       case DuelPhase.finished:
         final hasWon = controller.matchWinner == player;
         return Column(
           mainAxisSize: MainAxisSize.min,
           spacing: theme.dimens.padding,
           children: [
-            Text(hasWon ? '🏆 You win!' : 'You lose', textAlign: TextAlign.center, style: theme.textStyles.title),
+            if (hasWon) Icon(Icons.emoji_events, size: 48, color: theme.playerColor(player)),
+            Text(hasWon ? 'You win!' : 'You lose', textAlign: TextAlign.center, style: theme.textStyles.title),
             _ReadyButton(
               label: 'Rematch',
               color: theme.playerColor(player),

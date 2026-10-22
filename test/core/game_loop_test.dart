@@ -179,6 +179,39 @@ void main() {
       expect(positions, equals([const Offset(120, 80)]));
     });
 
+    testWidgets('reports every finger that goes down, also at the same time', (tester) async {
+      final positions = <Offset>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameInputDetector(onPointerDownAt: positions.add, child: const SizedBox.expand()),
+        ),
+      );
+
+      final first = await tester.startGesture(const Offset(50, 50));
+      final second = await tester.startGesture(const Offset(150, 50), pointer: 9);
+      await first.up();
+      await second.up();
+
+      expect(positions, equals([const Offset(50, 50), const Offset(150, 50)]));
+    });
+
+    testWidgets('space and enter go to onKeyConfirm instead of onTap', (tester) async {
+      var taps = 0;
+      var confirms = 0;
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameInputDetector(onTap: () => taps++, onKeyConfirm: () => confirms++, child: const SizedBox.expand()),
+        ),
+      );
+
+      await tester.sendKeyEvent(LogicalKeyboardKey.space);
+      await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+      await tester.tapAt(const Offset(100, 100));
+
+      expect(confirms, equals(2));
+      expect(taps, equals(1));
+    });
+
     testWidgets('maps arrow keys to swipes', (tester) async {
       final swipes = <GameDirection>[];
       await tester.pumpWidget(detector(onSwipe: swipes.add));

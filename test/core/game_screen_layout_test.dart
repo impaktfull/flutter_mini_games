@@ -38,10 +38,42 @@ void main() {
       expect(tester.getSize(find.byKey(_boardKey)), equals(const Size(360, 360)));
     });
 
-    testWidgets('puts the footer below the first screen height', (tester) async {
+    testWidgets('opens the footer in a bottom sheet', (tester) async {
       await _pump(tester, const Size(360, 640));
+      expect(find.byKey(_footerKey), findsNothing);
 
-      expect(tester.getTopLeft(find.byKey(_footerKey)).dy, greaterThanOrEqualTo(640));
+      await tester.tap(find.text('How to play'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(_footerKey), findsOneWidget);
+    });
+
+    testWidgets('does not scroll, so vertical drags reach the board', (tester) async {
+      var dragged = 0.0;
+      tester.view
+        ..physicalSize = const Size(360, 640)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameThemeProvider<CoreGameTheme>(
+            theme: CoreGameTheme.light(),
+            builder: (context, theme) => Scaffold(
+              body: GameScreenLayout(
+                board: GestureDetector(
+                  onPanUpdate: (details) => dragged += details.delta.dy,
+                  child: const ColoredBox(key: _boardKey, color: Colors.black),
+                ),
+                footer: const SizedBox(key: _footerKey, height: 200),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.drag(find.byKey(_boardKey), const Offset(0, -100));
+
+      expect(dragged, lessThan(-50));
     });
 
     testWidgets('keeps the aspect ratio when the height is the limit', (tester) async {
@@ -62,8 +94,7 @@ void main() {
       await _pump(tester, const Size(320, 400));
 
       expect(tester.takeException(), isNull);
-      // The page keeps its minimum height: header 80, controls 48 and 2 x 16 spacing
-      expect(tester.getSize(find.byKey(_boardKey)).height, equals(GameScreenLayout.minPageHeight - 80 - 48 - 32));
+      expect(tester.getSize(find.byKey(_boardKey)).height, greaterThan(200));
     });
   });
 }

@@ -163,7 +163,7 @@ class MyGameBuilder extends FlutterMiniGameBuilder {
 
 - Stateless widget wrapping its content in `GameControllerProvider`
 - Uses `FlutterMiniGamesScreen` with a `GameScreenLayout` inside: `header` (game header + `GameStatsBar`), `board` (+ `boardAspectRatio`), `controls` (buttons, number pad) and `footer` (`GameHowToPlay`)
-- `GameScreenLayout` gives the board the largest size that fits next to header and controls; the footer sits below the first screen height and scrolls, so it never shrinks the board. Never build your own screen column or scroll view
+- `GameScreenLayout` gives the board the largest size that fits next to header and controls; the footer opens in a bottom sheet from a "How to play" button (it may only use the core theme). The page doesn't scroll, because a scroll view would take drags and swipes from the board. Never build your own screen column or scroll view
 - Shows different buttons based on game state (e.g., "Next Puzzle" when won, "Reset" otherwise)
 - Rows that can grow use `Wrap` (or `Flexible` text) so they never overflow on small phones
 - Check the screen at 360x640 and 390x844 (light and dark) with a temporary golden test before opening a PR
@@ -251,6 +251,8 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
 - Wrap the playing field in `GameLoop(controller: ...)`: it only ticks while `isRunning` and the app is in the foreground, and clamps long frames to `GameLoop.maxDelta`
 - Use `GameInputDetector` for all input, never your own gesture or key handling:
   - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
+  - `onTapAt(localPosition)` for grids and pads: one detector for the whole board, map the position to a cell
+  - `autofocus: false` when a screen has more than one detector (only one may take the keyboard focus)
   - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
   - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages

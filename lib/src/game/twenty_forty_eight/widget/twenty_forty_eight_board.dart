@@ -6,12 +6,8 @@ import 'package:flutter_mini_games/src/game/twenty_forty_eight/game/logic/twenty
 import 'package:flutter_mini_games/src/game/twenty_forty_eight/style/twenty_forty_eight_theme.dart';
 import 'package:flutter_mini_games/src/game/twenty_forty_eight/widget/twenty_forty_eight_tile_view.dart';
 
-class TwentyFortyEightBoard extends StatefulWidget {
+class TwentyFortyEightBoard extends StatelessWidget {
   static const slideDuration = Duration(milliseconds: 120);
-
-  /// One drag can produce several swipes, a repeated swipe in the same direction within
-  /// this time is ignored so one long swipe is one move
-  static const repeatSwipeDelay = Duration(milliseconds: 250);
 
   final TwentyFortyEightGameController controller;
 
@@ -21,32 +17,15 @@ class TwentyFortyEightBoard extends StatefulWidget {
   });
 
   @override
-  State<TwentyFortyEightBoard> createState() => _TwentyFortyEightBoardState();
-}
-
-class _TwentyFortyEightBoardState extends State<TwentyFortyEightBoard> {
-  GameDirection? _lastDirection;
-  final Stopwatch _sinceLastSwipe = Stopwatch();
-
-  void _onSwipe(GameDirection direction) {
-    final isRepeat = direction == _lastDirection && _sinceLastSwipe.isRunning && _sinceLastSwipe.elapsed < TwentyFortyEightBoard.repeatSwipeDelay;
-    _lastDirection = direction;
-    _sinceLastSwipe
-      ..reset()
-      ..start();
-    if (isRepeat) return;
-    widget.controller.move(direction);
-  }
-
-  @override
   Widget build(BuildContext context) {
     final theme = TwentyFortyEightTheme.of(context);
-    final controller = widget.controller;
     const size = TwentyFortyEightGameController.size;
     return GameBoard(
       padding: EdgeInsets.all(theme.dimens.boardPadding),
       child: GameInputDetector(
-        onSwipe: _onSwipe,
+        // One drag is one move, also when the finger keeps moving
+        repeatSwipes: false,
+        onSwipe: controller.move,
         child: LayoutBuilder(
           builder: (context, constraints) {
             final spacing = theme.dimens.cellSpacing;
@@ -71,7 +50,7 @@ class _TwentyFortyEightBoardState extends State<TwentyFortyEightBoard> {
                 for (final tile in controller.tiles)
                   AnimatedPositioned(
                     key: ValueKey(tile.id),
-                    duration: TwentyFortyEightBoard.slideDuration,
+                    duration: slideDuration,
                     curve: Curves.easeOut,
                     left: offset(tile.col),
                     top: offset(tile.row),
@@ -80,9 +59,13 @@ class _TwentyFortyEightBoardState extends State<TwentyFortyEightBoard> {
                     child: TwentyFortyEightTileView(tile: tile, size: cellSize),
                   ),
                 if (controller.isWon)
-                  _buildOverlay(title: 'You reached ${TwentyFortyEightGameController.winValue}!', subtitle: 'Score: ${controller.score}')
+                  Positioned.fill(
+                    child: GameOverlay(title: 'You reached ${TwentyFortyEightGameController.winValue}!', subtitle: 'Score: ${controller.score}'),
+                  )
                 else if (controller.isGameOver)
-                  _buildOverlay(title: 'No moves left', subtitle: 'Score: ${controller.score}'),
+                  Positioned.fill(
+                    child: GameOverlay(title: 'No moves left', subtitle: 'Score: ${controller.score}'),
+                  ),
               ],
             );
           },
@@ -90,12 +73,4 @@ class _TwentyFortyEightBoardState extends State<TwentyFortyEightBoard> {
       ),
     );
   }
-
-  /// Scaled down so it also fits on a small board
-  Widget _buildOverlay({required String title, required String subtitle}) => Positioned.fill(
-    child: FittedBox(
-      fit: BoxFit.scaleDown,
-      child: GameOverlay(title: title, subtitle: subtitle),
-    ),
-  );
 }

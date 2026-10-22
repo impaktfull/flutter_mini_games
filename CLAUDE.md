@@ -457,6 +457,15 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `initialBoard` on the controller sets up a board for tests
 - Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
 - Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+### Pairs (`lib/src/game/pairs/`)
+
+- Single-player memory game, id `pairs`, turn based (no `GameLoop`): flip two cards at a time, matching pairs stay open
+- `PairsDifficulty` (cols x rows): easy 4x4 (8 pairs), medium 4x5 (10), hard 5x6 (15); switchable in the game
+- Cards are shuffled with an injectable `Random`; faces are Material `Icons` (`PairsCardTile.faceIcons`) colored by `PairsColors.faces`, backs in `cardBack`
+- The first card of an attempt starts the timer (`startSession()`), the second counts as a move (`registerMove()`)
+- Two cards that don't match get an error border and turn back after `mismatchDelay` (800 ms, a `Timer`); flips are ignored meanwhile. `hideMismatch()` turns them back right away (tests)
+- Cards flip with a rotation (`TweenAnimationBuilder`), found pairs fade to `matchedOpacity`
+- Score: `1000 - moves * 10 - seconds`, never below 100; all pairs found finishes with `won` and the score (`data`: difficulty, rows, cols, pairs)
 ### Whack (`lib/src/game/whack/`)
 
 - Single-player real-time game, id `whack`: targets pop up out of a 3x3 grid of holes, tap them before they hide

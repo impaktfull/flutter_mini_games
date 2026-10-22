@@ -15,6 +15,7 @@ class HomeScreen extends StatefulWidget {
     MinesweeperGameBuilder(),
     SnakeGameBuilder(),
     TwentyFortyEightGameBuilder(),
+    PairsGameBuilder(),
     WhackGameBuilder(),
     ReflexGameBuilder(),
   ];

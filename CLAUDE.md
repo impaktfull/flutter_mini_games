@@ -272,6 +272,21 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 }
 ```
 
+#### 7. Two-player Games (one device)
+
+Two players on one phone use the shared duel core (`lib/src/core/duel/`), never their own split screen or match flow:
+
+- `DuelPlayer.bottom` (Player 1, `primary`) and `DuelPlayer.top` (Player 2, `secondary`); colors via `coreTheme.playerColor(player)` / `onPlayerColor(player)`
+- `DuelLayout(side: (context, player) => ..., center: ...)`: the top half is rotated 180° for the opposite player (touch positions inside are rotated too)
+- `DuelTapArea(onTap: ...)`: every finger counts, also when both players tap at once (raw pointers); use a `Listener` for drags (e.g. mallets), pointers stay with the half they started in
+- Matches with rounds mix in `DuelGameController` (`roundsToWin`, `resetRound()`, `onRoundStarted()`, `endRound(winner)`, `rematch()`):
+  - Flow: ready (both players tap) → 3-2-1 countdown → playing → round result → ... → winner + rematch
+  - Real-time duels: `isRunning => duelIsRunning`, call `tickDuel(delta)` at the start of `tick` and only simulate while `phase == DuelPhase.playing`
+  - Ignore player input unless `phase == DuelPhase.playing`
+  - The result is `GameOutcome.won` with `data: {'winner': 'top' | 'bottom', 'rounds': {...}}`, no score
+- Put `DuelPhaseOverlay(controller: ..., player: ...)` on top of each half: ready buttons, countdown, round result, winner, rematch and the round score
+- Turn-based games on a shared board (Four Up, Boxes, Flip) don't need rounds: use `DuelPlayer` and its colors, show whose turn it is on both sides (the top one rotated), and finish with `won` + `data['winner']` or `draw`
+
 ## Adding a New Game - Checklist
 
 1. **Create directory structure** under `lib/src/game/{game_name}/`
@@ -321,7 +336,7 @@ class MyRealtimeController extends GameController with RealtimeGameController {
     ];
     ```
 
-11. **Run `tool/check_tree_shaking.sh`** - it picks up the new game automatically
+11. **Run `tool/check_tree_shaking.sh <game id>`** - builds only your game's app and checks no other game is in it (CI runs the full check for every game)
 
 ## Available Core Components
 
@@ -341,6 +356,7 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 - `GameOverlay` - Message on top of the playing field ("Tap to start", "Game over")
 - `RealtimeGameController` / `GameLoop` - Per-frame updates for real-time games
 - `GameInputDetector` / `GameDirection` - Taps, swipes and keyboard input
+- `DuelPlayer`, `DuelLayout`, `DuelTapArea`, `DuelGameController`, `DuelPhaseOverlay` - Two players on one device
 
 ## Existing Games
 

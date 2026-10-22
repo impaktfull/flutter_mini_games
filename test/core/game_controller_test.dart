@@ -10,6 +10,8 @@ class _TestGameController extends GameController {
   void win() => finish(GameOutcome.won, score: 10);
 
   void restart() => restartSession();
+
+  void start() => startSession();
 }
 
 void main() {
@@ -22,6 +24,13 @@ void main() {
 
       expect(controller.status, equals(GameStatus.playing));
       expect(controller.moves, equals(1));
+    });
+
+    test('starts the session without counting a move', () {
+      final controller = _TestGameController()..start();
+
+      expect(controller.status, equals(GameStatus.playing));
+      expect(controller.moves, equals(0));
     });
 
     test('reports the result when finished', () {

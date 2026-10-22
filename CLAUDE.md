@@ -83,6 +83,7 @@ class MyGameController extends GameController {
 ```
 
 - Score: higher is better, `null` when the game has no score (e.g. multiplayer)
+- Endless games (Snake, Flit, ...) finish with `GameOutcome.lost` and their score; the best score counts every non-abandoned result
 - Multiplayer games put the winner in `data` (e.g. `{'winner': 'X'}`)
 
 #### 2. Game Theme

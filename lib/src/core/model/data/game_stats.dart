@@ -9,7 +9,8 @@ class GameStats {
   final int draw;
   final int abandoned;
 
-  /// Highest score of a won game, null when no won game has a score
+  /// Highest score of a finished (not abandoned) game, null when none has a score.
+  /// Endless games finish with [GameOutcome.lost] and their score, so it counts every outcome.
   final int? bestScore;
 
   /// Shortest duration of a won game
@@ -31,11 +32,11 @@ class GameStats {
     int? bestScore;
     Duration? fastestWin;
     for (final result in results.where((result) => result.gameId == gameId)) {
+      final score = result.score;
+      if (result.outcome != GameOutcome.abandoned && score != null && (bestScore == null || score > bestScore)) bestScore = score;
       switch (result.outcome) {
         case GameOutcome.won:
           won++;
-          final score = result.score;
-          if (score != null && (bestScore == null || score > bestScore)) bestScore = score;
           if (fastestWin == null || result.duration < fastestWin) fastestWin = result.duration;
         case GameOutcome.lost:
           lost++;

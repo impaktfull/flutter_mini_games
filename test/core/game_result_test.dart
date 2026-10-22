@@ -45,25 +45,26 @@ void main() {
       final stats = GameStats.fromResults('game', [
         _result(GameOutcome.won, score: 100, duration: const Duration(seconds: 30)),
         _result(GameOutcome.won, score: 300, duration: const Duration(seconds: 50)),
-        _result(GameOutcome.lost, score: 999),
+        _result(GameOutcome.lost, score: 250),
+        _result(GameOutcome.abandoned, score: 999),
         _result(GameOutcome.draw),
         _result(GameOutcome.abandoned),
         _result(GameOutcome.won, gameId: 'other', score: 5000),
       ]);
 
-      expect(stats.played, equals(5));
+      expect(stats.played, equals(6));
       expect(stats.won, equals(2));
       expect(stats.lost, equals(1));
       expect(stats.draw, equals(1));
-      expect(stats.abandoned, equals(1));
+      expect(stats.abandoned, equals(2));
       expect(stats.bestScore, equals(300));
       expect(stats.fastestWin, equals(const Duration(seconds: 30)));
     });
 
-    test('has no best score when no game was won', () {
+    test('counts the score of lost games, for endless games', () {
       final stats = GameStats.fromResults('game', [_result(GameOutcome.lost, score: 10)]);
 
-      expect(stats.bestScore, isNull);
+      expect(stats.bestScore, equals(10));
       expect(stats.fastestWin, isNull);
     });
   });

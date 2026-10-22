@@ -9,6 +9,9 @@ import 'package:flutter_mini_games/src/game/dash/widget/dash_painter.dart';
 
 /// The playing field: board, game loop, input, world and overlays
 class DashField extends StatelessWidget {
+  /// Width / height of the board
+  static const aspectRatio = DashGameController.worldWidth / DashGameController.worldHeight;
+
   final DashGameController controller;
 
   const DashField({
@@ -20,7 +23,7 @@ class DashField extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = DashTheme.of(context);
     return GameBoard(
-      aspectRatio: DashGameController.worldWidth / DashGameController.worldHeight,
+      aspectRatio: aspectRatio,
       child: GameLoop(
         controller: controller,
         child: GameInputDetector(

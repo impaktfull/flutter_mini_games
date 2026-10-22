@@ -4,6 +4,7 @@ import 'package:flutter_mini_games/src/core/widget/components/button.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/twenty_forty_eight/game/logic/twenty_forty_eight_game_controller.dart';
 import 'package:flutter_mini_games/src/game/twenty_forty_eight/screen/twenty_forty_eight_header.dart';
@@ -31,28 +32,26 @@ class TwentyFortyEightScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: '2048',
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 24,
-          children: [
-            TwentyFortyEightHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Flexible(
-              fit: FlexFit.loose,
-              child: TwentyFortyEightBoard(controller: controller),
-            ),
-            GameButton(
-              onTap: controller.resetGame,
-              icon: controller.isFinished ? Icons.replay : Icons.refresh,
-              label: controller.isFinished ? 'New game' : 'Restart',
-            ),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.swipe, text: 'Swipe to slide\nall tiles'),
-                GameHowToPlayItem(icon: Icons.merge, text: 'Merge equal tiles\nto reach 2048'),
-              ],
-            ),
-          ],
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              TwentyFortyEightHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          board: TwentyFortyEightBoard(controller: controller),
+          controls: GameButton(
+            onTap: controller.resetGame,
+            icon: controller.isFinished ? Icons.replay : Icons.refresh,
+            label: controller.isFinished ? 'New game' : 'Restart',
+          ),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.swipe, text: 'Swipe to slide\nall tiles'),
+              GameHowToPlayItem(icon: Icons.merge, text: 'Merge equal tiles\nto reach 2048'),
+            ],
+          ),
         ),
       ),
     );

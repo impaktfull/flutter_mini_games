@@ -4,6 +4,7 @@ import 'package:flutter_mini_games/src/core/widget/components/button.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/game/logic/tic_tac_toe_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/screen/tic_tac_toe_header.dart';
@@ -31,48 +32,43 @@ class TicTacToeScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Tic Tac Toe',
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 24,
-          children: [
-            TicTacToeHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Flexible(
-              fit: FlexFit.loose,
-              child: AspectRatio(
-                aspectRatio: 1.0,
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    mainAxisSpacing: theme.dimens.cellSpacing,
-                    crossAxisSpacing: theme.dimens.cellSpacing,
-                  ),
-                  itemCount: 9,
-                  itemBuilder: (context, index) {
-                    final row = index ~/ 3;
-                    final col = index % 3;
-                    return TicTacToeCell(
-                      onTap: () => controller.makeMove(row, col),
-                      value: controller.board[row][col],
-                      isWinningCell: controller.isWinningCell(row, col),
-                    );
-                  },
-                ),
-              ),
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              TicTacToeHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          board: GridView.builder(
+            physics: const NeverScrollableScrollPhysics(),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              mainAxisSpacing: theme.dimens.cellSpacing,
+              crossAxisSpacing: theme.dimens.cellSpacing,
             ),
-            GameButton(
-              onTap: controller.resetGame,
-              icon: Icons.refresh,
-              label: controller.isGameOver ? 'Play Again' : 'Reset Game',
-            ),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.people_outline, text: 'Take turns\nas X and O'),
-                GameHowToPlayItem(icon: Icons.linear_scale, text: 'Get three\nin a row'),
-              ],
-            ),
-          ],
+            itemCount: 9,
+            itemBuilder: (context, index) {
+              final row = index ~/ 3;
+              final col = index % 3;
+              return TicTacToeCell(
+                onTap: () => controller.makeMove(row, col),
+                value: controller.board[row][col],
+                isWinningCell: controller.isWinningCell(row, col),
+              );
+            },
+          ),
+          controls: GameButton(
+            onTap: controller.resetGame,
+            icon: Icons.refresh,
+            label: controller.isGameOver ? 'Play Again' : 'Reset Game',
+          ),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.people_outline, text: 'Take turns\nas X and O'),
+              GameHowToPlayItem(icon: Icons.linear_scale, text: 'Get three\nin a row'),
+            ],
+          ),
         ),
       ),
     );

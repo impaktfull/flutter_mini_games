@@ -514,6 +514,15 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Quickdraw (`lib/src/game/quickdraw/`)
+
+- Two-player reaction duel on one device, id `quickdraw`, best of 5 (`DuelGameController`, `roundsToWin` 3), real-time (`RealtimeGameController` + `GameLoop`)
+- Every round: duel countdown, then a random wait of 1.5 to 5 s (injectable `Random`, picked in `onRoundStarted`), then "GO"; the first player to tap their half after GO wins the round, a tap before GO loses the round for that player
+- `QuickdrawSignal` (waiting / go) inside the playing phase; taps go through `DuelTapArea` to `onTap(player)` and only count while playing (every tap is a move), the first tap ends the round so near-simultaneous taps are decided by event order
+- The reaction time is game time from `tick`: it starts with the frame that shows GO and stops at the tap
+- GO is never color-only: a big bolt icon and "GO!" text; waiting, GO and too early each have their own color, switched instantly
+- Each half: `Stack[DuelTapArea(QuickdrawHalf), DuelPhaseOverlay, QuickdrawResultBanner]`; the banner (reaction time / too early / best time) sits on top of the overlay so it stays readable and ignores touches
+- Result: `GameOutcome.won` with the duel data plus `data['bestReactionMs']` (`{'bottom': ms?, 'top': ms?}`, added by overriding `finish`), no score
 ### Push (`lib/src/game/push/`)
 
 - Two-player sumo ring on one device, id `push`, best of 3: push the other disc out of the ring

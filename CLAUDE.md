@@ -163,7 +163,7 @@ class MyGameBuilder extends FlutterMiniGameBuilder {
 
 - Stateless widget wrapping its content in `GameControllerProvider`
 - Uses `FlutterMiniGamesScreen` with a `GameScreenLayout` inside: `header` (game header + `GameStatsBar`), `board` (+ `boardAspectRatio`), `controls` (buttons, number pad) and `footer` (`GameHowToPlay`)
-- `GameScreenLayout` gives the board the largest size that fits next to header and controls; the footer sits below the first screen height and scrolls, so it never shrinks the board. Never build your own screen column or scroll view
+- `GameScreenLayout` gives the board the largest size that fits next to header and controls; the footer opens in a bottom sheet from a "How to play" button (it may only use the core theme). The page doesn't scroll, because a scroll view would take drags and swipes from the board. Never build your own screen column or scroll view
 - Shows different buttons based on game state (e.g., "Next Puzzle" when won, "Reset" otherwise)
 - Rows that can grow use `Wrap` (or `Flexible` text) so they never overflow on small phones
 - Check the screen at 360x640 and 390x844 (light and dark) with a temporary golden test before opening a PR
@@ -251,6 +251,8 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
 - Wrap the playing field in `GameLoop(controller: ...)`: it only ticks while `isRunning` and the app is in the foreground, and clamps long frames to `GameLoop.maxDelta`
 - Use `GameInputDetector` for all input, never your own gesture or key handling:
   - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
+  - `onTapAt(localPosition)` for grids and pads: one detector for the whole board, map the position to a cell
+  - `autofocus: false` when a screen has more than one detector (only one may take the keyboard focus)
   - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
   - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
@@ -336,7 +338,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
     ];
     ```
 
-11. **Run `tool/check_tree_shaking.sh <game id>`** - builds only your game's app and checks no other game is in it (CI runs the full check for every game)
+11. **Run `tool/check_tree_shaking.sh <game folder>`** - builds only your game's app and checks with the compiler report (`--dump-info`) that no other game is in it (CI runs it for every game)
 
 ## Available Core Components
 
@@ -467,6 +469,51 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Hint: highlights one tap of the minimal solution from the current board (counted in `data['hints']`, no score penalty)
 - Score: `max(100, 1000 - (moves - par) * 50 - seconds)`; all lights off finishes with `won`, `data` holds `difficulty`, `par` and `hints`
 - Visual style: lit = `primary` cell + filled bulb + blurred solid glow (own layer below the lights), off = `surface` cell + outlined bulb
+### Code (`lib/src/game/code/`)
+
+- Single-player code breaker, id `code`, turn based (no game loop): guess a hidden code of 4 pegs out of 6 symbols in 8 tries, repeats allowed
+- `CodePeg` (circle, square, triangle, diamond, star, hexagon): every peg has its own shape, so the game is playable without colors; peg colors are core tokens and `Color.lerp` mixes of them (`CodeColors.pegs`)
+- `CodeFeedback.evaluate(secret, guess)`: `exact` (right symbol, right place) and `misplaced` (standard min-count rule with repeats: per symbol `min(count in code, count in guess)` minus the exact hits)
+- Feedback is a 2x2 grid of markers: filled = exact, hollow ring = misplaced
+- Tap a symbol to fill the next empty slot, tap a slot to clear it, Clear empties the guess, Submit checks a full guess; the hidden code is shown on top of the board when the game ends
+- The first peg starts the timer (`startSession()`), every submitted guess is a move; `Random` and the first `secret` are injectable
+- Score: `(9 - tries) * 100`. Cracked: `won` with the score, out of tries: `lost` without score; `data['tries']`
+### Echo (`lib/src/game/echo/`)
+
+- Single-player memory game, id `echo`: four pads light up in a sequence that grows by one every round, repeat it by tapping the pads in the same order
+- Phases (`EchoPhase`): ready → playback (input ignored) → input → playback of the next round ... → game over on the first wrong pad
+- Playback runs in `tick` (`RealtimeGameController` + `GameLoop`, so it pauses in the background): `leadIn` 700 ms, then per pad `onDurationFor(length)` lit (600 ms down to 250 ms) and `offDurationFor(length)` dark (250 ms down to 100 ms)
+- Pads in a 2x2 grid, colors `primary`, `secondary`, `error`, `textMuted` (`EchoColors.pads`), each with its own shape icon (circle, triangle, square, star) so they never differ by color alone; unlit pads blend towards `background` and scale down, a tapped pad flashes for `pressFlash`
+- The sequence uses an injectable `Random`; every pad tap is a move (`registerMove()`), tapping a pad or Start in the ready state starts the session; haptic `selectionClick` per tap
+- Score: rounds completed. A wrong pad finishes with `GameOutcome.lost` and the score (`data`: `rounds`, `sequenceLength`); the wrong pad shows a cross and the expected pad lights up
+### Pairs (`lib/src/game/pairs/`)
+
+- Single-player memory game, id `pairs`, turn based (no `GameLoop`): flip two cards at a time, matching pairs stay open
+- `PairsDifficulty` (cols x rows): easy 4x4 (8 pairs), medium 4x5 (10), hard 5x6 (15); switchable in the game
+- Cards are shuffled with an injectable `Random`; faces are Material `Icons` (`PairsCardTile.faceIcons`) colored by `PairsColors.faces`, backs in `cardBack`
+- The first card of an attempt starts the timer (`startSession()`), the second counts as a move (`registerMove()`)
+- Two cards that don't match get an error border and turn back after `mismatchDelay` (800 ms, a `Timer`); flips are ignored meanwhile. `hideMismatch()` turns them back right away (tests)
+- Cards flip with a rotation (`TweenAnimationBuilder`), found pairs fade to `matchedOpacity`
+- Score: `1000 - moves * 10 - seconds`, never below 100; all pairs found finishes with `won` and the score (`data`: difficulty, rows, cols, pairs)
+### Whack (`lib/src/game/whack/`)
+
+- Single-player real-time game, id `whack`: targets pop up out of a 3x3 grid of holes, tap them before they hide
+- 30 second round (`RealtimeGameController` + `GameLoop`); a tap on the board (or space/enter) starts it with `startSession()`, every tap on a hole is a move
+- Event-based timing on the round time: every target has a `spawnedAt` and `visibleDuration`, spawns that are due in a frame happen at their own time, so the result does not depend on how `tick` is split
+- The visible time shrinks from 1.5 s to 0.65 s and the spawn interval from 0.9 s to 0.45 s over the round, so several targets can be up at once; targets only spawn in empty holes (injectable `Random`)
+- 25% of the targets are decoys: a spiky ball with an angry face (critters are round with ears), drawn with `CustomPaint`
+- Each hole is its own raw `Listener` (multi-touch); the pop-up (slide out of the hole + scale) comes from `WhackTarget.popAt` on the controller
+- Score: hits - decoys tapped (taps on empty holes do not count). The round end finishes with `GameOutcome.won`, the score and `data` with `hits`, `decoys`, `misses`, `escaped`
+### Reflex (`lib/src/game/reflex/`)
+
+- Single-player reaction test, id `reflex`, real-time (`RealtimeGameController` + `GameLoop`) for the timing
+- 5 tries; each try waits a random delay between 1.5 and 5 s (injectable `Random`), then the board changes color: tap (or space/enter) as fast as possible
+- Tapping before the change shows "Too early!" and retries that try with a new delay
+- Phases (`ReflexPhase`): ready → waiting → go → measured (tap for the next try) → ... → finished; too early → tap to retry
+- The reaction time is game time from `tick`: it starts with the frame that shows the change and stops at the tap event (`GameInputDetector.onTap`, fires on touch down); tests drive `tick` and `onTap` directly
+- Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
+- The start tap calls `startSession()`, every tap during a try (early or measured) is a move
+- Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
 
 ## Testing
 

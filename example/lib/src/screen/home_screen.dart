@@ -22,6 +22,16 @@ class HomeScreen extends StatefulWidget {
     WhackGameBuilder(),
     ReflexGameBuilder(),
     BoxesGameBuilder(),
+    PuckGameBuilder(),
+    BreakerGameBuilder(),
+    FourUpGameBuilder(),
+    QuickdrawGameBuilder(),
+    PushGameBuilder(),
+    SlapGameBuilder(),
+    TilesGameBuilder(),
+    FlipGameBuilder(),
+    SnatchGameBuilder(),
+    TugGameBuilder(),
   ];
 
   const HomeScreen({super.key});

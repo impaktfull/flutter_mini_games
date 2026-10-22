@@ -524,6 +524,104 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Input: one `GameInputDetector(onTapAt:)` on the board; `BoxesBoardGeometry.edgeAt` maps a tap to the nearest free edge within 0.42 cells (a tap in the middle of a box draws nothing)
 - Screen: `GameScreenLayout` with a banner per player (turn / result + box count): Player 2's banner rotated 180° above the board, Player 1's banner below it; the top player's box symbols are rotated too
 - Visual style: claimed boxes filled in the player color with the symbol (never color only), lines in the player color, undrawn lines as `surface` guides, a small marker on the last drawn line
+### Puck (`lib/src/game/puck/`)
+
+- Two-player air hockey on one device, id `puck`: drag your mallet in your own half and shoot the puck into the other goal
+- `PuckGameController` = `GameController` + `RealtimeGameController` + `DuelGameController`; every goal is a round, first to `goalsToWin` (5, configurable on the builder)
+- World: one shared portrait table, 1.0 wide and 1.8 high, y down; `DuelPlayer.top` defends the goal at y = 0, `bottom` the goal at y = 1.8 (goal mouth 0.36 wide in the middle)
+- Input: one raw `Listener` on the table; every pointer belongs to the half it went down in (`halfAt`) and sets the target of that player's mallet (`moveMallet`, only while playing); targets are clamped to the player's half (`clampToHalf`)
+- Physics in `tick` (after `tickDuel`, only while `DuelPhase.playing`): mallets follow their target at most `maxMalletSpeed`, spread evenly over sub steps; sub steps keep every move below `maxStep` (half the puck radius) so nothing tunnels; exponential friction; wall and goal post bounces with `wallRestitution`; puck–mallet circle collision reflects the relative velocity (`malletRestitution`), so the mallet's velocity transfers to the puck; speed capped at `maxPuckSpeed`; a puck pinned against a wall pushes the mallet back
+- Goal when the puck's center crosses a goal line inside the mouth; the next round serves the puck `serveOffset` from the center line in the half of the player who conceded (center for the first round), mallets back at their start
+- Screen: `FlutterMiniGamesScreen` with a `GameBoard` table that fills the space; `DuelLayout` with `DuelPhaseOverlay` per player stacked over the table (lets touches through while playing); goals painted next to the center line, the top one upside down
+- Result: `GameOutcome.won` with `data['winner']` and the goals in `data['rounds']`, no score
+### Breaker (`lib/src/game/breaker/`)
+
+- Single-player brick breaker, id `breaker`, real-time (`RealtimeGameController` + `GameLoop`): bounce the ball off the paddle to break all the bricks, 3 lives
+- World of 1.0 x 1.4 units (5:7 `GameBoard`), y grows downwards; 8 columns of bricks, level 1 has 4 rows and every level adds one, clearing level 5 (8 rows) wins
+- The ball moves in sub-steps of at most half its radius with circle-rectangle collision (reflection on the contact normal, pushed out of the brick), so it never tunnels through a brick or the paddle at any speed; one brick breaks per sub-step
+- Paddle bounce angle: the hit offset from the paddle center maps linearly to up to 60° from vertical; walls and bricks keep the ball at least 15° from horizontal
+- Speed: 0.75 units/s at launch (+0.07 per level), grows by 0.012 units/s every second up to 1.6; the launch angle is random (injectable `Random`)
+- Input: `GameInputDetector(onTap:, onHorizontalHold:)` for arrow keys / A-D, holding a half of the board and space / enter (launch); a raw `Listener` inside it drags the paddle with the finger's horizontal movement once it moved 8 px (holds are ignored while dragging), and a short touch without drag launches the ball on release so the paddle can be positioned first
+- Phases (`BreakerPhase`): ready → playing → serving (ball lost) / level cleared → ... → game over / won; the ball rests on the paddle until launched, the GameLoop only ticks while the ball moves or the paddle is steered
+- Brick colors blend per row along `BreakerColors.bricks` (`error` → `primary` → `secondary` by default)
+- Every launch is a move. Score: 10 per brick. Losing the last life finishes with `GameOutcome.lost`, clearing the last level with `GameOutcome.won`, both with the score and `data` (`level`, `bricks`, `lives`)
+### Four Up (`lib/src/game/four_up/`)
+
+- Two-player four in a row on one device, id `four_up`, turn based (no game loop, no `DuelGameController` rounds)
+- 7x6 grid (`FourUpGameController.columns` / `rows`), `cellAt(col, row)` with row 0 at the top; `DuelPlayer.bottom` and `DuelPlayer.top` alternate, a disc falls to the lowest free row (`dropDisc(col)` returns the row, null for a full column or a finished game)
+- Four or more in a row horizontally, vertically or diagonally wins: `winningCells` holds every disc of the winning line(s), drawn with a ring while the other discs are blended towards the slot color (solid, no alpha); a full grid is a draw
+- Result: `GameOutcome.won` with `data['winner']` (`'bottom'` / `'top'`) or `GameOutcome.draw`, no score; `registerMove()` per disc; `resetGame()` lets the other player start
+- Screen: `GameScreenLayout` with the shared board; turn banners on both sides (top player's banner rotated in the header, bottom player's banner next to the reset button); discs differ by pattern too (ring for bottom, cross for top)
+- Input: one `GameInputDetector` on the board, `onTapAt` maps x to a column; arrow left/right (or swipes) select a column, arrow down (or swipe down) drops in it
+- The last disc falls in with a short bounce (`TweenAnimationBuilder` keyed by the move count)
+### Quickdraw (`lib/src/game/quickdraw/`)
+
+- Two-player reaction duel on one device, id `quickdraw`, best of 5 (`DuelGameController`, `roundsToWin` 3), real-time (`RealtimeGameController` + `GameLoop`)
+- Every round: duel countdown, then a random wait of 1.5 to 5 s (injectable `Random`, picked in `onRoundStarted`), then "GO"; the first player to tap their half after GO wins the round, a tap before GO loses the round for that player
+- `QuickdrawSignal` (waiting / go) inside the playing phase; taps go through `DuelTapArea` to `onTap(player)` and only count while playing (every tap is a move), the first tap ends the round so near-simultaneous taps are decided by event order
+- The reaction time is game time from `tick`: it starts with the frame that shows GO and stops at the tap
+- GO is never color-only: a big bolt icon and "GO!" text; waiting, GO and too early each have their own color, switched instantly
+- Each half: `Stack[DuelTapArea(QuickdrawHalf), DuelPhaseOverlay, QuickdrawResultBanner]`; the banner (reaction time / too early / best time) sits on top of the overlay so it stays readable and ignores touches
+- Result: `GameOutcome.won` with the duel data plus `data['bestReactionMs']` (`{'bottom': ms?, 'top': ms?}`, added by overriding `finish`), no score
+### Push (`lib/src/game/push/`)
+
+- Two-player sumo ring on one device, id `push`, best of 3: push the other disc out of the ring
+- `PushGameController` = `GameController` + `RealtimeGameController` + `DuelGameController`; `tick` calls `tickDuel` first and only simulates while playing (the frame that ends the countdown is not simulated)
+- World units: ring centered at (0, 0) with radius 1, y down; discs (radius 0.13) start at y = ±0.45 (bottom player below the center)
+- Controls per half (`PushTouchArea`, a raw `Listener` per half, both players at once): every finger down = impulse of 0.3 towards the opponent's disc (a move); the horizontal tap position aims, middle = straight, edges = up to 60° to the player's left / right (aim -1..1, from the player's view); holding a finger keeps a weak push (0.5 units/s²) in the aimed direction, shown as an aim line
+- Physics in substeps of at most 1/120 s: exponential friction (`e^(-1.2 t)`), max speed 2, equal-mass impulse collision with restitution 0.8 plus overlap separation
+- The ring shrinks by 0.05 units/s after 3 s until a disc is out (no stalemates); a disc whose center leaves the ring loses the round, both at once is a drawn round (replayed)
+- Screen: the ring (`PushPainter`) fills the space below `DuelLayout`, each half has `DuelPhaseOverlay`; disc colors = `coreTheme.playerColor(player)` via `PushColors.disc`
+- Result: `GameOutcome.won`, `data['winner']` and `data['rounds']`, no score
+### Slap (`lib/src/game/slap/`)
+
+- Two-player palm slap on one device, id `slap`, real-time (`RealtimeGameController` + `DuelGameController` + `GameLoop`), first to 5 points (`roundsToWin = 5`, one slap attempt per round)
+- `DuelPlayer.bottom` attacks first, roles swap every round (attacker from the number of rounds played); role labels "Attack" / "Defend" with an icon, so roles are never color-only
+- Defender: holds the target (raw `Listener` down/up/cancel, pointers tracked per player, also during the countdown); the attacker can only attack while the defender holds ("Hold your target"); lifting before an attack has no penalty
+- Attacker: Slap and Fake buttons (`DuelTapArea`). Both raise the hand for a random wind-up of 250-700 ms (injectable `Random`), so they look the same; then a slap comes down in `strikeDuration` (350 ms), a fake goes back in `retractDuration` (250 ms). `maxFakes` (3) fakes per round
+- Lifting during a slap (wind-up or strike) = dodged, point for the defender; still holding when it lands = slapped, point for the attacker; lifting during a fake = flinched, point for the attacker; no slap within `attackTimeLimit` (6 s of holding, fakes excluded) = too slow, point for the defender (`SlapRoundEnd`)
+- Stages in `tick` are event based (the rest of a frame goes to the next stage), so results don't depend on how `tick` is split; `handPosition` / `handLift` drive the drawing
+- The attacker's hand is drawn with `CustomPaint` (solid outline pass, then fill pass) in the attacker's player color on the defender's half, coming from the divider; the target fills with the defender's color and shows "Holding"
+- Result: `GameOutcome.won`, `data['winner']` and `data['rounds']`, no score
+### Tiles (`lib/src/game/tiles/`)
+
+- Single-player real-time game, id `tiles` (`RealtimeGameController` + `GameLoop`): rows of 4 tiles scroll down, exactly one dark tile per row (column from an injectable `Random`)
+- Positions in rows: the 3:4 board is 4 columns wide and 4 rows high, `topOf(row)` gives a row's top; rows are created just above the board and dropped below it (`TilesRow`)
+- Tap the dark tile of the lowest unplayed row; dark tiles that are already tapped or not next yet are ignored. A light tile or a dark tile leaving the bottom ends the game (`TilesMistake`: `wrongTile` / `missedTile`); on a miss the board scrolls back so the missed tile is visible
+- Before the start only the "Start" tile (dark tile of row 0) reacts; that tap starts the game (it is a move and scores)
+- Speed starts at 2 rows/s and grows by 0.05 rows/s per second up to 7; the scroll is the closed-form integral of the speed over game time (`scrollAt`), so it does not depend on the frame rate
+- Input: one raw `Listener` on the board (every finger counts, fast players tap with two fingers), mapped to column and row; every tap on a tile is a move
+- Feedback: a tapped tile flashes `primary` and fades to `tappedTile`; the mistake tile is drawn in `error` with a cross (wrong tile) or a ring (missed tile), the overlay moves to the other half of the board
+- Score: tiles tapped; game over finishes with `GameOutcome.lost`, the score and `data` with `reason` and `speed`
+### Flip (`lib/src/game/flip/`)
+
+- Two-player reversi on one device, id `flip`, turn based (no `GameLoop`, no rounds): 8x8 board, standard 4-disc start, `DuelPlayer.bottom` (Player 1) moves first
+- A move must outflank at least one line of opponent discs in any of the 8 directions; all outflanked discs flip (`flipsFor`, `movesFor`); illegal taps are ignored
+- A player without a legal move passes automatically (`passedPlayer`, shown in the banners); the game ends when neither player can move
+- `GameScreenLayout`: Player 2's turn banner in the header rotated 180°, Player 1's banner above the Reset / Play Again button; each banner shows the player, status (your turn / waiting / passed / result) and disc count
+- One `GameInputDetector(onTapAt:)` on the board maps a tap to a cell; legal moves are hinted with a small disc of the current player
+- Discs: Player 1 filled, Player 2 a ring (never color only), colors from `coreTheme.playerColor`; flips turn the disc around its vertical axis, placed discs pop in; `gameNumber` keys the discs so a reset does not animate
+- `registerMove()` per placed disc; finishes with `won` + `data['winner']` (`'bottom'` / `'top'`) or `draw`, `data['discs']` holds both disc counts, no score
+- `initialBoard` / `startingPlayer` on the controller set up positions for tests
+### Snatch (`lib/src/game/snatch/`)
+
+- Two-player real-time game on one device, id `snatch`: a target symbol is shown in the middle, the first player to tap the matching tile in their half scores a point
+- Built on the duel core: `GameController with RealtimeGameController, DuelGameController`, `DuelLayout` with `SnatchTarget` as `center` (the target twice, once rotated for the top player), each half a `Stack` of `SnatchHalf` and `DuelPhaseOverlay`
+- Each half shows the same 6 symbols (Material `Icons`, `SnatchSymbols`) in its own shuffled order (injectable `Random`, the halves never in the same order); the target never repeats twice in a row and is only shown while playing
+- Point mapping: the whole match is one duel round (`roundsToWin = 1`), points live in the controller; `roundWins` is overridden to return the points, so the shared overlay shows them as the score and no countdown runs between points
+- A correct tap: +1, a short pause (`revealDuration`, the tile and the center in the scorer's color, the other half's matching tile ringed), then a new target and new orders; taps during the pause are ignored, so with simultaneous taps the first one wins
+- A wrong tap: -1 (never below 0) and the half is locked for `wrongLockDuration`, so tapping every tile does not pay off
+- Every tile is its own raw `Listener` (both players can tap at once); every tap during play is a move
+- First to 7 points wins: `GameOutcome.won` with `data['winner']`, `data['points']`, `data['penalties']` (and the core's `rounds`), no score
+
+### Tug (`lib/src/game/tug/`)
+
+- Two-player tug of war on one device, id `tug`, built on the duel core (`DuelGameController` + `RealtimeGameController`), best of 3
+- Both players mash their half (`DuelTapArea`, both at once); each tap (`pull(player)`) is a move and pulls the marker one step toward the tapping player
+- The marker position is kept in whole steps (`position`, -`stepsToWin`..`stepsToWin`, `progress` -1..1); the first to reach `stepsToWin` (15) steps from the middle wins the round
+- Screen: `DuelLayout` with a vertical rope as `center` (`TugRope`, `CustomPaint`, `ropeLengthFraction` of the height) between the halves; each half is a `TugSide` (`DuelTapArea` + `DuelPhaseOverlay`)
+- Every pull slides the marker (`TweenAnimationBuilder`), pulses the "Tap!" hint and gives a selection haptic; the marker takes the color of the leading player
+- The result is `GameOutcome.won` with `data['winner']` and `data['rounds']`, no score
 
 ## Testing
 

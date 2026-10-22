@@ -34,15 +34,20 @@ abstract class GameController extends ChangeNotifier {
   /// Used by `GameControllerProvider` to report results to the host app
   set resultListener(ValueChanged<GameResult>? listener) => _resultListener = listener;
 
-  /// Counts a move and starts the timer on the first one
+  /// Counts a move and starts the session on the first one
   @protected
   void registerMove() {
     if (isFinished) return;
     _moves++;
-    if (_status == GameStatus.ready) {
-      _status = GameStatus.playing;
-      _stopwatch.start();
-    }
+    startSession();
+  }
+
+  /// Starts the session and the timer without counting a move (e.g. "Tap to start")
+  @protected
+  void startSession() {
+    if (_status != GameStatus.ready) return;
+    _status = GameStatus.playing;
+    _stopwatch.start();
   }
 
   /// Ends the session and reports the result

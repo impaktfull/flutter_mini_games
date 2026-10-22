@@ -455,6 +455,15 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `initialBoard` on the controller sets up a board for tests
 - Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
 - Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+### Whack (`lib/src/game/whack/`)
+
+- Single-player real-time game, id `whack`: targets pop up out of a 3x3 grid of holes, tap them before they hide
+- 30 second round (`RealtimeGameController` + `GameLoop`); a tap on the board (or space/enter) starts it with `startSession()`, every tap on a hole is a move
+- Event-based timing on the round time: every target has a `spawnedAt` and `visibleDuration`, spawns that are due in a frame happen at their own time, so the result does not depend on how `tick` is split
+- The visible time shrinks from 1.5 s to 0.65 s and the spawn interval from 0.9 s to 0.45 s over the round, so several targets can be up at once; targets only spawn in empty holes (injectable `Random`)
+- 25% of the targets are decoys: a spiky ball with an angry face (critters are round with ears), drawn with `CustomPaint`
+- Each hole is its own raw `Listener` (multi-touch); the pop-up (slide out of the hole + scale) comes from `WhackTarget.popAt` on the controller
+- Score: hits - decoys tapped (taps on empty holes do not count). The round end finishes with `GameOutcome.won`, the score and `data` with `hits`, `decoys`, `misses`, `escaped`
 
 ## Testing
 

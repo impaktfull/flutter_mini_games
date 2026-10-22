@@ -41,7 +41,7 @@ class TugGameController extends GameController with RealtimeGameController, Duel
 
   @override
   void tick(Duration delta) {
-    tickDuel(delta);
+    if (!tickDuel(delta)) return;
     // The rope only moves on taps; the loop drives the countdown and the pause between rounds
   }
 

@@ -24,8 +24,9 @@ void main() {
     TugGameController controller() => tester.widget<TugRope>(find.byType(TugRope)).controller;
     Finder side(DuelPlayer player) => find.byWidgetPredicate((widget) => widget is TugSide && widget.player == player);
 
-    // Ready
+    // Ready, with how to play on both halves
     expect(find.text('Tap when ready'), findsNWidgets(2));
+    expect(find.text('Tap your half as fast as you can'), findsNWidgets(2));
     await tester.tap(find.text('Tap when ready').first);
     await tester.pump();
     await tester.tap(find.text('Tap when ready'));

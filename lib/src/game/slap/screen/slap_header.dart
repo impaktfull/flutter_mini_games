@@ -55,21 +55,16 @@ class SlapHeader extends StatelessWidget {
   }
 
   String _status() {
-    final roundEnd = controller.roundEnd;
-    if (roundEnd != null) {
-      switch (roundEnd) {
-        case SlapRoundEnd.dodged:
-          return 'Dodged!';
-        case SlapRoundEnd.slapped:
-          return 'Slapped!';
-        case SlapRoundEnd.flinched:
-          return 'Fooled by a fake!';
-        case SlapRoundEnd.tooSlow:
-          return "Time's up!";
-      }
-    }
-    if (controller.phase != DuelPhase.playing) {
-      return _isAttacker ? 'You slap first' : 'You hold the target first';
+    switch (controller.phase) {
+      case DuelPhase.ready:
+      case DuelPhase.countdown:
+        return _isAttacker ? 'You slap first' : 'You hold the target first';
+      case DuelPhase.roundOver:
+      case DuelPhase.finished:
+        // DuelPhaseOverlay shows why the round ended
+        return '';
+      case DuelPhase.playing:
+        break;
     }
     final defender = controller.defender;
     switch (controller.attack) {

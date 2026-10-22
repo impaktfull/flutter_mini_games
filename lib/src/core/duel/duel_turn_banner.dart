@@ -16,11 +16,15 @@ class DuelTurnBanner extends StatelessWidget {
   /// Optional value on the right, e.g. the number of discs or boxes
   final String? trailing;
 
+  /// Replaces the player symbol on the left, e.g. the game's own disc (24x24)
+  final Widget? leading;
+
   const DuelTurnBanner({
     required this.player,
     required this.isActive,
     required this.status,
     this.trailing,
+    this.leading,
     super.key,
   });
 
@@ -43,19 +47,20 @@ class DuelTurnBanner extends StatelessWidget {
         child: Row(
           spacing: 8,
           children: [
-            Container(
-              width: 24,
-              height: 24,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(color: onColor, width: 2),
-              ),
-              child: Text(
-                player.symbol,
-                style: theme.textStyles.caption.copyWith(color: onColor, fontWeight: FontWeight.bold),
-              ),
-            ),
+            leading ??
+                Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(color: onColor, width: 2),
+                  ),
+                  child: Text(
+                    player.symbol,
+                    style: theme.textStyles.caption.copyWith(color: onColor, fontWeight: FontWeight.bold),
+                  ),
+                ),
             Expanded(
               child: Text(
                 '${player.label} · $status',

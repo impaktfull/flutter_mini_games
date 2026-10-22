@@ -239,6 +239,33 @@ class _CellPainter extends CustomPainter {
 - Use `StrokeCap.round` for smooth line ends
 - Compare sets by content in `shouldRepaint`, a new set is created on every build
 
+#### 6. Real-time Games
+
+Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop and input instead of their own tickers or gesture code:
+
+- The controller mixes in `RealtimeGameController`: `isRunning` and `tick(Duration delta)`
+- The simulation lives in `tick` and is frame-rate independent: move by `speed * seconds`, never per frame
+- Wrap the playing field in `GameLoop(controller: ...)`: it only ticks while `isRunning` and the app is in the foreground, and clamps long frames to `GameLoop.maxDelta`
+- Use `GameInputDetector(onTap: ..., onSwipe: ...)` for taps, swipes and the keyboard (web/desktop)
+- Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
+- Draw with `CustomPaint` using theme colors, use world coordinates (e.g. 0..1 or cells) and scale to the canvas size
+- Inject `Random` in the controller so tests are reproducible; test the controller by calling `tick` directly
+
+```dart
+class MyRealtimeController extends GameController with RealtimeGameController {
+  @override
+  bool get isRunning => status == GameStatus.playing && !_isGameOver;
+
+  @override
+  void tick(Duration delta) {
+    final seconds = delta.inMicroseconds / Duration.microsecondsPerSecond;
+    _position += _speed * seconds;
+    if (_hitObstacle()) finish(GameOutcome.lost, score: _score);
+    notifyListeners();
+  }
+}
+```
+
 ## Adding a New Game - Checklist
 
 1. **Create directory structure** under `lib/src/game/{game_name}/`
@@ -303,6 +330,10 @@ class _CellPainter extends CustomPainter {
 - `GameButton` - Styled button component
 - `GameStatsBar` - Time, moves and best score
 - `GameHowToPlay` - Rules panel
+- `GameBoard` - Rounded, elevated frame for the playing field
+- `GameOverlay` - Message on top of the playing field ("Tap to start", "Game over")
+- `RealtimeGameController` / `GameLoop` - Per-frame updates for real-time games
+- `GameInputDetector` / `GameDirection` - Taps, swipes and keyboard input
 
 ## Existing Games
 

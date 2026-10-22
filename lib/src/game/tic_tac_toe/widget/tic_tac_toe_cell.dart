@@ -26,9 +26,7 @@ class TicTacToeCell extends StatelessWidget {
             borderRadius: BorderRadius.circular(8),
             border: isWinningCell
                 ? Border.all(
-                    color: (valueX
-                        ? theme.colors.cellXWinningBorder
-                        : theme.colors.cellOWinningBorder),
+                    color: (valueX ? theme.colors.cellXWinningBorder : theme.colors.cellOWinningBorder),
                     width: 2,
                   )
                 : null,

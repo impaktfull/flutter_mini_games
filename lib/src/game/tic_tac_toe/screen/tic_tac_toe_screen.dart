@@ -9,7 +9,7 @@ import 'package:flutter_mini_games/src/game/tic_tac_toe/style/tic_tac_toe_theme.
 import 'package:flutter_mini_games/src/game/tic_tac_toe/widget/tic_tac_toe_cell.dart';
 
 class TicTacToeScreen extends StatelessWidget {
-  final TicTacToeTheme theme;
+  final TicTacToeTheme? theme;
   final CoreGameTheme coreTheme;
 
   const TicTacToeScreen({
@@ -22,56 +22,54 @@ class TicTacToeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return GameControllerProvider(
       controller: TicTacToeGameController(),
-      theme: theme,
+      themeBuilder: (coreTheme) => theme ?? TicTacToeTheme.getDefault(coreTheme: coreTheme),
       coreTheme: coreTheme,
-      builder: (context, controller, theme, coreTheme) =>
-          FlutterMiniGamesScreen(
-            title: 'Tic Tac Toe',
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              spacing: 32,
-              children: [
-                TicTacToeHeader(
-                  controller: controller,
-                ),
-                Flexible(
-                  fit: FlexFit.loose,
-                  child: AspectRatio(
-                    aspectRatio: 1.0,
-                    child: GridView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            mainAxisSpacing: 4,
-                            crossAxisSpacing: 4,
-                          ),
-                      itemCount: 9,
-                      itemBuilder: (context, index) {
-                        final row = index ~/ 3;
-                        final col = index % 3;
-                        final value = controller.board[row][col];
-                        final isWinningCell = controller.isWinningCell(
-                          row,
-                          col,
-                        );
-                        return TicTacToeCell(
-                          onTap: () => controller.makeMove(row, col),
-                          value: value,
-                          isWinningCell: isWinningCell,
-                        );
-                      },
-                    ),
-                  ),
-                ),
-                GameButton(
-                  onTap: controller.resetGame,
-                  icon: Icons.refresh,
-                  label: 'Reset Game',
-                ),
-              ],
+      builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
+        title: 'Tic Tac Toe',
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          spacing: 32,
+          children: [
+            TicTacToeHeader(
+              controller: controller,
             ),
-          ),
+            Flexible(
+              fit: FlexFit.loose,
+              child: AspectRatio(
+                aspectRatio: 1.0,
+                child: GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    mainAxisSpacing: 4,
+                    crossAxisSpacing: 4,
+                  ),
+                  itemCount: 9,
+                  itemBuilder: (context, index) {
+                    final row = index ~/ 3;
+                    final col = index % 3;
+                    final value = controller.board[row][col];
+                    final isWinningCell = controller.isWinningCell(
+                      row,
+                      col,
+                    );
+                    return TicTacToeCell(
+                      onTap: () => controller.makeMove(row, col),
+                      value: value,
+                      isWinningCell: isWinningCell,
+                    );
+                  },
+                ),
+              ),
+            ),
+            GameButton(
+              onTap: controller.resetGame,
+              icon: Icons.refresh,
+              label: 'Reset Game',
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

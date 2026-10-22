@@ -457,6 +457,18 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `initialBoard` on the controller sets up a board for tests
 - Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
 - Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+### Switch (`lib/src/game/switch/`)
+
+- Single-player Lights Out, id `switch_lights`, turn based (no game loop): tapping a light toggles it and its 4 neighbours, turn every light off
+- The id is not `switch`: Flutter itself contains the string `"switch"`, so the tree-shaking check would always find it
+- Theme classes are `SwitchGame*` (`SwitchGameTheme`, ...) because Flutter's material library already has a `SwitchTheme`
+- 5x5 board stored as a bitmask (bit `row * size + col`), sizes up to 5 so the masks stay within the 32-bit web limit
+- `SwitchSolver`: Gaussian elimination over GF(2), returns every solution (4 on a 5x5 board), the minimal one gives par and the hint
+- `SwitchPuzzleGenerator` (injectable `Random`): taps `SwitchDifficulty.taps` distinct random cells of a dark board (3 / 6 / 9 / 13), so every puzzle is solvable; retries when the taps cancel out
+- Custom puzzle lists (`SwitchPuzzle.fromString('.#... ###.. .#... ..... .....')`, unsolvable boards throw) OR generation; `nextPuzzle()`, difficulty chips in the header
+- Hint: highlights one tap of the minimal solution from the current board (counted in `data['hints']`, no score penalty)
+- Score: `max(100, 1000 - (moves - par) * 50 - seconds)`; all lights off finishes with `won`, `data` holds `difficulty`, `par` and `hints`
+- Visual style: lit = `primary` cell + filled bulb + blurred solid glow (own layer below the lights), off = `surface` cell + outlined bulb
 ### Code (`lib/src/game/code/`)
 
 - Single-player code breaker, id `code`, turn based (no game loop): guess a hidden code of 4 pegs out of 6 symbols in 8 tries, repeats allowed

@@ -16,6 +16,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Minesweeper: reveal every safe cell without hitting a mine | `MinesweeperGameBuilder` | 1 |
 | Snake: eat the food to grow, without hitting the walls or yourself | `SnakeGameBuilder` | 1 |
 | 2048: slide the tiles and merge equal numbers until you reach 2048 | `TwentyFortyEightGameBuilder` | 1 |
+| Switch: turn off all the lights, a tap toggles a light and its neighbours | `SwitchGameBuilder` | 1 |
 | Code: crack the hidden code of 4 symbols in 8 tries | `CodeGameBuilder` | 1 |
 | Echo: repeat the growing sequence of flashing pads | `EchoGameBuilder` | 1 |
 | Pairs: flip two cards at a time and find all matching pairs | `PairsGameBuilder` | 1 |

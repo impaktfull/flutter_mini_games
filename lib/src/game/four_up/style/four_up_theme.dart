@@ -23,19 +23,13 @@ class FourUpTheme extends GameTheme {
       topDisc: core.playerColor(DuelPlayer.top),
       onTopDisc: core.onPlayerColor(DuelPlayer.top),
       winHighlight: core.colors.text,
-      bannerInactive: core.colors.surface,
     ),
-    textStyles: FourUpTextStyles(
-      banner: core.textStyles.label,
-      bannerInactive: core.textStyles.label.copyWith(color: core.colors.textMuted),
-    ),
-    dimens: FourUpDimens(
+    textStyles: const FourUpTextStyles(),
+    dimens: const FourUpDimens(
       boardPadding: 4,
       discSizeFactor: 0.8,
       patternStrokeWidth: 2.5,
       winRingWidth: 3,
-      bannerRadius: core.dimens.radiusLarge,
-      bannerDiscSize: 20,
     ),
   );
 
@@ -57,20 +51,17 @@ class FourUpColors {
   /// Discs of [DuelPlayer.bottom]
   final Color bottomDisc;
 
-  /// Pattern on the discs of [DuelPlayer.bottom] and text on its banner
+  /// Pattern on the discs of [DuelPlayer.bottom]
   final Color onBottomDisc;
 
   /// Discs of [DuelPlayer.top]
   final Color topDisc;
 
-  /// Pattern on the discs of [DuelPlayer.top] and text on its banner
+  /// Pattern on the discs of [DuelPlayer.top]
   final Color onTopDisc;
 
   /// Ring around the discs of the winning line
   final Color winHighlight;
-
-  /// Banner of the player that is waiting
-  final Color bannerInactive;
 
   const FourUpColors({
     required this.slot,
@@ -79,7 +70,6 @@ class FourUpColors {
     required this.topDisc,
     required this.onTopDisc,
     required this.winHighlight,
-    required this.bannerInactive,
   });
 
   Color disc(DuelPlayer player) => player == DuelPlayer.bottom ? bottomDisc : topDisc;
@@ -93,7 +83,6 @@ class FourUpColors {
     Color? topDisc,
     Color? onTopDisc,
     Color? winHighlight,
-    Color? bannerInactive,
   }) => FourUpColors(
     slot: slot ?? this.slot,
     bottomDisc: bottomDisc ?? this.bottomDisc,
@@ -101,29 +90,15 @@ class FourUpColors {
     topDisc: topDisc ?? this.topDisc,
     onTopDisc: onTopDisc ?? this.onTopDisc,
     winHighlight: winHighlight ?? this.winHighlight,
-    bannerInactive: bannerInactive ?? this.bannerInactive,
   );
 }
 
+/// Four Up has no text of its own: the turn banners are the shared `DuelTurnBanner` that uses
+/// the core theme. Kept so the theme has the same shape as every other game theme.
 class FourUpTextStyles {
-  /// Banner of the player whose turn it is (colored with [FourUpColors.onDisc])
-  final TextStyle banner;
+  const FourUpTextStyles();
 
-  /// Banner of the player that is waiting
-  final TextStyle bannerInactive;
-
-  const FourUpTextStyles({
-    required this.banner,
-    required this.bannerInactive,
-  });
-
-  FourUpTextStyles copyWith({
-    TextStyle? banner,
-    TextStyle? bannerInactive,
-  }) => FourUpTextStyles(
-    banner: banner ?? this.banner,
-    bannerInactive: bannerInactive ?? this.bannerInactive,
-  );
+  FourUpTextStyles copyWith() => const FourUpTextStyles();
 }
 
 class FourUpDimens {
@@ -138,18 +113,12 @@ class FourUpDimens {
 
   /// Ring around the discs of the winning line
   final double winRingWidth;
-  final double bannerRadius;
-
-  /// Size of the disc on the turn banners
-  final double bannerDiscSize;
 
   const FourUpDimens({
     required this.boardPadding,
     required this.discSizeFactor,
     required this.patternStrokeWidth,
     required this.winRingWidth,
-    required this.bannerRadius,
-    required this.bannerDiscSize,
   });
 
   FourUpDimens copyWith({
@@ -157,14 +126,10 @@ class FourUpDimens {
     double? discSizeFactor,
     double? patternStrokeWidth,
     double? winRingWidth,
-    double? bannerRadius,
-    double? bannerDiscSize,
   }) => FourUpDimens(
     boardPadding: boardPadding ?? this.boardPadding,
     discSizeFactor: discSizeFactor ?? this.discSizeFactor,
     patternStrokeWidth: patternStrokeWidth ?? this.patternStrokeWidth,
     winRingWidth: winRingWidth ?? this.winRingWidth,
-    bannerRadius: bannerRadius ?? this.bannerRadius,
-    bannerDiscSize: bannerDiscSize ?? this.bannerDiscSize,
   );
 }

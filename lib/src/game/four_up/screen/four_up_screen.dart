@@ -36,29 +36,26 @@ class FourUpScreen extends StatelessWidget {
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Four Up',
         child: GameScreenLayout(
-          header: Column(
-            spacing: 8,
-            children: [
-              RotatedBox(
-                quarterTurns: 2,
-                child: FourUpHeader(controller: controller, player: DuelPlayer.top),
-              ),
-              GameStatsBar(controller: controller),
-            ],
-          ),
+          header: FourUpHeader(controller: controller, player: DuelPlayer.top),
           boardAspectRatio: FourUpBoard.aspectRatio,
           board: FourUpBoard(controller: controller),
-          controls: Wrap(
-            alignment: WrapAlignment.center,
-            crossAxisAlignment: WrapCrossAlignment.center,
+          controls: Column(
             spacing: 8,
-            runSpacing: 8,
             children: [
               FourUpHeader(controller: controller, player: DuelPlayer.bottom),
-              GameButton(
-                onTap: controller.resetGame,
-                icon: Icons.refresh,
-                label: controller.isGameOver ? 'Play Again' : 'Reset',
+              // Stats next to the button instead of in the header: the wide board keeps its
+              // full width on small phones
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                spacing: 16,
+                children: [
+                  Flexible(child: GameStatsBar(controller: controller)),
+                  GameButton(
+                    onTap: controller.resetGame,
+                    icon: Icons.refresh,
+                    label: controller.isGameOver ? 'Play Again' : 'Reset',
+                  ),
+                ],
               ),
             ],
           ),
@@ -66,7 +63,7 @@ class FourUpScreen extends StatelessWidget {
             items: [
               GameHowToPlayItem(icon: Icons.touch_app, text: 'Take turns, tap a column\nto drop your disc'),
               GameHowToPlayItem(icon: Icons.linear_scale, text: 'Get four in a row: across,\ndown or diagonally'),
-              GameHowToPlayItem(icon: Icons.keyboard, text: 'Keyboard: arrow left/right\nto pick, arrow down to drop'),
+              GameHowToPlayItem(icon: Icons.keyboard, text: 'Keyboard: arrow left/right\nto pick, down/space to drop'),
             ],
           ),
         ),

@@ -38,8 +38,8 @@ void main() {
 
   testWidgets('tapping between two dots draws lines, closing a box claims it', (tester) async {
     final controller = await pump(tester);
-    expect(find.text('Your turn'), findsOneWidget);
-    expect(find.text('Waiting'), findsOneWidget);
+    expect(find.text('Player 1 · Your turn'), findsOneWidget);
+    expect(find.text('Player 2 · Waiting'), findsOneWidget);
 
     for (final edge in const [
       BoxesEdge.horizontal(0, 0), // Player 1
@@ -62,8 +62,9 @@ void main() {
     await tester.pump();
     expect(controller.boxOwner(0, 0), DuelPlayer.top);
     expect(controller.currentPlayer, DuelPlayer.top);
-    expect(tester.widget<Text>(find.byKey(const ValueKey('boxes_score_top'))).data, '1');
-    expect(tester.widget<Text>(find.byKey(const ValueKey('boxes_score_bottom'))).data, '0');
+    // Box counts on the banners
+    expect(find.descendant(of: find.byKey(const ValueKey('boxes_header_top')), matching: find.text('1')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const ValueKey('boxes_header_bottom')), matching: find.text('0')), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
 
@@ -88,13 +89,13 @@ void main() {
     final theme = BoxesTheme.fromCore(CoreGameTheme.light());
     final custom = theme.copyWith(
       colors: theme.colors.copyWith(guide: theme.colors.dot),
-      textStyles: theme.textStyles.copyWith(boxSymbol: theme.textStyles.bannerLabel),
+      textStyles: theme.textStyles.copyWith(boxSymbol: const TextStyle(fontSize: 10)),
       dimens: theme.dimens.copyWith(lineWidth: 8),
     );
 
     expect(custom.colors.guide, theme.colors.dot);
     expect(custom.colors.bottomPlayer, theme.colors.bottomPlayer);
-    expect(custom.textStyles.boxSymbol, theme.textStyles.bannerLabel);
+    expect(custom.textStyles.boxSymbol.fontSize, 10);
     expect(custom.dimens.lineWidth, 8);
     expect(custom.dimens.dotRadius, theme.dimens.dotRadius);
   });

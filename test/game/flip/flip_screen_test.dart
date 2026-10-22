@@ -32,8 +32,8 @@ void main() {
   testWidgets('plays a few moves by tapping cells and resets', (tester) async {
     final controller = await pump(tester);
     expect(find.byKey(const ValueKey('flip_hint_2_3')), findsOneWidget);
-    expect(find.text('Your turn'), findsOneWidget);
-    expect(find.text('Waiting'), findsOneWidget);
+    expect(find.text('Player 1 · Your turn'), findsOneWidget);
+    expect(find.text('Player 2 · Waiting'), findsOneWidget);
 
     await tapCell(tester, 0, 0); // illegal, ignored
     expect(controller.moves, 0);
@@ -41,8 +41,9 @@ void main() {
     await tapCell(tester, 2, 3);
     expect(controller.cellAt(3, 3), DuelPlayer.bottom);
     expect(controller.currentPlayer, DuelPlayer.top);
-    expect(find.text('4'), findsOneWidget);
-    expect(find.text('1'), findsWidgets);
+    // Disc counts on the banners
+    expect(find.descendant(of: find.byKey(const ValueKey('flip_header_bottom')), matching: find.text('4')), findsOneWidget);
+    expect(find.descendant(of: find.byKey(const ValueKey('flip_header_top')), matching: find.text('1')), findsOneWidget);
 
     await tapCell(tester, 2, 2);
     expect(controller.cellAt(3, 3), DuelPlayer.top);
@@ -67,13 +68,11 @@ void main() {
     final theme = FlipTheme.fromCore(CoreGameTheme.light());
     final custom = theme.copyWith(
       colors: theme.colors.copyWith(topPlayer: theme.colors.cell),
-      textStyles: theme.textStyles.copyWith(count: theme.textStyles.status),
       dimens: theme.dimens.copyWith(cellSpacing: 1),
     );
 
     expect(custom.colors.topPlayer, theme.colors.cell);
     expect(custom.colors.bottomPlayer, theme.colors.bottomPlayer);
-    expect(custom.textStyles.count, theme.textStyles.status);
     expect(custom.dimens.cellSpacing, 1);
     expect(custom.dimens.ringWidth, theme.dimens.ringWidth);
   });

@@ -288,7 +288,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
   - Real-time duels: `isRunning => duelIsRunning`, start `tick` with `if (!tickDuel(delta)) return;` (false during countdown and pauses, and for the frame that ends the countdown)
   - Ignore player input unless `phase == DuelPhase.playing`
   - The result is `GameOutcome.won` with `data: {'winner': 'top' | 'bottom', 'rounds': {...}}`, no score
-- Put `DuelPhaseOverlay(controller: ..., player: ...)` on top of each half: ready buttons, countdown, round result, winner, rematch and the score. Pass `rules` (how to play, shown while getting ready), `roundMessage` (why the round ended, e.g. "Dodged!") and `showScore: false` when the game draws its own score
+- Put `DuelPhaseOverlay(controller: ..., player: ...)` on top of each half: ready buttons, countdown, round result, winner, rematch and the score. Pass `rules` (how to play, shown while getting ready), `roundMessage` (why the round ended, e.g. "Dodged!"), `finishMessage` (shown with the winner, e.g. a best time) and `showScore: false` when the game draws its own score
 - Mark ownership with `player.symbol` (`1` / `2`) next to the player color
 - Turn-based games on a shared board (Four Up, Boxes, Flip) don't need rounds: use `GameScreenLayout` with a `DuelTurnBanner` per player (top one in the header, rotated automatically; bottom one with the controls), and finish with `won` + `data['winner']` or `draw`
 

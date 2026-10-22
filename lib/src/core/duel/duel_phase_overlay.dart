@@ -19,6 +19,9 @@ class DuelPhaseOverlay extends StatelessWidget {
   /// Why the last round ended, from the point of view of [player] (e.g. "Dodged!")
   final String? roundMessage;
 
+  /// Shown under the winner / loser text at the end of the match (e.g. "Your best: 212 ms")
+  final String? finishMessage;
+
   /// Whether to show the score caption; off when the game draws its own score
   final bool showScore;
 
@@ -27,6 +30,7 @@ class DuelPhaseOverlay extends StatelessWidget {
     required this.player,
     this.rules = const [],
     this.roundMessage,
+    this.finishMessage,
     this.showScore = true,
     super.key,
   });
@@ -35,35 +39,38 @@ class DuelPhaseOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = CoreGameTheme.of(context);
     final message = _buildMessage(theme);
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        if (message != null)
-          Positioned.fill(
-            child: ColoredBox(
-              color: theme.colors.background.withValues(alpha: 0.85),
-              child: Center(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Padding(padding: EdgeInsets.all(theme.dimens.padding), child: message),
-                ),
+    // The score has its own row under the message, so a tall message never covers it.
+    // It is hidden while the players get ready (it would always be 0 – 0).
+    final score = showScore && controller.phase != DuelPhase.ready
+        ? IgnorePointer(
+            child: Padding(
+              padding: EdgeInsets.all(theme.dimens.padding / 2),
+              child: Text(
+                '${player.label}  ${controller.duelScore(player)} – ${controller.duelScore(player.opponent)}',
+                style: theme.textStyles.caption,
+              ),
+            ),
+          )
+        : null;
+    if (message == null) {
+      // Playing: only the score, touches go to the game
+      return Align(alignment: Alignment.bottomCenter, child: score);
+    }
+    return ColoredBox(
+      color: theme.colors.background.withValues(alpha: 0.85),
+      child: Column(
+        children: [
+          Expanded(
+            child: Center(
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Padding(padding: EdgeInsets.all(theme.dimens.padding), child: message),
               ),
             ),
           ),
-        if (showScore)
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: IgnorePointer(
-              child: Padding(
-                padding: EdgeInsets.all(theme.dimens.padding / 2),
-                child: Text(
-                  '${player.label}  ${controller.duelScore(player)} – ${controller.duelScore(player.opponent)}',
-                  style: theme.textStyles.caption,
-                ),
-              ),
-            ),
-          ),
-      ],
+          ?score,
+        ],
+      ),
     );
   }
 
@@ -113,6 +120,7 @@ class DuelPhaseOverlay extends StatelessWidget {
           children: [
             if (hasWon) Icon(Icons.emoji_events, size: 48, color: theme.playerColor(player)),
             Text(hasWon ? 'You win!' : 'You lose', textAlign: TextAlign.center, style: theme.textStyles.title),
+            if (finishMessage case final message?) Text(message, textAlign: TextAlign.center, style: theme.textStyles.body),
             _ReadyButton(
               label: 'Rematch',
               color: theme.playerColor(player),

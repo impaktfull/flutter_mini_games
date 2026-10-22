@@ -8,6 +8,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 |---|---|---|
 | Tic Tac Toe | `TicTacToeGameBuilder` | 2 |
 | Trail: draw one trail through every cell, passing the numbered checkpoints in order | `TrailGameBuilder` | 1 |
+| Hop: bounce from platform to platform and climb as high as you can | `HopGameBuilder` | 1 |
 | Minesweeper: reveal every safe cell without hitting a mine | `MinesweeperGameBuilder` | 1 |
 | Snake: eat the food to grow, without hitting the walls or yourself | `SnakeGameBuilder` | 1 |
 | 2048: slide the tiles and merge equal numbers until you reach 2048 | `TwentyFortyEightGameBuilder` | 1 |

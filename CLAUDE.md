@@ -517,6 +517,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Boxes (`lib/src/game/boxes/`)
+
+- Two-player dots and boxes on one device, id `boxes`, turn based (no game loop, no rounds): 4x4 boxes (5x5 dots), `rows` / `cols` on the controller for tests
+- `DuelPlayer.bottom` (Player 1, symbol `1`) starts, `DuelPlayer.top` (Player 2, symbol `2`); colors via `coreTheme.playerColor(player)` in `BoxesTheme.fromCore`
+- `BoxesEdge` (horizontal / vertical, row, col) is a line between two adjacent dots; every drawn line is a move (`registerMove()`), drawn edges are ignored
+- Completing the fourth side of a box claims it (one line can claim two) and gives the same player another turn; otherwise the turn passes
+- When every box is claimed: `GameOutcome.won` with `data['winner']` (`bottom` / `top`) and `data['boxes']` (`{'bottom': n, 'top': m}`), or `GameOutcome.draw` with the box counts; no score
+- Input: one `GameInputDetector(onTapAt:)` on the board; `BoxesBoardGeometry.edgeAt` maps a tap to the nearest free edge within 0.42 cells (a tap in the middle of a box draws nothing)
+- Screen: `GameScreenLayout` with a banner per player (turn / result + box count): Player 2's banner rotated 180° above the board, Player 1's banner below it; the top player's box symbols are rotated too
+- Visual style: claimed boxes filled in the player color with the symbol (never color only), lines in the player color, undrawn lines as `surface` guides, a small marker on the last drawn line
 ### Puck (`lib/src/game/puck/`)
 
 - Two-player air hockey on one device, id `puck`: drag your mallet in your own half and shoot the puck into the other goal

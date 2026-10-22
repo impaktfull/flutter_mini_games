@@ -56,6 +56,8 @@ export 'src/game/whack/game/model/whack_target.dart';
 export 'src/game/whack/style/whack_theme.dart';
 export 'src/game/reflex/game/reflex_game_builder.dart';
 export 'src/game/reflex/style/reflex_theme.dart';
+export 'src/game/slap/game/slap_game_builder.dart';
+export 'src/game/slap/style/slap_theme.dart';
 export 'src/game/tiles/game/tiles_game_builder.dart';
 export 'src/game/tiles/game/model/tiles_row.dart';
 export 'src/game/tiles/style/tiles_theme.dart';

@@ -514,6 +514,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Snatch (`lib/src/game/snatch/`)
+
+- Two-player real-time game on one device, id `snatch`: a target symbol is shown in the middle, the first player to tap the matching tile in their half scores a point
+- Built on the duel core: `GameController with RealtimeGameController, DuelGameController`, `DuelLayout` with `SnatchTarget` as `center` (the target twice, once rotated for the top player), each half a `Stack` of `SnatchHalf` and `DuelPhaseOverlay`
+- Each half shows the same 6 symbols (Material `Icons`, `SnatchSymbols`) in its own shuffled order (injectable `Random`, the halves never in the same order); the target never repeats twice in a row and is only shown while playing
+- Point mapping: the whole match is one duel round (`roundsToWin = 1`), points live in the controller; `roundWins` is overridden to return the points, so the shared overlay shows them as the score and no countdown runs between points
+- A correct tap: +1, a short pause (`revealDuration`, the tile and the center in the scorer's color, the other half's matching tile ringed), then a new target and new orders; taps during the pause are ignored, so with simultaneous taps the first one wins
+- A wrong tap: -1 (never below 0) and the half is locked for `wrongLockDuration`, so tapping every tile does not pay off
+- Every tile is its own raw `Listener` (both players can tap at once); every tap during play is a move
+- First to 7 points wins: `GameOutcome.won` with `data['winner']`, `data['points']`, `data['penalties']` (and the core's `rounds`), no score
 
 ## Testing
 

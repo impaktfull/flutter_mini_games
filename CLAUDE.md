@@ -357,6 +357,17 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Dash (`lib/src/game/dash/`)
+
+- Single-player endless runner, id `dash`: the runner stays at a fixed x, obstacles scroll in from the right
+- Real-time game (`RealtimeGameController`), world of 12 x 8 units (3:2 `GameBoard`), y up from the ground
+- Input: tap / space / up / swipe up = jump (no double jump, `registerMove()` per jump), swipe down / arrow down = duck for 0.6 s or fall fast in the air
+- Obstacles: ground blocks of 5 sizes, after distance 150 also low flyers (duck under or jump over) and high flyers (run under, do not jump)
+- Fairness: the free gap between two obstacles is at least a full jump plus reaction time at the (slightly higher) arrival speed; tests play the game with a simple bot
+- Speed starts at 7 units/s and grows by 0.1 units/s per second up to 14; exact kinematics make jumps frame-rate independent
+- Forgiving hitboxes, inset from the drawn shapes
+- Score: 10 points per world unit of distance; hitting an obstacle finishes with `GameOutcome.lost` (`data['distance']`)
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

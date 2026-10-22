@@ -53,6 +53,7 @@ Shared code lives in `lib/src/core/` and `lib/src/flutter_mini_games.dart` (the 
 - Calls `registerMove()` for every move: it counts moves and starts the timer
 - Calls `finish(outcome, score: ..., data: ...)` when the game ends: the result is stored and reported to the host
 - Calls `restartSession()` in `resetGame()` / `nextPuzzle()`
+- Calls `startSession()` to start the timer without counting a move (e.g. "Tap to start")
 - Leaving a game while playing is reported as `GameOutcome.abandoned` automatically
 - Calls `notifyListeners()` after state changes
 
@@ -125,7 +126,7 @@ class MyGameTheme extends GameTheme {
 
 **CoreGameTheme** (`CoreGameTheme.light()`, `.dark()`, `.fromMaterial(ThemeData)`, `.fromColors(...)`, `copyWith`):
 
-- Colors: `primary` / `onPrimary`, `secondary` / `onSecondary`, `background` (screen), `surface` (cells, panels), `text`, `textMuted`, `shadow` (use with alpha)
+- Colors: `primary` / `onPrimary`, `secondary` / `onSecondary`, `background` (screen), `surface` (cells, panels), `text`, `textMuted`, `error` / `onError` (mistakes), `shadow` (use with alpha)
 - Text styles: `title` (bold 24), `body` (16), `label` (bold 16), `caption` (12, muted)
 - Dimens: `radiusLarge`, `radiusSmall`, `padding`
 
@@ -247,7 +248,10 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
 - The controller mixes in `RealtimeGameController`: `isRunning` and `tick(Duration delta)`
 - The simulation lives in `tick` and is frame-rate independent: move by `speed * seconds`, never per frame
 - Wrap the playing field in `GameLoop(controller: ...)`: it only ticks while `isRunning` and the app is in the foreground, and clamps long frames to `GameLoop.maxDelta`
-- Use `GameInputDetector(onTap: ..., onSwipe: ...)` for taps, swipes and the keyboard (web/desktop)
+- Use `GameInputDetector` for all input, never your own gesture or key handling:
+  - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
+  - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
+  - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
 - Draw with `CustomPaint` using theme colors, use world coordinates (e.g. 0..1 or cells) and scale to the canvas size
 - Inject `Random` in the controller so tests are reproducible; test the controller by calling `tick` directly

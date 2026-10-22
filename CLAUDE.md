@@ -336,7 +336,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
     ];
     ```
 
-11. **Run `tool/check_tree_shaking.sh`** - it picks up the new game automatically
+11. **Run `tool/check_tree_shaking.sh <game id>`** - builds only your game's app and checks no other game is in it (CI runs the full check for every game)
 
 ## Available Core Components
 

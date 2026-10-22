@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/snatch/game/logic/snatch_game_controller.dart';
 import 'package:flutter_mini_games/src/game/snatch/widget/snatch_half.dart';
 import 'package:flutter_mini_games/src/game/snatch/widget/snatch_tile.dart';
@@ -70,7 +69,7 @@ void main() {
       await tester.pump();
     }
     expect(controller().phase, equals(DuelPhase.finished));
-    expect(find.text('🏆 You win!'), findsOneWidget);
+    expect(find.text('You win!'), findsOneWidget);
     expect(results.single.gameId, equals('snatch'));
     expect(results.single.data['winner'], equals('bottom'));
 

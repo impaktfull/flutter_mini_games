@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/tug/game/logic/tug_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tug/widget/tug_rope.dart';
 import 'package:flutter_mini_games/src/game/tug/widget/tug_side.dart';
@@ -86,7 +85,7 @@ void main() {
 
     await tapBoth(bottomTaps: 0, topTaps: TugGameController.stepsToWin);
     await tester.pump();
-    expect(find.text('🏆 You win!'), findsOneWidget);
+    expect(find.text('You win!'), findsOneWidget);
     expect(find.text('You lose'), findsOneWidget);
     expect(results.single.gameId, equals('tug'));
     expect(results.single.outcome, equals(GameOutcome.won));

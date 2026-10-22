@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/snatch/game/logic/snatch_game_controller.dart';
 import 'package:flutter_mini_games/src/game/snatch/widget/snatch_symbols.dart';
 import 'package:flutter_test/flutter_test.dart';

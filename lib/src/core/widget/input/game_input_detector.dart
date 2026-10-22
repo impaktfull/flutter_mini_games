@@ -8,6 +8,10 @@ enum GameDirection { up, down, left, right }
 ///
 /// - Tap or space/enter: [onTap] (fires on touch down for a fast response), [onRelease] when let go.
 ///   [onTapAt] also gets the local position of a touch (grids, pads), not called for keys.
+///   [onTapAt] follows one finger at a time; use [onPointerDownAt] when several fingers can
+///   tap at once (e.g. fast tile games): it reports every finger that goes down.
+/// - [onKeyConfirm]: space/enter only, never touches (e.g. drop the selected column).
+///   When set, space/enter call it instead of [onTap].
 /// - Swipe or arrow keys/WASD: [onSwipe]. Several swipes can be made in one drag unless
 ///   [repeatSwipes] is false.
 /// - When [onSwipe] is null, arrow up and W also trigger [onTap] / [onRelease] (jump games)
@@ -20,6 +24,8 @@ class GameInputDetector extends StatefulWidget {
 
   final VoidCallback? onTap;
   final ValueChanged<Offset>? onTapAt;
+  final ValueChanged<Offset>? onPointerDownAt;
+  final VoidCallback? onKeyConfirm;
   final VoidCallback? onRelease;
   final ValueChanged<GameDirection>? onSwipe;
   final ValueChanged<GameDirection?>? onHorizontalHold;
@@ -35,6 +41,8 @@ class GameInputDetector extends StatefulWidget {
     required this.child,
     this.onTap,
     this.onTapAt,
+    this.onPointerDownAt,
+    this.onKeyConfirm,
     this.onRelease,
     this.onSwipe,
     this.onHorizontalHold,
@@ -121,7 +129,14 @@ class _GameInputDetectorState extends State<GameInputDetector> {
       return KeyEventResult.handled;
     }
 
-    final isTapKey = key == LogicalKeyboardKey.space || key == LogicalKeyboardKey.enter || direction == GameDirection.up;
+    final isConfirmKey = key == LogicalKeyboardKey.space || key == LogicalKeyboardKey.enter;
+    final onKeyConfirm = widget.onKeyConfirm;
+    if (isConfirmKey && onKeyConfirm != null) {
+      if (isDown) onKeyConfirm();
+      return KeyEventResult.handled;
+    }
+
+    final isTapKey = isConfirmKey || direction == GameDirection.up;
     final onTap = widget.onTap;
     if (isTapKey && onTap != null) {
       isDown ? onTap() : widget.onRelease?.call();
@@ -138,7 +153,12 @@ class _GameInputDetectorState extends State<GameInputDetector> {
       onKeyEvent: _onKeyEvent,
       child: Listener(
         // Raw pointers: holds must not compete with taps and swipes in the gesture arena
-        onPointerDown: hasHold ? _onPointerDown : null,
+        onPointerDown: hasHold || widget.onPointerDownAt != null
+            ? (event) {
+                widget.onPointerDownAt?.call(event.localPosition);
+                if (hasHold) _onPointerDown(event);
+              }
+            : null,
         onPointerUp: hasHold ? (event) => _endHold(event.pointer) : null,
         onPointerCancel: hasHold ? (event) => _endHold(event.pointer) : null,
         child: GestureDetector(

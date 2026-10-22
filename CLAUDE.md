@@ -253,6 +253,8 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
   - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
   - `onTapAt(localPosition)` for grids and pads: one detector for the whole board, map the position to a cell
   - `autofocus: false` when a screen has more than one detector (only one may take the keyboard focus)
+  - `onPointerDownAt(localPosition)` when several fingers can tap at once (every finger counts, e.g. Tiles, Whack)
+  - `onKeyConfirm` for space/enter only (e.g. drop the selected column), touches never trigger it
   - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
   - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
@@ -281,13 +283,14 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `DuelPlayer.bottom` (Player 1, `primary`) and `DuelPlayer.top` (Player 2, `secondary`); colors via `coreTheme.playerColor(player)` / `onPlayerColor(player)`
 - `DuelLayout(side: (context, player) => ..., center: ...)`: the top half is rotated 180° for the opposite player (touch positions inside are rotated too)
 - `DuelTapArea(onTap: ...)`: every finger counts, also when both players tap at once (raw pointers); use a `Listener` for drags (e.g. mallets), pointers stay with the half they started in
-- Matches with rounds mix in `DuelGameController` (`roundsToWin`, `resetRound()`, `onRoundStarted()`, `endRound(winner)`, `rematch()`):
+- Matches with rounds mix in `DuelGameController` (`roundsToWin`, `resetRound()`, `onRoundStarted()`, `endRound(winner)`, `rematch()`; optional `duelScore(player)` for points instead of rounds, `duelResultData` for extra result data, `duelCountdownDuration` / `duelRoundOverDuration`). Never override `finish` or `roundWins`:
   - Flow: ready (both players tap) → 3-2-1 countdown → playing → round result → ... → winner + rematch
-  - Real-time duels: `isRunning => duelIsRunning`, call `tickDuel(delta)` at the start of `tick` and only simulate while `phase == DuelPhase.playing`
+  - Real-time duels: `isRunning => duelIsRunning`, start `tick` with `if (!tickDuel(delta)) return;` (false during countdown and pauses, and for the frame that ends the countdown)
   - Ignore player input unless `phase == DuelPhase.playing`
   - The result is `GameOutcome.won` with `data: {'winner': 'top' | 'bottom', 'rounds': {...}}`, no score
-- Put `DuelPhaseOverlay(controller: ..., player: ...)` on top of each half: ready buttons, countdown, round result, winner, rematch and the round score
-- Turn-based games on a shared board (Four Up, Boxes, Flip) don't need rounds: use `DuelPlayer` and its colors, show whose turn it is on both sides (the top one rotated), and finish with `won` + `data['winner']` or `draw`
+- Put `DuelPhaseOverlay(controller: ..., player: ...)` on top of each half: ready buttons, countdown, round result, winner, rematch and the score. Pass `rules` (how to play, shown while getting ready), `roundMessage` (why the round ended, e.g. "Dodged!") and `showScore: false` when the game draws its own score
+- Mark ownership with `player.symbol` (`1` / `2`) next to the player color
+- Turn-based games on a shared board (Four Up, Boxes, Flip) don't need rounds: use `GameScreenLayout` with a `DuelTurnBanner` per player (top one in the header, rotated automatically; bottom one with the controls), and finish with `won` + `data['winner']` or `draw`
 
 ## Adding a New Game - Checklist
 
@@ -358,7 +361,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `GameOverlay` - Message on top of the playing field ("Tap to start", "Game over")
 - `RealtimeGameController` / `GameLoop` - Per-frame updates for real-time games
 - `GameInputDetector` / `GameDirection` - Taps, swipes and keyboard input
-- `DuelPlayer`, `DuelLayout`, `DuelTapArea`, `DuelGameController`, `DuelPhaseOverlay` - Two players on one device
+- `DuelPlayer`, `DuelLayout`, `DuelTapArea`, `DuelGameController`, `DuelPhaseOverlay`, `DuelTurnBanner` - Two players on one device
 
 ## Existing Games
 

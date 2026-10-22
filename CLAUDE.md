@@ -361,6 +361,19 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### Sudoku (`lib/src/game/sudoku/`)
+
+- Single-player classic 9x9 sudoku, id `sudoku`, turn based (no game loop)
+- Features:
+  - `SudokuSolver`: bitmask backtracking (fewest candidates first) that solves and counts solutions
+  - `SudokuPuzzleGenerator`: random full grid, then removes givens in random order while the solution stays unique (injectable `Random`)
+  - `SudokuDifficulty`: easy / medium / hard / expert (40 / 32 / 28 / 24 target givens)
+  - Custom puzzle lists (`SudokuPuzzle.fromString('53..7....')`) OR auto-generation, `nextPuzzle()` for progression
+  - Tap a cell, then a digit on the number pad; erase and a notes (pencil marks) toggle
+  - Highlights the row/column/box and the same digits as the selected cell; wrong entries are marked and counted as mistakes; correct entries are locked
+  - Score: `basePoints - seconds - mistakes * 50`, never lower than `basePoints / 10` (base points 1000 / 1500 / 2000 / 2500 per difficulty)
+- Visual style: cells on the board background, thin cell lines and thick 3x3 box lines painted on top with solid colors
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

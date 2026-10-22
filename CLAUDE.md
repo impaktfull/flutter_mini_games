@@ -369,6 +369,34 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 - `HopPlatformGenerator` (injectable `Random`): gaps grow with the height but stay below 75% of the jump height; the reachable platform of every step is never breakable; moving and breakable platforms appear as the height grows
 - Input: `GameInputDetector(onTap: start, onHorizontalHold: steer)`; a tap or space starts without counting a move (`startSession()`), every new steering direction is a move
 - Score: max height × 100; falling below the view finishes with `GameOutcome.lost` and the score
+### Minesweeper (`lib/src/game/minesweeper/`)
+
+- Single-player puzzle, id `minesweeper`: reveal every safe cell without hitting a mine
+- `MinesweeperDifficulty` (cols x rows, mines), sized for a portrait phone: easy 8x8/10, medium 10x12/20, hard 12x16/40; switchable in the game
+- Mines are placed on the first reveal (injectable `Random`), never on the tapped cell or its neighbours, so the first tap always opens an area
+- Tap = reveal (flood fill for cells without adjacent mines), long press = flag, a flag-mode button toggles what a tap does; tapping a revealed number whose flags match reveals its neighbours (chord)
+- Header shows the remaining mines counter (mines - flags); number colours come from `MinesweeperColors.numbers` (core tokens only)
+- Lose on a mine: all mines are shown, `finish(lost)` without score. Win when all safe cells are revealed: `finish(won)`
+  - Score: `mines * 100 - seconds * 5`, never lower than `mines * 10` (`MinesweeperGameController.calculateScore`)
+- Turn based, no `GameLoop`
+### Snake (`lib/src/game/snake/`)
+
+- Single-player real-time game, id `snake`: steer the snake to the food, it grows with every bite
+- Square grid (15x15 by default, `gridSize` on the builder), the snake moves one cell per step
+- Step interval starts at 180 ms and gets 5 ms shorter per food, down to 80 ms (time accumulator in `tick`)
+- Swipes / arrow keys via `GameInputDetector`; up to 2 direction changes are queued, reversing is ignored
+- The first swipe starts the game and takes the first step right away; the snake is drawn one step behind and interpolated with `stepProgress` (head and tail glide, corners stay sharp)
+- Food spawns on a random empty cell (injectable `Random`)
+- Score: 10 points per food. Hitting a wall or itself finishes with `GameOutcome.lost` and the score; filling the board is `GameOutcome.won`
+### 2048 (`lib/src/game/twenty_forty_eight/`)
+
+- Single-player puzzle, id `twenty_forty_eight` (classes `TwentyFortyEight*`, Dart identifiers can't start with a digit)
+- 4x4 board, swipe (or arrow keys/WASD via `GameInputDetector`) to slide all tiles; equal tiles merge once per move
+- After every move that changed the board a tile spawns on a random empty cell (2 with 90%, 4 with 10%), `Random` is injectable
+- Score: sum of the merged tile values. Reaching 2048 finishes as `won`, no moves left finishes as `lost` (both with the score)
+- `initialBoard` on the controller sets up a board for tests
+- Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
+- Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
 
 ## Testing
 

@@ -361,6 +361,16 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
+### 2048 (`lib/src/game/twenty_forty_eight/`)
+
+- Single-player puzzle, id `twenty_forty_eight` (classes `TwentyFortyEight*`, Dart identifiers can't start with a digit)
+- 4x4 board, swipe (or arrow keys/WASD via `GameInputDetector`) to slide all tiles; equal tiles merge once per move
+- After every move that changed the board a tile spawns on a random empty cell (2 with 90%, 4 with 10%), `Random` is injectable
+- Score: sum of the merged tile values. Reaching 2048 finishes as `won`, no moves left finishes as `lost` (both with the score)
+- `initialBoard` on the controller sets up a board for tests
+- Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
+- Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+
 ## Testing
 
 Tests are located in `test/` and follow the same directory structure as the source.

@@ -8,6 +8,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 |---|---|---|
 | Tic Tac Toe | `TicTacToeGameBuilder` | 2 |
 | Trail: draw one trail through every cell, passing the numbered checkpoints in order | `TrailGameBuilder` | 1 |
+| 2048: slide the tiles and merge equal numbers until you reach 2048 | `TwentyFortyEightGameBuilder` | 1 |
 
 Only the games you reference are compiled into your app.
 

@@ -114,25 +114,22 @@ class HopGameController extends GameController with RealtimeGameController {
     _generatePlatforms();
   }
 
-  /// Starts the game without steering, e.g. with the space bar
+  /// Starts the game without steering (e.g. a tap or the space bar), does not count a move
   void start() {
     if (!isReady) return;
-    registerMove();
+    startSession();
     _velocityY = jumpVelocity;
     notifyListeners();
   }
 
   /// Steers left or right while held, [HopSteer.none] when released.
-  /// The first steering starts the game.
+  /// Every new steering direction counts as a move, the first one also starts the game.
   void steerTo(HopSteer steer) {
     if (_isGameOver || isFinished || steer == _steer) return;
     _steer = steer;
     if (steer != HopSteer.none) {
       _facing = steer;
-      if (isReady) {
-        start();
-        return;
-      }
+      if (isReady) start();
       registerMove();
     }
     notifyListeners();

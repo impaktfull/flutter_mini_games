@@ -191,7 +191,7 @@ void main() {
       expect(reported.single.gameId, equals(HopGameController.id));
       expect(reported.single.outcome, equals(GameOutcome.lost));
       expect(reported.single.score, equals(controller.score));
-      expect(reported.single.moves, equals(1));
+      expect(reported.single.moves, equals(0), reason: "starting without steering is not a move");
 
       // Input after game over is ignored
       controller.steerTo(HopSteer.left);

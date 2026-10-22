@@ -65,6 +65,18 @@ void main() {
     await tester.pumpWidget(const SizedBox());
   });
 
+  testWidgets('space starts the game without counting a move', (tester) async {
+    await _pumpGame(tester);
+    final controller = _controller(tester);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pump();
+    expect(controller.status, equals(GameStatus.playing));
+    expect(controller.moves, equals(0));
+
+    await tester.pumpWidget(const SizedBox());
+  });
+
   testWidgets('shows game over and plays again', (tester) async {
     await _pumpGame(tester);
     final controller = _controller(tester)..start();

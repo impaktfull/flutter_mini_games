@@ -17,14 +17,14 @@ class HopTheme extends GameTheme {
   factory HopTheme.fromCore(CoreGameTheme core) {
     return HopTheme(
       colors: HopColors(
-        background: core.colors.surface,
+        background: core.colors.background,
         character: core.colors.primary,
         characterFace: core.colors.onPrimary,
         platform: core.colors.secondary,
         movingPlatform: core.colors.textMuted,
-        breakablePlatform: core.colors.background,
+        breakablePlatform: core.colors.surface,
         breakablePlatformCrack: core.colors.textMuted,
-        steerIndicator: core.colors.background,
+        steerIndicator: core.colors.surface,
       ),
       textStyles: HopTextStyles(
         score: core.textStyles.title,

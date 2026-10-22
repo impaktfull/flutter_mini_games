@@ -455,6 +455,14 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `initialBoard` on the controller sets up a board for tests
 - Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
 - Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+### Echo (`lib/src/game/echo/`)
+
+- Single-player memory game, id `echo`: four pads light up in a sequence that grows by one every round, repeat it by tapping the pads in the same order
+- Phases (`EchoPhase`): ready → playback (input ignored) → input → playback of the next round ... → game over on the first wrong pad
+- Playback runs in `tick` (`RealtimeGameController` + `GameLoop`, so it pauses in the background): `leadIn` 700 ms, then per pad `onDurationFor(length)` lit (600 ms down to 250 ms) and `offDurationFor(length)` dark (250 ms down to 100 ms)
+- Pads in a 2x2 grid, colors `primary`, `secondary`, `error`, `textMuted` (`EchoColors.pads`), each with its own shape icon (circle, triangle, square, star) so they never differ by color alone; unlit pads blend towards `background` and scale down, a tapped pad flashes for `pressFlash`
+- The sequence uses an injectable `Random`; every pad tap is a move (`registerMove()`), tapping a pad or Start in the ready state starts the session; haptic `selectionClick` per tap
+- Score: rounds completed. A wrong pad finishes with `GameOutcome.lost` and the score (`data`: `rounds`, `sequenceLength`); the wrong pad shows a cross and the expected pad lights up
 
 ## Testing
 

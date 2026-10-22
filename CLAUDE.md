@@ -514,6 +514,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Flip (`lib/src/game/flip/`)
+
+- Two-player reversi on one device, id `flip`, turn based (no `GameLoop`, no rounds): 8x8 board, standard 4-disc start, `DuelPlayer.bottom` (Player 1) moves first
+- A move must outflank at least one line of opponent discs in any of the 8 directions; all outflanked discs flip (`flipsFor`, `movesFor`); illegal taps are ignored
+- A player without a legal move passes automatically (`passedPlayer`, shown in the banners); the game ends when neither player can move
+- `GameScreenLayout`: Player 2's turn banner in the header rotated 180°, Player 1's banner above the Reset / Play Again button; each banner shows the player, status (your turn / waiting / passed / result) and disc count
+- One `GameInputDetector(onTapAt:)` on the board maps a tap to a cell; legal moves are hinted with a small disc of the current player
+- Discs: Player 1 filled, Player 2 a ring (never color only), colors from `coreTheme.playerColor`; flips turn the disc around its vertical axis, placed discs pop in; `gameNumber` keys the discs so a reset does not animate
+- `registerMove()` per placed disc; finishes with `won` + `data['winner']` (`'bottom'` / `'top'`) or `draw`, `data['discs']` holds both disc counts, no score
+- `initialBoard` / `startingPlayer` on the controller set up positions for tests
 
 ## Testing
 

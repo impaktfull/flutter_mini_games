@@ -39,3 +39,5 @@ export 'src/game/twenty_forty_eight/style/twenty_forty_eight_theme.dart';
 export 'src/game/whack/game/whack_game_builder.dart';
 export 'src/game/whack/game/model/whack_target.dart';
 export 'src/game/whack/style/whack_theme.dart';
+export 'src/game/reflex/game/reflex_game_builder.dart';
+export 'src/game/reflex/style/reflex_theme.dart';

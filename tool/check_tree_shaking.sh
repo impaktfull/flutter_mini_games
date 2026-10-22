@@ -4,7 +4,9 @@
 # For every game it creates an app that only uses that game, builds it for the web and checks
 # that the id of every other game (`static const id` in its controller) is absent from the output.
 #
-# Usage: tool/check_tree_shaking.sh   (FLUTTER="fvm flutter" tool/check_tree_shaking.sh on CI)
+# Usage: tool/check_tree_shaking.sh [game id ...]   (FLUTTER="fvm flutter" tool/check_tree_shaking.sh on CI)
+# With game ids only the apps of those games are built (faster while developing a game);
+# every game's marker is still checked. CI runs it without arguments.
 set -euo pipefail
 
 ROOT=$(cd "$(dirname "$0")/.." && pwd)
@@ -27,6 +29,7 @@ $FLUTTER pub add flutter_mini_games --path "$ROOT" >/dev/null
 
 failed=0
 for i in "${!classes[@]}"; do
+  if [ "$#" -gt 0 ] && ! printf '%s\n' "$@" | grep -qx "${markers[$i]//\"/}"; then continue; fi
   cat > lib/main.dart <<EOF
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';

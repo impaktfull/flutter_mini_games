@@ -159,6 +159,44 @@ void main() {
       expect(taps, equals([DuelPlayer.top, DuelPlayer.bottom]));
     });
 
+    testWidgets('overlay keeps the score under the message and shows the finish message', (tester) async {
+      tester.view
+        ..physicalSize = const Size(320, 568)
+        ..devicePixelRatio = 1;
+      addTearDown(tester.view.reset);
+      final controller = _TestDuelController();
+      await tester.pumpWidget(
+        app(
+          ListenableBuilder(
+            listenable: controller,
+            builder: (context, child) => DuelLayout(
+              side: (context, player) => DuelPhaseOverlay(
+                controller: controller,
+                player: player,
+                finishMessage: 'Best: 200 ms',
+              ),
+            ),
+          ),
+        ),
+      );
+      expect(find.textContaining('0 – 0'), findsNothing, reason: 'no score while getting ready');
+
+      controller
+        ..setReady(DuelPlayer.bottom)
+        ..setReady(DuelPlayer.top)
+        ..tick(DuelGameController.countdownDuration)
+        ..win(DuelPlayer.bottom)
+        ..tick(DuelGameController.roundOverDuration)
+        ..tick(DuelGameController.countdownDuration)
+        ..win(DuelPlayer.bottom);
+      await tester.pump();
+
+      expect(find.text('Best: 200 ms'), findsNWidgets(2));
+      final rematch = tester.getRect(find.text('Rematch').last);
+      final score = tester.getRect(find.textContaining('Player 1').last);
+      expect(rematch.overlaps(score), isFalse);
+    });
+
     testWidgets('overlay walks through ready, countdown and the winner', (tester) async {
       final controller = _TestDuelController();
       await tester.pumpWidget(

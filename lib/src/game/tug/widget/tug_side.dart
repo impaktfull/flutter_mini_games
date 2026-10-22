@@ -5,6 +5,7 @@ import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
+import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/game/tug/game/logic/tug_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tug/style/tug_theme.dart';
 
@@ -12,6 +13,13 @@ import 'package:flutter_mini_games/src/game/tug/style/tug_theme.dart';
 /// other player taps at the same time. A "Tap!" hint pulses on every pull.
 class TugSide extends StatelessWidget {
   static const pulseDuration = Duration(milliseconds: 160);
+
+  /// How to play, shown while the players get ready
+  static const rules = [
+    GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap your half as fast as you can'),
+    GameHowToPlayItem(icon: Icons.flag, text: 'Pull the marker to your edge to win the round'),
+    GameHowToPlayItem(icon: Icons.emoji_events, text: 'Best of 3 rounds wins'),
+  ];
 
   final TugGameController controller;
   final DuelPlayer player;
@@ -58,7 +66,7 @@ class TugSide extends StatelessWidget {
                 : const SizedBox.expand(),
           ),
         ),
-        DuelPhaseOverlay(controller: controller, player: player),
+        DuelPhaseOverlay(controller: controller, player: player, rules: rules),
       ],
     );
   }

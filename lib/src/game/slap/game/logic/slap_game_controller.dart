@@ -190,8 +190,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
 
   @override
   void tick(Duration delta) {
-    tickDuel(delta);
-    if (!isPlaying) return;
+    if (!tickDuel(delta)) return;
     switch (_attack) {
       case SlapAttackState.waitingForHold:
         return;

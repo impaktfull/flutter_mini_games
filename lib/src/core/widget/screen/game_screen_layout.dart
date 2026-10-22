@@ -10,7 +10,7 @@ import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 /// sits below it and is reached by scrolling, so it never makes the board smaller.
 class GameScreenLayout extends StatelessWidget {
   /// Below this height the page scrolls instead of shrinking the board further
-  static const minPageHeight = 520.0;
+  static const minPageHeight = 440.0;
 
   /// Boards don't grow wider than this on tablets and desktop
   static const maxBoardWidth = 560.0;

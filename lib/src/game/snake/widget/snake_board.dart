@@ -1,0 +1,118 @@
+import 'dart:ui' show lerpDouble;
+
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/game/snake/game/logic/snake_game_controller.dart';
+import 'package:flutter_mini_games/src/game/snake/game/model/snake_cell.dart';
+import 'package:flutter_mini_games/src/game/snake/style/snake_theme.dart';
+
+/// Draws the board, the food and the snake. The snake is interpolated between two steps.
+class SnakeBoard extends StatelessWidget {
+  final SnakeGameController controller;
+
+  const SnakeBoard({
+    required this.controller,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = SnakeTheme.of(context);
+    return CustomPaint(
+      size: Size.infinite,
+      painter: _SnakePainter(
+        gridSize: controller.gridSize,
+        snake: controller.snake,
+        removedTail: controller.removedTail,
+        food: controller.food,
+        progress: controller.stepProgress,
+        colors: theme.colors,
+        dimens: theme.dimens,
+      ),
+    );
+  }
+}
+
+class _SnakePainter extends CustomPainter {
+  final int gridSize;
+  final List<SnakeCell> snake;
+  final SnakeCell? removedTail;
+  final SnakeCell? food;
+  final double progress;
+  final SnakeColors colors;
+  final SnakeDimens dimens;
+
+  _SnakePainter({
+    required this.gridSize,
+    required this.snake,
+    required this.removedTail,
+    required this.food,
+    required this.progress,
+    required this.colors,
+    required this.dimens,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final cellSize = size.width / gridSize;
+    Offset center(double x, double y) => Offset((x + 0.5) * cellSize, (y + 0.5) * cellSize);
+    Offset lerpCell(SnakeCell from, SnakeCell to) => center(lerpDouble(from.x, to.x, progress)!, lerpDouble(from.y, to.y, progress)!);
+
+    // Checkerboard
+    canvas.drawRect(Offset.zero & size, Paint()..color = colors.cell);
+    final alternate = Paint()..color = colors.cellAlternate;
+    for (var y = 0; y < gridSize; y++) {
+      for (var x = 0; x < gridSize; x++) {
+        if ((x + y).isOdd) canvas.drawRect(Rect.fromLTWH(x * cellSize, y * cellSize, cellSize, cellSize), alternate);
+      }
+    }
+
+    // Food
+    final food = this.food;
+    if (food != null) {
+      canvas.drawCircle(center(food.x.toDouble(), food.y.toDouble()), cellSize * dimens.foodSize / 2, Paint()..color = colors.food);
+    }
+
+    // Body: one stroked path, so segments never overlap each other
+    final headPosition = lerpCell(snake[1], snake[0]);
+    final path = Path()..moveTo(headPosition.dx, headPosition.dy);
+    for (final cell in snake.skip(1)) {
+      final point = center(cell.x.toDouble(), cell.y.toDouble());
+      path.lineTo(point.dx, point.dy);
+    }
+    final removedTail = this.removedTail;
+    if (removedTail != null) {
+      final tail = lerpCell(removedTail, snake.last);
+      path.lineTo(tail.dx, tail.dy);
+    }
+    canvas.drawPath(
+      path,
+      Paint()
+        ..color = colors.snakeBody
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = cellSize * dimens.snakeThickness
+        ..strokeCap = StrokeCap.round
+        ..strokeJoin = StrokeJoin.round,
+    );
+
+    // Head with eyes looking in the direction of movement
+    canvas.drawCircle(headPosition, cellSize * dimens.headSize / 2, Paint()..color = colors.snakeHead);
+    final forward = Offset((snake[0].x - snake[1].x).toDouble(), (snake[0].y - snake[1].y).toDouble());
+    final side = Offset(-forward.dy, forward.dx);
+    final eyePaint = Paint()..color = colors.snakeEye;
+    for (final sign in const [-1.0, 1.0]) {
+      final eye = headPosition + forward * cellSize * 0.18 + side * sign * cellSize * 0.2;
+      canvas.drawCircle(eye, cellSize * 0.09, eyePaint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _SnakePainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.food != food ||
+      oldDelegate.removedTail != removedTail ||
+      oldDelegate.gridSize != gridSize ||
+      oldDelegate.colors != colors ||
+      oldDelegate.dimens != dimens ||
+      !listEquals(oldDelegate.snake, snake);
+}

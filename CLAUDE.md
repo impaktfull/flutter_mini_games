@@ -514,6 +514,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Slap (`lib/src/game/slap/`)
+
+- Two-player palm slap on one device, id `slap`, real-time (`RealtimeGameController` + `DuelGameController` + `GameLoop`), first to 5 points (`roundsToWin = 5`, one slap attempt per round)
+- `DuelPlayer.bottom` attacks first, roles swap every round (attacker from the number of rounds played); role labels "Attack" / "Defend" with an icon, so roles are never color-only
+- Defender: holds the target (raw `Listener` down/up/cancel, pointers tracked per player, also during the countdown); the attacker can only attack while the defender holds ("Hold your target"); lifting before an attack has no penalty
+- Attacker: Slap and Fake buttons (`DuelTapArea`). Both raise the hand for a random wind-up of 250-700 ms (injectable `Random`), so they look the same; then a slap comes down in `strikeDuration` (350 ms), a fake goes back in `retractDuration` (250 ms). `maxFakes` (3) fakes per round
+- Lifting during a slap (wind-up or strike) = dodged, point for the defender; still holding when it lands = slapped, point for the attacker; lifting during a fake = flinched, point for the attacker; no slap within `attackTimeLimit` (6 s of holding, fakes excluded) = too slow, point for the defender (`SlapRoundEnd`)
+- Stages in `tick` are event based (the rest of a frame goes to the next stage), so results don't depend on how `tick` is split; `handPosition` / `handLift` drive the drawing
+- The attacker's hand is drawn with `CustomPaint` (solid outline pass, then fill pass) in the attacker's player color on the defender's half, coming from the divider; the target fills with the defender's color and shows "Holding"
+- Result: `GameOutcome.won`, `data['winner']` and `data['rounds']`, no score
 
 ## Testing
 

@@ -4,6 +4,7 @@ import 'package:flutter_mini_games/src/core/widget/components/button.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/flit/game/logic/flit_game_controller.dart';
 import 'package:flutter_mini_games/src/game/flit/screen/flit_header.dart';
@@ -31,24 +32,27 @@ class FlitScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Flit',
-        child: Column(
-          spacing: 12,
-          children: [
-            FlitHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Expanded(child: FlitBoard(controller: controller)),
-            GameButton(
-              onTap: controller.isReady ? null : controller.resetGame,
-              icon: Icons.refresh,
-              label: controller.isGameOver ? 'Play again' : 'Restart',
-            ),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap to flap'),
-                GameHowToPlayItem(icon: Icons.view_column, text: 'Fly through the gaps'),
-              ],
-            ),
-          ],
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              FlitHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          boardAspectRatio: FlitGameController.worldWidth,
+          board: FlitBoard(controller: controller),
+          controls: GameButton(
+            onTap: controller.isReady ? null : controller.resetGame,
+            icon: Icons.refresh,
+            label: controller.isGameOver ? 'Play again' : 'Restart',
+          ),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap, space or up\nto flap'),
+              GameHowToPlayItem(icon: Icons.view_column, text: 'Fly through the gaps\nbetween the columns'),
+            ],
+          ),
         ),
       ),
     );

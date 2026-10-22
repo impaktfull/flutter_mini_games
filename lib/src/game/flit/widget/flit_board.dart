@@ -97,17 +97,10 @@ class _FlitBoardState extends State<FlitBoard> with SingleTickerProviderStateMix
                     ),
                   ),
                 ),
-              // Scales the message down on small boards
               if (controller.isReady)
-                const FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: GameOverlay(title: 'Tap to start', subtitle: 'Tap, space or ↑ to flap'),
-                )
+                const GameOverlay(title: 'Tap to start', subtitle: 'Tap, space or ↑ to flap')
               else if (controller.isGameOver)
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: GameOverlay(title: 'Game over', subtitle: 'You passed ${controller.score} ${controller.score == 1 ? 'column' : 'columns'}'),
-                ),
+                GameOverlay(title: 'Game over', subtitle: 'You passed ${controller.score} ${controller.score == 1 ? 'column' : 'columns'}'),
             ],
           ),
         ),

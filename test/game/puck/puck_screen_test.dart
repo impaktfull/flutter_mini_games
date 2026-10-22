@@ -31,6 +31,9 @@ void main() {
     final controller = _controller(tester);
 
     expect(find.text('Tap when ready'), findsNWidgets(2));
+    // Rules on both halves, the table paints the score itself
+    expect(find.text('How to play'), findsNWidgets(2));
+    expect(find.textContaining(' – '), findsNothing);
     await tester.tap(find.text('Tap when ready').first);
     await tester.tap(find.text('Tap when ready').last);
     await tester.pump();
@@ -69,6 +72,14 @@ void main() {
     await top.up();
     await bottom.up();
     await tester.pump();
+
+    // A goal for the bottom player, each half explains the round from its own view
+    controller.debugSetPuck(const Offset(PuckGameController.width / 2, 0.02), const Offset(0, -2));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(controller.phase, equals(DuelPhase.roundOver));
+    expect(find.text('Goal!'), findsOneWidget);
+    expect(find.text('Conceded'), findsOneWidget);
+    expect(find.textContaining(' – '), findsNothing);
     expect(tester.takeException(), isNull);
   });
 }

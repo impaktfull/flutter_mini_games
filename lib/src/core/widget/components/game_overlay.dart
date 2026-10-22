@@ -19,20 +19,24 @@ class GameOverlay extends StatelessWidget {
     final subtitle = this.subtitle;
     return IgnorePointer(
       child: Center(
-        child: Container(
-          margin: EdgeInsets.all(theme.dimens.padding),
-          padding: EdgeInsets.symmetric(horizontal: theme.dimens.padding * 1.5, vertical: theme.dimens.padding),
-          decoration: BoxDecoration(
-            color: theme.colors.background.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(theme.dimens.radiusLarge),
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            spacing: 4,
-            children: [
-              Text(title, textAlign: TextAlign.center, style: theme.textStyles.title),
-              if (subtitle != null) Text(subtitle, textAlign: TextAlign.center, style: theme.textStyles.body),
-            ],
+        // Scales down on small boards instead of overflowing
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Container(
+            margin: EdgeInsets.all(theme.dimens.padding),
+            padding: EdgeInsets.symmetric(horizontal: theme.dimens.padding * 1.5, vertical: theme.dimens.padding),
+            decoration: BoxDecoration(
+              color: theme.colors.background.withValues(alpha: 0.9),
+              borderRadius: BorderRadius.circular(theme.dimens.radiusLarge),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 4,
+              children: [
+                Text(title, textAlign: TextAlign.center, style: theme.textStyles.title),
+                if (subtitle != null) Text(subtitle, textAlign: TextAlign.center, style: theme.textStyles.body),
+              ],
+            ),
           ),
         ),
       ),

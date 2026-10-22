@@ -57,6 +57,8 @@ class CoreGameTheme extends GameTheme {
         surface: scheme.surfaceContainerHighest,
         text: scheme.onSurface,
         textMuted: scheme.onSurfaceVariant,
+        error: scheme.error,
+        onError: scheme.onError,
         shadow: scheme.shadow,
       ),
       fontFamily: theme.textTheme.bodyMedium?.fontFamily,
@@ -99,6 +101,12 @@ class CoreGameColors {
   /// Secondary text color (captions, labels)
   final Color textMuted;
 
+  /// Mistakes and wrong moves
+  final Color error;
+
+  /// Text and icons on [error]
+  final Color onError;
+
   /// Shadow color, used with alpha
   final Color shadow;
 
@@ -111,6 +119,8 @@ class CoreGameColors {
     required this.surface,
     required this.text,
     required this.textMuted,
+    required this.error,
+    required this.onError,
     required this.shadow,
   });
 
@@ -123,6 +133,8 @@ class CoreGameColors {
     surface: Color(0xFFF5F5F5),
     text: Color(0xFF000000),
     textMuted: Color(0xFF6B6B6B),
+    error: Color(0xFFD32F2F),
+    onError: Color(0xFFFFFFFF),
     shadow: Color(0xFF000000),
   );
 
@@ -135,6 +147,8 @@ class CoreGameColors {
     surface: Color(0xFF242424),
     text: Color(0xFFFFFFFF),
     textMuted: Color(0xFFA0A0A0),
+    error: Color(0xFFFF6B6B),
+    onError: Color(0xFF1A1A1A),
     shadow: Color(0xFF000000),
   );
 
@@ -147,6 +161,8 @@ class CoreGameColors {
     Color? surface,
     Color? text,
     Color? textMuted,
+    Color? error,
+    Color? onError,
     Color? shadow,
   }) => CoreGameColors(
     primary: primary ?? this.primary,
@@ -157,6 +173,8 @@ class CoreGameColors {
     surface: surface ?? this.surface,
     text: text ?? this.text,
     textMuted: textMuted ?? this.textMuted,
+    error: error ?? this.error,
+    onError: onError ?? this.onError,
     shadow: shadow ?? this.shadow,
   );
 }

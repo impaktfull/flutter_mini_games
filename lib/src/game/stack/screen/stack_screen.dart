@@ -8,6 +8,7 @@ import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
 import 'package:flutter_mini_games/src/core/widget/input/game_input_detector.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/stack/game/logic/stack_game_controller.dart';
 import 'package:flutter_mini_games/src/game/stack/screen/stack_header.dart';
@@ -35,43 +36,41 @@ class StackScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Stack',
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 12,
-          children: [
-            StackHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Flexible(
-              fit: FlexFit.loose,
-              child: GameBoard(
-                aspectRatio: StackGameController.aspectRatio,
-                child: GameLoop(
-                  controller: controller,
-                  child: GameInputDetector(
-                    onTap: controller.onTap,
-                    child: Stack(
-                      fit: StackFit.expand,
-                      children: [
-                        StackTower(controller: controller),
-                        if (controller.isReady) const GameOverlay(title: 'Tap to start', subtitle: 'Build the highest tower'),
-                        if (controller.isGameOver) GameOverlay(title: 'Game over', subtitle: 'Score: ${controller.score}'),
-                      ],
-                    ),
-                  ),
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              StackHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          boardAspectRatio: StackGameController.aspectRatio,
+          board: GameBoard(
+            aspectRatio: StackGameController.aspectRatio,
+            child: GameLoop(
+              controller: controller,
+              child: GameInputDetector(
+                onTap: controller.onTap,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    StackTower(controller: controller),
+                    if (controller.isReady) const GameOverlay(title: 'Tap to start', subtitle: 'Build the highest tower'),
+                    if (controller.isGameOver) GameOverlay(title: 'Game over', subtitle: 'Score: ${controller.score}'),
+                  ],
                 ),
               ),
             ),
-            if (controller.isGameOver)
-              GameButton(onTap: controller.resetGame, icon: Icons.replay, label: 'Play again')
-            else
-              GameButton(onTap: controller.isRunning ? controller.resetGame : null, icon: Icons.refresh, label: 'Restart'),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap to drop,\noverhang is cut off'),
-                GameHowToPlayItem(icon: Icons.star, text: 'Perfect drops\ngive a bonus'),
-              ],
-            ),
-          ],
+          ),
+          controls: controller.isGameOver
+              ? GameButton(onTap: controller.resetGame, icon: Icons.replay, label: 'Play again')
+              : GameButton(onTap: controller.isRunning ? controller.resetGame : null, icon: Icons.refresh, label: 'Restart'),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap to drop,\noverhang is cut off'),
+              GameHowToPlayItem(icon: Icons.star, text: 'Perfect drops\ngive a bonus'),
+            ],
+          ),
         ),
       ),
     );

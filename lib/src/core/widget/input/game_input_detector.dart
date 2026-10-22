@@ -6,7 +6,8 @@ enum GameDirection { up, down, left, right }
 
 /// Shared input for all games: taps, swipes, holds and the keyboard (web and desktop).
 ///
-/// - Tap or space/enter: [onTap] (fires on touch down for a fast response), [onRelease] when let go
+/// - Tap or space/enter: [onTap] (fires on touch down for a fast response), [onRelease] when let go.
+///   [onTapAt] also gets the local position of a touch (grids, pads), not called for keys.
 /// - Swipe or arrow keys/WASD: [onSwipe]. Several swipes can be made in one drag unless
 ///   [repeatSwipes] is false.
 /// - When [onSwipe] is null, arrow up and W also trigger [onTap] / [onRelease] (jump games)
@@ -18,21 +19,27 @@ class GameInputDetector extends StatefulWidget {
   static const swipeThreshold = 24.0;
 
   final VoidCallback? onTap;
+  final ValueChanged<Offset>? onTapAt;
   final VoidCallback? onRelease;
   final ValueChanged<GameDirection>? onSwipe;
   final ValueChanged<GameDirection?>? onHorizontalHold;
 
   /// Whether one drag can report several swipes (Snake) or only the first (2048)
   final bool repeatSwipes;
+
+  /// Whether this detector takes the keyboard focus; false when a screen has several
+  final bool autofocus;
   final Widget child;
 
   const GameInputDetector({
     required this.child,
     this.onTap,
+    this.onTapAt,
     this.onRelease,
     this.onSwipe,
     this.onHorizontalHold,
     this.repeatSwipes = true,
+    this.autofocus = true,
     super.key,
   });
 
@@ -127,7 +134,7 @@ class _GameInputDetectorState extends State<GameInputDetector> {
   Widget build(BuildContext context) {
     final hasHold = widget.onHorizontalHold != null;
     return Focus(
-      autofocus: true,
+      autofocus: widget.autofocus,
       onKeyEvent: _onKeyEvent,
       child: Listener(
         // Raw pointers: holds must not compete with taps and swipes in the gesture arena
@@ -136,7 +143,12 @@ class _GameInputDetectorState extends State<GameInputDetector> {
         onPointerCancel: hasHold ? (event) => _endHold(event.pointer) : null,
         child: GestureDetector(
           behavior: HitTestBehavior.opaque,
-          onTapDown: widget.onTap == null ? null : (_) => widget.onTap!(),
+          onTapDown: widget.onTap == null && widget.onTapAt == null
+              ? null
+              : (details) {
+                  widget.onTap?.call();
+                  widget.onTapAt?.call(details.localPosition);
+                },
           onTapUp: widget.onRelease == null ? null : (_) => widget.onRelease!(),
           onTapCancel: widget.onRelease,
           onPanStart: widget.onSwipe == null

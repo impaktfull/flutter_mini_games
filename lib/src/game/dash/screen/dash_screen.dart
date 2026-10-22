@@ -4,6 +4,7 @@ import 'package:flutter_mini_games/src/core/widget/components/button.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
+import 'package:flutter_mini_games/src/core/widget/screen/game_screen_layout.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/dash/game/logic/dash_game_controller.dart';
 import 'package:flutter_mini_games/src/game/dash/screen/dash_header.dart';
@@ -31,24 +32,25 @@ class DashScreen extends StatelessWidget {
       },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Dash',
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 24,
-          children: [
-            DashHeader(controller: controller),
-            GameStatsBar(controller: controller),
-            Flexible(child: DashField(controller: controller)),
-            if (controller.isFinished)
-              GameButton(onTap: controller.resetGame, icon: Icons.replay, label: 'Play again')
-            else
-              GameButton(onTap: controller.isRunning ? controller.resetGame : null, icon: Icons.refresh, label: 'Restart'),
-            const GameHowToPlay(
-              items: [
-                GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap, space or up\nto jump'),
-                GameHowToPlayItem(icon: Icons.swipe_down, text: 'Swipe down to duck\nor drop faster'),
-              ],
-            ),
-          ],
+        child: GameScreenLayout(
+          header: Column(
+            spacing: 8,
+            children: [
+              DashHeader(controller: controller),
+              GameStatsBar(controller: controller),
+            ],
+          ),
+          boardAspectRatio: DashField.aspectRatio,
+          board: DashField(controller: controller),
+          controls: controller.isFinished
+              ? GameButton(onTap: controller.resetGame, icon: Icons.replay, label: 'Play again')
+              : GameButton(onTap: controller.isRunning ? controller.resetGame : null, icon: Icons.refresh, label: 'Restart'),
+          footer: const GameHowToPlay(
+            items: [
+              GameHowToPlayItem(icon: Icons.touch_app, text: 'Tap, space or up\nto jump'),
+              GameHowToPlayItem(icon: Icons.swipe_down, text: 'Swipe down to duck\nor drop faster'),
+            ],
+          ),
         ),
       ),
     );

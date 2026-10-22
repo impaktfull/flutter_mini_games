@@ -17,6 +17,10 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Snake: eat the food to grow, without hitting the walls or yourself | `SnakeGameBuilder` | 1 |
 | 2048: slide the tiles and merge equal numbers until you reach 2048 | `TwentyFortyEightGameBuilder` | 1 |
 | Code: crack the hidden code of 4 symbols in 8 tries | `CodeGameBuilder` | 1 |
+| Echo: repeat the growing sequence of flashing pads | `EchoGameBuilder` | 1 |
+| Pairs: flip two cards at a time and find all matching pairs | `PairsGameBuilder` | 1 |
+| Whack: tap the critters before they hide, skip the spiky decoys | `WhackGameBuilder` | 1 |
+| Reflex: tap as soon as the color changes and measure your reaction time | `ReflexGameBuilder` | 1 |
 
 Only the games you reference are compiled into your app.
 

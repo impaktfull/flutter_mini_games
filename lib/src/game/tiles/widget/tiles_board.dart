@@ -4,13 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_board.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_overlay.dart';
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
+import 'package:flutter_mini_games/src/core/widget/input/game_input_detector.dart';
 import 'package:flutter_mini_games/src/game/tiles/game/logic/tiles_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tiles/game/model/tiles_row.dart';
 import 'package:flutter_mini_games/src/game/tiles/style/tiles_theme.dart';
 
 /// Playing field of Tiles: runs the game loop, handles touches and draws the rows.
 ///
-/// Uses raw pointer events so every finger counts, also when two tiles are tapped at once.
+/// Every finger that goes down counts ([GameInputDetector.onPointerDownAt]), also when two
+/// tiles are tapped at once.
 class TilesBoard extends StatelessWidget {
   final TilesGameController controller;
 
@@ -29,9 +31,8 @@ class TilesBoard extends StatelessWidget {
         child: LayoutBuilder(
           builder: (context, constraints) {
             final size = constraints.biggest;
-            return Listener(
-              behavior: HitTestBehavior.opaque,
-              onPointerDown: (event) => _onPointerDown(event.localPosition, size),
+            return GameInputDetector(
+              onPointerDownAt: (position) => _onPointerDown(position, size),
               child: Stack(
                 fit: StackFit.expand,
                 children: [

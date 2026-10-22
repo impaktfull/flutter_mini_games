@@ -9,9 +9,6 @@ import 'package:flutter_mini_games/src/game/boxes/game/model/boxes_board_geometr
 import 'package:flutter_mini_games/src/game/boxes/game/model/boxes_edge.dart';
 import 'package:flutter_mini_games/src/game/boxes/style/boxes_theme.dart';
 
-/// Symbol of [player] in the boxes they claimed and in their banner
-String boxesSymbol(DuelPlayer player) => player == DuelPlayer.bottom ? '1' : '2';
-
 /// The dots, lines and claimed boxes. A tap between two dots draws the nearest free line.
 class BoxesBoard extends StatelessWidget {
   final BoxesGameController controller;
@@ -132,7 +129,7 @@ class _BoxesPainter extends CustomPainter {
     final style = theme.textStyles.boxSymbol;
     final painter = TextPainter(
       text: TextSpan(
-        text: boxesSymbol(owner),
+        text: owner.symbol,
         style: style.copyWith(
           color: theme.onPlayerColor(owner),
           fontSize: min(style.fontSize ?? 24, rect.shortestSide * 0.6),

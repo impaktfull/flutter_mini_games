@@ -23,16 +23,11 @@ class BoxesTheme extends GameTheme {
       onBottomPlayer: core.onPlayerColor(DuelPlayer.bottom),
       topPlayer: core.playerColor(DuelPlayer.top),
       onTopPlayer: core.onPlayerColor(DuelPlayer.top),
-      banner: core.colors.surface,
-      onBanner: core.colors.text,
     );
     return BoxesTheme(
       colors: colors,
       textStyles: BoxesTextStyles(
         boxSymbol: core.textStyles.title,
-        bannerLabel: core.textStyles.label,
-        bannerStatus: core.textStyles.caption,
-        bannerScore: core.textStyles.title,
       ),
       dimens: BoxesDimens(
         dotRadius: 6,
@@ -42,10 +37,6 @@ class BoxesTheme extends GameTheme {
         boardInset: 20,
         boxInset: 6,
         boxRadius: core.dimens.radiusSmall,
-        bannerRadius: core.dimens.radiusLarge,
-        bannerPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-        bannerSymbolSize: 28,
-        bannerBorderWidth: 2,
       ),
     );
   }
@@ -60,7 +51,7 @@ class BoxesTheme extends GameTheme {
     dimens: dimens ?? this.dimens,
   );
 
-  /// Color of [player]'s lines, boxes and banner
+  /// Color of [player]'s lines and boxes
   Color playerColor(DuelPlayer player) => player == DuelPlayer.bottom ? colors.bottomPlayer : colors.topPlayer;
 
   /// Text and symbols on [playerColor]
@@ -81,10 +72,6 @@ class BoxesColors {
   final Color topPlayer;
   final Color onTopPlayer;
 
-  /// Banner of the player who is waiting
-  final Color banner;
-  final Color onBanner;
-
   const BoxesColors({
     required this.dot,
     required this.guide,
@@ -92,8 +79,6 @@ class BoxesColors {
     required this.onBottomPlayer,
     required this.topPlayer,
     required this.onTopPlayer,
-    required this.banner,
-    required this.onBanner,
   });
 
   BoxesColors copyWith({
@@ -103,8 +88,6 @@ class BoxesColors {
     Color? onBottomPlayer,
     Color? topPlayer,
     Color? onTopPlayer,
-    Color? banner,
-    Color? onBanner,
   }) => BoxesColors(
     dot: dot ?? this.dot,
     guide: guide ?? this.guide,
@@ -112,35 +95,21 @@ class BoxesColors {
     onBottomPlayer: onBottomPlayer ?? this.onBottomPlayer,
     topPlayer: topPlayer ?? this.topPlayer,
     onTopPlayer: onTopPlayer ?? this.onTopPlayer,
-    banner: banner ?? this.banner,
-    onBanner: onBanner ?? this.onBanner,
   );
 }
 
 class BoxesTextStyles {
   /// Player symbol in a claimed box, colored with the player's on-color
   final TextStyle boxSymbol;
-  final TextStyle bannerLabel;
-  final TextStyle bannerStatus;
-  final TextStyle bannerScore;
 
   const BoxesTextStyles({
     required this.boxSymbol,
-    required this.bannerLabel,
-    required this.bannerStatus,
-    required this.bannerScore,
   });
 
   BoxesTextStyles copyWith({
     TextStyle? boxSymbol,
-    TextStyle? bannerLabel,
-    TextStyle? bannerStatus,
-    TextStyle? bannerScore,
   }) => BoxesTextStyles(
     boxSymbol: boxSymbol ?? this.boxSymbol,
-    bannerLabel: bannerLabel ?? this.bannerLabel,
-    bannerStatus: bannerStatus ?? this.bannerStatus,
-    bannerScore: bannerScore ?? this.bannerScore,
   );
 }
 
@@ -158,12 +127,6 @@ class BoxesDimens {
   /// Space between a claimed box fill and its lines
   final double boxInset;
   final double boxRadius;
-  final double bannerRadius;
-  final EdgeInsets bannerPadding;
-
-  /// Size of the player symbol in the banner
-  final double bannerSymbolSize;
-  final double bannerBorderWidth;
 
   const BoxesDimens({
     required this.dotRadius,
@@ -173,10 +136,6 @@ class BoxesDimens {
     required this.boardInset,
     required this.boxInset,
     required this.boxRadius,
-    required this.bannerRadius,
-    required this.bannerPadding,
-    required this.bannerSymbolSize,
-    required this.bannerBorderWidth,
   });
 
   BoxesDimens copyWith({
@@ -187,10 +146,6 @@ class BoxesDimens {
     double? boardInset,
     double? boxInset,
     double? boxRadius,
-    double? bannerRadius,
-    EdgeInsets? bannerPadding,
-    double? bannerSymbolSize,
-    double? bannerBorderWidth,
   }) => BoxesDimens(
     dotRadius: dotRadius ?? this.dotRadius,
     lineWidth: lineWidth ?? this.lineWidth,
@@ -199,9 +154,5 @@ class BoxesDimens {
     boardInset: boardInset ?? this.boardInset,
     boxInset: boxInset ?? this.boxInset,
     boxRadius: boxRadius ?? this.boxRadius,
-    bannerRadius: bannerRadius ?? this.bannerRadius,
-    bannerPadding: bannerPadding ?? this.bannerPadding,
-    bannerSymbolSize: bannerSymbolSize ?? this.bannerSymbolSize,
-    bannerBorderWidth: bannerBorderWidth ?? this.bannerBorderWidth,
   );
 }

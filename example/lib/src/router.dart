@@ -10,5 +10,8 @@ Route<void> onGenerateRoute(RouteSettings settings) {
       return MaterialPageRoute(settings: settings, builder: game.build);
     }
   }
-  return MaterialPageRoute(settings: const RouteSettings(name: '/'), builder: (context) => const HomeScreen());
+  return MaterialPageRoute(
+    settings: const RouteSettings(name: '/'),
+    builder: (context) => const HomeScreen(),
+  );
 }

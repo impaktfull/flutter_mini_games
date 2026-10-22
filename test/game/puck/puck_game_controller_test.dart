@@ -243,6 +243,7 @@ void main() {
       expect(result.score, isNull);
       expect(result.data['winner'], equals('top'));
       expect(result.data['rounds'], equals({'bottom': 1, 'top': 5}));
+      expect(result.data['goals'], equals({'bottom': 1, 'top': 5}));
 
       // Nothing moves after the match
       final puck = controller.puck;

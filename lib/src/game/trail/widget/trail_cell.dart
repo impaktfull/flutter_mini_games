@@ -30,7 +30,7 @@ class TrailCell extends StatelessWidget {
           margin: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             color: theme.colors.cellEmpty,
-            borderRadius: BorderRadius.circular(8),
+            borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
           ),
           child: CustomPaint(
             painter: _TrailCellPainter(
@@ -65,7 +65,7 @@ class TrailCell extends StatelessWidget {
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-              color: theme.colors.shadow.withValues(alpha: 0.2),
+              color: theme.colors.gridShadow.withValues(alpha: 0.2),
               blurRadius: 4,
               offset: const Offset(0, 2),
             ),
@@ -74,7 +74,7 @@ class TrailCell extends StatelessWidget {
         child: Center(
           child: Text(
             checkpointNumber.toString(),
-            style: theme.textStyles.checkpointNumber,
+            style: isCompleted || isCurrentTarget ? theme.textStyles.checkpointNumberHighlighted : theme.textStyles.checkpointNumber,
           ),
         ),
       ),

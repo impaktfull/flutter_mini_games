@@ -14,9 +14,10 @@ class GameThemeProvider<T extends GameTheme> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Provider<T>(
-      create: (context) => theme,
-      child: builder(context, theme),
+    // .value so a new theme (e.g. after a brightness change) reaches the game
+    return Provider<T>.value(
+      value: theme,
+      child: Builder(builder: (context) => builder(context, theme)),
     );
   }
 }

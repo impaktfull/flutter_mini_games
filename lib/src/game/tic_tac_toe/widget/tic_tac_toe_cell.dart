@@ -14,56 +14,35 @@ class TicTacToeCell extends StatelessWidget {
     super.key,
   });
 
+  bool get _isX => value == 'X';
+
   @override
   Widget build(BuildContext context) {
-    final valueX = value == "X";
     return GameThemeBuilder<TicTacToeTheme>(
-      builder: (context, theme) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          decoration: BoxDecoration(
-            color: _getCellBackground(theme),
-            borderRadius: BorderRadius.circular(8),
-            border: isWinningCell
-                ? Border.all(
-                    color: (valueX ? theme.colors.cellXWinningBorder : theme.colors.cellOWinningBorder),
-                    width: 2,
-                  )
-                : null,
+      builder: (context, theme) {
+        final playerColor = _isX ? theme.colors.playerX : theme.colors.playerO;
+        return GestureDetector(
+          onTap: onTap,
+          child: Container(
+            decoration: BoxDecoration(
+              color: isWinningCell ? playerColor : theme.colors.cellBackground,
+              borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
+              border: isWinningCell ? Border.all(color: playerColor, width: theme.dimens.winningBorderWidth) : null,
+            ),
+            margin: const EdgeInsets.all(2),
+            child: Center(
+              child: value != null ? Text(value!, style: _getTextStyle(theme)) : null,
+            ),
           ),
-          margin: const EdgeInsets.all(2),
-          child: Center(
-            child: value != null
-                ? Text(
-                    value!,
-                    style: _getTextStyle(theme),
-                  )
-                : null,
-          ),
-        ),
-      ),
+        );
+      },
     );
   }
 
-  Color? _getCellBackground(TicTacToeTheme theme) {
-    final valueX = value == "X";
+  TextStyle _getTextStyle(TicTacToeTheme theme) {
     if (isWinningCell) {
-      if (valueX) {
-        return theme.colors.cellXWinningBackground;
-      }
-      return theme.colors.cellOWinningBackground;
+      return _isX ? theme.textStyles.cellXWinning : theme.textStyles.cellOWinning;
     }
-    return theme.colors.cellBackground;
-  }
-
-  TextStyle? _getTextStyle(TicTacToeTheme theme) {
-    final valueX = value == "X";
-    if (isWinningCell) {
-      if (valueX) {
-        return theme.textStyles.cellXWinning;
-      }
-      return theme.textStyles.cellOWinning;
-    }
-    return valueX ? theme.textStyles.cellX : theme.textStyles.cellO;
+    return _isX ? theme.textStyles.cellX : theme.textStyles.cellO;
   }
 }

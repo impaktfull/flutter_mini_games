@@ -28,14 +28,21 @@ class GameButton extends StatelessWidget {
             ),
             decoration: BoxDecoration(
               color: theme.colors.primary,
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(theme.dimens.radiusSmall),
             ),
-            child: Text(
-              label,
-              style: const TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              spacing: 8,
+              children: [
+                Icon(icon, size: 18, color: theme.colors.onPrimary),
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textStyles.label.copyWith(color: theme.colors.onPrimary),
+                  ),
+                ),
+              ],
             ),
           ),
         ),

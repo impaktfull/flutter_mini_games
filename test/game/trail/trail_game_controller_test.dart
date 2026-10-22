@@ -1,3 +1,4 @@
+import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 import 'package:flutter_mini_games/src/game/trail/game/logic/trail_game_controller.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_direction.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_puzzle.dart';
@@ -34,17 +35,21 @@ void main() {
       }
 
       expect(controller.isWon, isTrue);
-      expect(controller.isGameOver, isTrue);
+      expect(controller.isFinished, isTrue);
       expect(controller.canUndo, isFalse);
+      expect(controller.result?.outcome, equals(GameOutcome.won));
+      expect(controller.result?.moves, equals(snakeSolution.length));
+      expect(controller.result?.score, greaterThan(0));
     });
 
-    test('is game over without winning when stuck', () {
+    test('is stuck without finishing the game when no move is left', () {
       final controller = createController();
       for (final (row, col) in [(0, 1), (1, 1), (1, 2), (0, 2)]) {
         controller.moveTo(row, col);
       }
 
-      expect(controller.isGameOver, isTrue);
+      expect(controller.isStuck, isTrue);
+      expect(controller.isFinished, isFalse);
       expect(controller.isWon, isFalse);
     });
 
@@ -56,7 +61,8 @@ void main() {
 
       controller.undo();
 
-      expect(controller.isGameOver, isFalse);
+      expect(controller.isStuck, isFalse);
+      expect(controller.undos, equals(1));
       expect(controller.path, equals([(0, 0), (0, 1), (1, 1), (1, 2)]));
       expect(controller.isInPath(0, 2), isFalse);
     });
@@ -84,6 +90,29 @@ void main() {
       expect(controller.path, equals([(0, 0)]));
       expect(controller.filledCells, equals(1));
       expect(controller.isInPath(0, 2), isFalse);
+    });
+
+    test('score rewards bigger grids and penalises time and undos', () {
+      final base = TrailGameController.calculateScore(totalCells: 25, elapsed: Duration.zero, undos: 0);
+
+      expect(base, equals(500));
+      expect(TrailGameController.calculateScore(totalCells: 25, elapsed: const Duration(seconds: 30), undos: 0), equals(470));
+      expect(TrailGameController.calculateScore(totalCells: 25, elapsed: Duration.zero, undos: 2), equals(490));
+      // Never lower than the number of cells
+      expect(TrailGameController.calculateScore(totalCells: 25, elapsed: const Duration(hours: 1), undos: 0), equals(25));
+    });
+
+    test('next puzzle starts a new session', () {
+      final controller = createController();
+      for (final (row, col) in snakeSolution) {
+        controller.moveTo(row, col);
+      }
+
+      controller.nextPuzzle();
+
+      expect(controller.isFinished, isFalse);
+      expect(controller.result, isNull);
+      expect(controller.moves, equals(0));
     });
 
     test('reports trail directions for rendering', () {

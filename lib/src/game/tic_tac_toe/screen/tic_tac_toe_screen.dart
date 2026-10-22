@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/core/widget/components/button.dart';
+import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
+import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/provider/game_controller_provider.dart';
 import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/game/logic/tic_tac_toe_game_controller.dart';
@@ -9,54 +11,51 @@ import 'package:flutter_mini_games/src/game/tic_tac_toe/style/tic_tac_toe_theme.
 import 'package:flutter_mini_games/src/game/tic_tac_toe/widget/tic_tac_toe_cell.dart';
 
 class TicTacToeScreen extends StatelessWidget {
-  final TicTacToeTheme? theme;
-  final CoreGameTheme coreTheme;
+  final CoreGameTheme? coreTheme;
+  final GameThemeOverride<TicTacToeTheme>? theme;
 
   const TicTacToeScreen({
-    required this.theme,
+    this.coreTheme,
+    this.theme,
     super.key,
-    required this.coreTheme,
   });
 
   @override
   Widget build(BuildContext context) {
     return GameControllerProvider(
-      controller: TicTacToeGameController(),
-      themeBuilder: (coreTheme) => theme ?? TicTacToeTheme.getDefault(coreTheme: coreTheme),
+      create: TicTacToeGameController.new,
       coreTheme: coreTheme,
+      theme: (core) {
+        final defaults = TicTacToeTheme.fromCore(core);
+        return theme?.call(defaults) ?? defaults;
+      },
       builder: (context, controller, theme, coreTheme) => FlutterMiniGamesScreen(
         title: 'Tic Tac Toe',
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          spacing: 32,
+          spacing: 24,
           children: [
-            TicTacToeHeader(
-              controller: controller,
-            ),
+            TicTacToeHeader(controller: controller),
+            GameStatsBar(controller: controller),
             Flexible(
               fit: FlexFit.loose,
               child: AspectRatio(
                 aspectRatio: 1.0,
                 child: GridView.builder(
                   physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 3,
-                    mainAxisSpacing: 4,
-                    crossAxisSpacing: 4,
+                    mainAxisSpacing: theme.dimens.cellSpacing,
+                    crossAxisSpacing: theme.dimens.cellSpacing,
                   ),
                   itemCount: 9,
                   itemBuilder: (context, index) {
                     final row = index ~/ 3;
                     final col = index % 3;
-                    final value = controller.board[row][col];
-                    final isWinningCell = controller.isWinningCell(
-                      row,
-                      col,
-                    );
                     return TicTacToeCell(
                       onTap: () => controller.makeMove(row, col),
-                      value: value,
-                      isWinningCell: isWinningCell,
+                      value: controller.board[row][col],
+                      isWinningCell: controller.isWinningCell(row, col),
                     );
                   },
                 ),
@@ -65,7 +64,13 @@ class TicTacToeScreen extends StatelessWidget {
             GameButton(
               onTap: controller.resetGame,
               icon: Icons.refresh,
-              label: 'Reset Game',
+              label: controller.isGameOver ? 'Play Again' : 'Reset Game',
+            ),
+            const GameHowToPlay(
+              items: [
+                GameHowToPlayItem(icon: Icons.people_outline, text: 'Take turns\nas X and O'),
+                GameHowToPlayItem(icon: Icons.linear_scale, text: 'Get three\nin a row'),
+              ],
             ),
           ],
         ),

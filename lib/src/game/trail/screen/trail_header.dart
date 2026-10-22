@@ -23,20 +23,20 @@ class TrailHeader extends StatelessWidget {
             style: theme.textStyles.headerWin,
           ),
           Text(
-            'Every cell filled, every checkpoint visited!',
+            'Score: ${controller.result?.score ?? 0}',
             style: theme.textStyles.progress,
           ),
         ],
       );
     }
 
-    if (controller.isGameOver) {
+    if (controller.isStuck) {
       return Column(
         spacing: 4,
         children: [
           Text(
             'No more moves!',
-            style: theme.textStyles.headerLose,
+            style: theme.textStyles.headerStuck,
           ),
           Text(
             'Undo or reset to try again',
@@ -59,9 +59,10 @@ class TrailHeader extends StatelessWidget {
           controller.puzzle.name ?? 'Puzzle',
           style: theme.textStyles.header,
         ),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
+        Wrap(
+          alignment: WrapAlignment.center,
           spacing: 24,
+          runSpacing: 8,
           children: [
             _buildProgressIndicator(
               icon: Icons.flag,
@@ -93,9 +94,10 @@ class TrailHeader extends StatelessWidget {
     final progress = total > 0 ? current / total : 0.0;
 
     return Row(
+      mainAxisSize: MainAxisSize.min,
       spacing: 4,
       children: [
-        Icon(icon, size: 18, color: theme.colors.cellFilled),
+        Icon(icon, size: 18, color: theme.colors.progress),
         Text(label, style: theme.textStyles.progress),
         const SizedBox(width: 4),
         SizedBox(
@@ -103,7 +105,7 @@ class TrailHeader extends StatelessWidget {
           child: LinearProgressIndicator(
             value: progress,
             backgroundColor: theme.colors.cellEmpty,
-            valueColor: AlwaysStoppedAnimation(theme.colors.cellFilled),
+            valueColor: AlwaysStoppedAnimation(theme.colors.progress),
             borderRadius: BorderRadius.circular(4),
           ),
         ),

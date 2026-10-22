@@ -1,70 +1,89 @@
 # flutter_mini_games
 
-A Flutter package that makes it easy to embed fun, casual mini games into your app. Enhance engagement and retention by offering users a library of simple games—seamlessly integrated into your user experience.
+A Flutter package that makes it easy to embed casual mini games into your app, with a shared scores system and theming that matches your app.
 
-## Features
+## Games
 
-- Plug-and-play library of mini games for Flutter apps
-- Easy-to-use widgets to embed games anywhere in your app
-- Customizable UI to match your app’s theme
-- Supports both Android and iOS
-- Lightweight and modular design
-- Designed for rapid integration and extensibility
+| Game | Builder | Players |
+|---|---|---|
+| Tic Tac Toe | `TicTacToeGameBuilder` | 2 |
+| Trail: draw one trail through every cell, passing the numbered checkpoints in order | `TrailGameBuilder` | 1 |
 
-> _More mini games, customization options, and features coming soon!_
+Only the games you reference are compiled into your app.
 
 ## Getting started
-
-### Prerequisites
-
-- Flutter SDK `>=1.17.0` (tested with Dart 3.8.1+)
-- Works with Android and iOS out of the box
-
-### Installation
-
-Add the following to your `pubspec.yaml`:
 
 ```yaml
 dependencies:
   flutter_mini_games: ^0.0.1
 ```
 
-Then run:
-
-```bash
-flutter pub get
-```
+Requires Flutter 3.32 or newer.
 
 ## Usage
 
-Import the package and use the available widgets to add games anywhere in your app.
+Launch a game from anywhere:
 
 ```dart
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 
-class MyMiniGameScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Mini Game')),
-      body: Center(
-        child: MiniGameWidget(
-          gameType: MiniGameType.ticTacToe,
-        ),
-      ),
-    );
-  }
-}
+final result = await FlutterMiniGames.launch(context, const TrailGameBuilder());
+print(result?.score);
 ```
 
-For more advanced examples and a list of all available games and configuration options, check out the [`/example`](example/) directory.
+Using your own router? `game.build(context)` returns the game screen as a widget.
+
+### Configuration (optional)
+
+Wrap your app once to configure all games:
+
+```dart
+FlutterMiniGames(
+  theme: CoreGameTheme.light(),          // or CoreGameTheme.fromMaterial(myThemeData)
+  darkTheme: CoreGameTheme.dark(),
+  scoreStore: MyPersistentScoreStore(),  // defaults to an in-memory store
+  onGameFinished: (result) => analytics.log(result.toJson()),
+  child: MaterialApp(...),
+)
+```
+
+### Scores
+
+Every game reports a `GameResult`: game id, outcome (`won`, `lost`, `draw`, `abandoned`), optional score, duration, moves and game-specific data. Results go to the score store and `onGameFinished`.
+
+Persist results by implementing `GameScoreStore`:
+
+```dart
+class MyPersistentScoreStore extends GameScoreStore {
+  @override
+  Future<void> save(GameResult result) async => /* store result.toJson() */;
+
+  @override
+  Future<List<GameResult>> results(String gameId) async => /* read with GameResult.fromJson */;
+}
+
+final stats = await store.stats('trail'); // played, won, bestScore, fastestWin, ...
+```
+
+### Theming
+
+All games derive their look from one `CoreGameTheme`. Every game theme has the same shape (`colors`, `textStyles`, `dimens`) and can be tweaked per game:
+
+```dart
+TrailGameBuilder(
+  theme: (theme) => theme.copyWith(
+    colors: theme.colors.copyWith(pathLine: Colors.teal),
+  ),
+)
+
+TicTacToeGameBuilder(
+  coreTheme: CoreGameTheme.dark(), // a different core theme for this game only
+)
+```
+
+See the [`/example`](example/) app for a complete setup.
 
 ## Additional information
 
-- [Package homepage](https://pub.dev/packages/flutter_mini_games) (coming soon)
-- Issues and feedback: Please file issues or feature requests via the [GitHub issue tracker](https://github.com/impaktfull/flutter_mini_games/issues)
-- Contributions welcome! See `CONTRIBUTING.md` for guidelines.
+- Issues and feedback: [GitHub issue tracker](https://github.com/impaktfull/flutter_mini_games/issues)
 - Licensed under the BSD 3-Clause License.
-- Author: Koen Van Looveren
-
-If you have questions, suggestions, or want to contribute additional mini games, feel free to submit a pull request or start a discussion!

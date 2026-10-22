@@ -84,7 +84,9 @@ void main() {
 
     controller.tap(bottom, tile);
     expect(controller.points(bottom), equals(1));
-    expect(controller.roundWins(bottom), equals(1));
+    // The points are the score of the duel, the match itself is a single round
+    expect(controller.duelScore(bottom), equals(1));
+    expect(controller.roundWins(bottom), equals(0));
     expect(controller.moves, equals(1));
     expect(controller.isRevealing, isTrue);
     expect(controller.lastScorer, equals(bottom));
@@ -164,6 +166,7 @@ void main() {
     expect(result.outcome, equals(GameOutcome.won));
     expect(result.score, isNull);
     expect(result.data['winner'], equals('top'));
+    expect(result.data['rounds'], equals({'bottom': 0, 'top': 1}));
     expect(result.data['points'], equals({'bottom': 1, 'top': 7}));
     expect(result.data['penalties'], equals({'bottom': 0, 'top': 1}));
     expect(result.moves, equals(10));

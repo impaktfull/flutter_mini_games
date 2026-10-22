@@ -127,10 +127,7 @@ class PushGameController extends GameController with RealtimeGameController, Due
 
   @override
   void tick(Duration delta) {
-    // The frame that ends the countdown belongs to the countdown, not to the round
-    final wasPlaying = isPlaying;
-    tickDuel(delta);
-    if (!wasPlaying || !isPlaying) return;
+    if (!tickDuel(delta)) return;
     var seconds = delta.inMicroseconds / Duration.microsecondsPerSecond;
     while (seconds > 0 && isPlaying) {
       final step = min(seconds, _maxStep);

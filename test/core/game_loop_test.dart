@@ -108,6 +108,64 @@ void main() {
       expect(taps, equals(3));
     });
 
+    testWidgets('reports only the first swipe of a drag when repeatSwipes is false', (tester) async {
+      final swipes = <GameDirection>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameInputDetector(onSwipe: swipes.add, repeatSwipes: false, child: const SizedBox.expand()),
+        ),
+      );
+
+      final gesture = await tester.startGesture(const Offset(200, 200));
+      await gesture.moveBy(const Offset(40, 0));
+      await gesture.moveBy(const Offset(40, 0));
+      await gesture.up();
+      await tester.dragFrom(const Offset(200, 200), const Offset(0, 60));
+
+      expect(swipes, equals([GameDirection.right, GameDirection.down]));
+    });
+
+    testWidgets('reports the release of a tap and of the space key', (tester) async {
+      final events = <String>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameInputDetector(
+            onTap: () => events.add('down'),
+            onRelease: () => events.add('up'),
+            child: const SizedBox.expand(),
+          ),
+        ),
+      );
+
+      await tester.tapAt(const Offset(200, 200));
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.space);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.space);
+
+      expect(events, equals(['down', 'up', 'down', 'up']));
+    });
+
+    testWidgets('reports horizontal holds per half and per key, the last press wins', (tester) async {
+      final holds = <GameDirection?>[];
+      await tester.pumpWidget(
+        MaterialApp(
+          home: GameInputDetector(onHorizontalHold: holds.add, child: const SizedBox.expand()),
+        ),
+      );
+      final width = tester.getSize(find.byType(GameInputDetector)).width;
+
+      final left = await tester.startGesture(Offset(width * 0.25, 200));
+      final right = await tester.startGesture(Offset(width * 0.75, 200), pointer: 7);
+      await right.up();
+      await left.up();
+      await tester.sendKeyDownEvent(LogicalKeyboardKey.arrowRight);
+      await tester.sendKeyUpEvent(LogicalKeyboardKey.arrowRight);
+
+      expect(
+        holds,
+        equals([GameDirection.left, GameDirection.right, GameDirection.left, null, GameDirection.right, null]),
+      );
+    });
+
     testWidgets('maps arrow keys to swipes', (tester) async {
       final swipes = <GameDirection>[];
       await tester.pumpWidget(detector(onSwipe: swipes.add));

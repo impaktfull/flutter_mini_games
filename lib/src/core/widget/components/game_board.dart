@@ -26,6 +26,8 @@ class GameBoard extends StatelessWidget {
           decoration: BoxDecoration(
             color: theme.colors.background,
             borderRadius: radius,
+            // Keeps the board visible in dark themes, where the shadow disappears
+            border: Border.all(color: theme.colors.surface, width: 1.5),
             boxShadow: [
               BoxShadow(
                 color: theme.colors.shadow.withValues(alpha: 0.1),

@@ -514,6 +514,15 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
 - The start tap calls `startSession()`, every tap during a try (early or measured) is a move
 - Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
+### Four Up (`lib/src/game/four_up/`)
+
+- Two-player four in a row on one device, id `four_up`, turn based (no game loop, no `DuelGameController` rounds)
+- 7x6 grid (`FourUpGameController.columns` / `rows`), `cellAt(col, row)` with row 0 at the top; `DuelPlayer.bottom` and `DuelPlayer.top` alternate, a disc falls to the lowest free row (`dropDisc(col)` returns the row, null for a full column or a finished game)
+- Four or more in a row horizontally, vertically or diagonally wins: `winningCells` holds every disc of the winning line(s), drawn with a ring while the other discs are blended towards the slot color (solid, no alpha); a full grid is a draw
+- Result: `GameOutcome.won` with `data['winner']` (`'bottom'` / `'top'`) or `GameOutcome.draw`, no score; `registerMove()` per disc; `resetGame()` lets the other player start
+- Screen: `GameScreenLayout` with the shared board; turn banners on both sides (top player's banner rotated in the header, bottom player's banner next to the reset button); discs differ by pattern too (ring for bottom, cross for top)
+- Input: one `GameInputDetector` on the board, `onTapAt` maps x to a column; arrow left/right (or swipes) select a column, arrow down (or swipe down) drops in it
+- The last disc falls in with a short bounce (`TweenAnimationBuilder` keyed by the move count)
 
 ## Testing
 

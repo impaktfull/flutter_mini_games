@@ -455,6 +455,16 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `initialBoard` on the controller sets up a board for tests
 - Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
 - Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+### Reflex (`lib/src/game/reflex/`)
+
+- Single-player reaction test, id `reflex`, real-time (`RealtimeGameController` + `GameLoop`) for the timing
+- 5 tries; each try waits a random delay between 1.5 and 5 s (injectable `Random`), then the board changes color: tap (or space/enter) as fast as possible
+- Tapping before the change shows "Too early!" and retries that try with a new delay
+- Phases (`ReflexPhase`): ready → waiting → go → measured (tap for the next try) → ... → finished; too early → tap to retry
+- The reaction time is game time from `tick`: it starts with the frame that shows the change and stops at the tap event (`GameInputDetector.onTap`, fires on touch down); tests drive `tick` and `onTap` directly
+- Every phase has its own theme color plus a big icon and message, so the change is never color-only; the color switches instantly (no animation)
+- The start tap calls `startSession()`, every tap during a try (early or measured) is a move
+- Score: `max(0, 1000 - average ms)`; finishes with `GameOutcome.won`, `data` holds `averageMs`, `bestMs`, `timesMs` and `earlyTaps`
 
 ## Testing
 

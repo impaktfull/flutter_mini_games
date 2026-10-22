@@ -56,6 +56,8 @@ export 'src/game/whack/game/model/whack_target.dart';
 export 'src/game/whack/style/whack_theme.dart';
 export 'src/game/reflex/game/reflex_game_builder.dart';
 export 'src/game/reflex/style/reflex_theme.dart';
+export 'src/game/boxes/game/boxes_game_builder.dart';
+export 'src/game/boxes/style/boxes_theme.dart';
 export 'src/game/puck/game/puck_game_builder.dart';
 export 'src/game/puck/style/puck_theme.dart';
 export 'src/game/breaker/game/breaker_game_builder.dart';

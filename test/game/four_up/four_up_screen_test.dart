@@ -61,7 +61,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('arrow keys select a column and arrow down drops, without overflow on a small dark phone', (tester) async {
+  testWidgets('arrow keys select a column, arrow down / space / enter drop, without overflow on a small dark phone', (tester) async {
     final controller = await pump(tester, brightness: Brightness.dark, size: const Size(320, 568));
 
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
@@ -72,6 +72,16 @@ void main() {
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
     await tester.pumpAndSettle();
     expect(controller.cellAt(4, FourUpGameController.rows - 1), DuelPlayer.bottom);
+
+    // Space and enter drop in the selected column too
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
+    await tester.sendKeyEvent(LogicalKeyboardKey.space);
+    await tester.pumpAndSettle();
+    expect(controller.cellAt(3, FourUpGameController.rows - 1), DuelPlayer.top);
+
+    await tester.sendKeyEvent(LogicalKeyboardKey.enter);
+    await tester.pumpAndSettle();
+    expect(controller.cellAt(3, FourUpGameController.rows - 2), DuelPlayer.bottom);
     expect(tester.takeException(), isNull);
   });
 
@@ -79,13 +89,11 @@ void main() {
     final theme = FourUpTheme.fromCore(CoreGameTheme.light());
     final custom = theme.copyWith(
       colors: theme.colors.copyWith(topDisc: theme.colors.winHighlight),
-      textStyles: theme.textStyles.copyWith(banner: theme.textStyles.bannerInactive),
       dimens: theme.dimens.copyWith(boardPadding: 8),
     );
 
     expect(custom.colors.topDisc, theme.colors.winHighlight);
     expect(custom.colors.bottomDisc, theme.colors.bottomDisc);
-    expect(custom.textStyles.banner, theme.textStyles.bannerInactive);
     expect(custom.dimens.boardPadding, 8);
     expect(custom.dimens.winRingWidth, theme.dimens.winRingWidth);
   });

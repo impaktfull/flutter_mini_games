@@ -38,10 +38,7 @@ class BoxesScreen extends StatelessWidget {
           header: Column(
             spacing: 8,
             children: [
-              RotatedBox(
-                quarterTurns: 2,
-                child: BoxesHeader(controller: controller, player: DuelPlayer.top),
-              ),
+              BoxesHeader(controller: controller, player: DuelPlayer.top),
               GameStatsBar(controller: controller),
             ],
           ),

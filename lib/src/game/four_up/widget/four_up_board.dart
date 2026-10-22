@@ -8,7 +8,7 @@ import 'package:flutter_mini_games/src/game/four_up/style/four_up_theme.dart';
 import 'package:flutter_mini_games/src/game/four_up/widget/four_up_disc.dart';
 
 /// The 7x6 grid. Tap a column to drop a disc; arrow keys / swipes left and right select a
-/// column and arrow down / swipe down drops in the selected column.
+/// column and arrow down / swipe down / space / enter drops in the selected column.
 class FourUpBoard extends StatelessWidget {
   static const aspectRatio = FourUpGameController.columns / FourUpGameController.rows;
 
@@ -56,6 +56,8 @@ class FourUpBoard extends StatelessWidget {
               ..dropDisc(col.clamp(0, FourUpGameController.columns - 1));
           },
           onSwipe: _onSwipe,
+          // Space/enter drop in the selected column, like arrow down; touches never do
+          onKeyConfirm: controller.dropSelected,
           repeatSwipes: false,
           child: TweenAnimationBuilder<double>(
             // A new disc restarts the drop animation

@@ -20,18 +20,9 @@ class FlipTheme extends GameTheme {
       cell: core.colors.surface,
       lastMoveCell: Color.lerp(core.colors.surface, core.colors.textMuted, 0.3)!,
       bottomPlayer: core.playerColor(DuelPlayer.bottom),
-      onBottomPlayer: core.onPlayerColor(DuelPlayer.bottom),
       topPlayer: core.playerColor(DuelPlayer.top),
-      onTopPlayer: core.onPlayerColor(DuelPlayer.top),
-      banner: core.colors.surface,
-      text: core.colors.text,
-      textMuted: core.colors.textMuted,
     ),
-    textStyles: FlipTextStyles(
-      playerName: core.textStyles.label,
-      status: core.textStyles.body.copyWith(fontSize: 14),
-      count: core.textStyles.title,
-    ),
+    textStyles: const FlipTextStyles(),
     dimens: FlipDimens(
       cellRadius: core.dimens.radiusSmall / 2,
       cellSpacing: 3,
@@ -39,8 +30,6 @@ class FlipTheme extends GameTheme {
       discInset: 0.12,
       ringWidth: 0.3,
       hintSize: 0.34,
-      bannerRadius: core.dimens.radiusSmall,
-      bannerDiscSize: 22,
     ),
   );
 
@@ -65,84 +54,37 @@ class FlipColors {
   /// Discs of Player 1 (bottom, filled discs)
   final Color bottomPlayer;
 
-  /// Text and discs on [bottomPlayer]
-  final Color onBottomPlayer;
-
   /// Discs of Player 2 (top, ring discs)
   final Color topPlayer;
-
-  /// Text and discs on [topPlayer]
-  final Color onTopPlayer;
-
-  /// Turn banner of the player that is waiting
-  final Color banner;
-  final Color text;
-  final Color textMuted;
 
   const FlipColors({
     required this.cell,
     required this.lastMoveCell,
     required this.bottomPlayer,
-    required this.onBottomPlayer,
     required this.topPlayer,
-    required this.onTopPlayer,
-    required this.banner,
-    required this.text,
-    required this.textMuted,
   });
 
   Color player(DuelPlayer player) => player == DuelPlayer.bottom ? bottomPlayer : topPlayer;
-
-  Color onPlayer(DuelPlayer player) => player == DuelPlayer.bottom ? onBottomPlayer : onTopPlayer;
 
   FlipColors copyWith({
     Color? cell,
     Color? lastMoveCell,
     Color? bottomPlayer,
-    Color? onBottomPlayer,
     Color? topPlayer,
-    Color? onTopPlayer,
-    Color? banner,
-    Color? text,
-    Color? textMuted,
   }) => FlipColors(
     cell: cell ?? this.cell,
     lastMoveCell: lastMoveCell ?? this.lastMoveCell,
     bottomPlayer: bottomPlayer ?? this.bottomPlayer,
-    onBottomPlayer: onBottomPlayer ?? this.onBottomPlayer,
     topPlayer: topPlayer ?? this.topPlayer,
-    onTopPlayer: onTopPlayer ?? this.onTopPlayer,
-    banner: banner ?? this.banner,
-    text: text ?? this.text,
-    textMuted: textMuted ?? this.textMuted,
   );
 }
 
+/// Flip has no text of its own: the turn banners are the shared `DuelTurnBanner` that uses
+/// the core theme. Kept so the theme has the same shape as every other game theme.
 class FlipTextStyles {
-  /// Player name in the turn banner
-  final TextStyle playerName;
+  const FlipTextStyles();
 
-  /// "Your turn", "Waiting", "Passed", ... in the turn banner
-  final TextStyle status;
-
-  /// Disc count in the turn banner
-  final TextStyle count;
-
-  const FlipTextStyles({
-    required this.playerName,
-    required this.status,
-    required this.count,
-  });
-
-  FlipTextStyles copyWith({
-    TextStyle? playerName,
-    TextStyle? status,
-    TextStyle? count,
-  }) => FlipTextStyles(
-    playerName: playerName ?? this.playerName,
-    status: status ?? this.status,
-    count: count ?? this.count,
-  );
+  FlipTextStyles copyWith() => const FlipTextStyles();
 }
 
 class FlipDimens {
@@ -158,8 +100,6 @@ class FlipDimens {
 
   /// Size of a legal move hint, as a fraction of the cell size
   final double hintSize;
-  final double bannerRadius;
-  final double bannerDiscSize;
 
   const FlipDimens({
     required this.cellRadius,
@@ -168,8 +108,6 @@ class FlipDimens {
     required this.discInset,
     required this.ringWidth,
     required this.hintSize,
-    required this.bannerRadius,
-    required this.bannerDiscSize,
   });
 
   FlipDimens copyWith({
@@ -179,8 +117,6 @@ class FlipDimens {
     double? discInset,
     double? ringWidth,
     double? hintSize,
-    double? bannerRadius,
-    double? bannerDiscSize,
   }) => FlipDimens(
     cellRadius: cellRadius ?? this.cellRadius,
     cellSpacing: cellSpacing ?? this.cellSpacing,
@@ -188,7 +124,5 @@ class FlipDimens {
     discInset: discInset ?? this.discInset,
     ringWidth: ringWidth ?? this.ringWidth,
     hintSize: hintSize ?? this.hintSize,
-    bannerRadius: bannerRadius ?? this.bannerRadius,
-    bannerDiscSize: bannerDiscSize ?? this.bannerDiscSize,
   );
 }

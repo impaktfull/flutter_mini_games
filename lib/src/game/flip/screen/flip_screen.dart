@@ -39,10 +39,7 @@ class FlipScreen extends StatelessWidget {
             spacing: 8,
             children: [
               // Player 2 sits opposite: their banner is rotated towards them
-              RotatedBox(
-                quarterTurns: 2,
-                child: FlipHeader(controller: controller, player: DuelPlayer.top),
-              ),
+              FlipHeader(controller: controller, player: DuelPlayer.top),
               GameStatsBar(controller: controller),
             ],
           ),

@@ -4,7 +4,6 @@ import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 
 /// What a tile shows besides its symbol
 enum SnatchTileState {
@@ -28,8 +27,8 @@ enum SnatchTileState {
 /// new orders follow.
 ///
 /// The whole match is one duel round ([roundsToWin] = 1): the duel core runs ready → countdown →
-/// playing → winner and rematch, the points are kept here. [roundWins] returns the points so the
-/// shared `DuelPhaseOverlay` shows them as the score.
+/// playing → winner and rematch, the points are kept here. [duelScore] returns the points so the
+/// shared `DuelPhaseOverlay` shows them as the score, the result data holds the points and penalties.
 class SnatchGameController extends GameController with RealtimeGameController, DuelGameController {
   static const id = 'snatch';
 
@@ -66,7 +65,13 @@ class SnatchGameController extends GameController with RealtimeGameController, D
 
   /// The points of [player]; the shared overlay shows them as the score
   @override
-  int roundWins(DuelPlayer player) => points(player);
+  int duelScore(DuelPlayer player) => points(player);
+
+  @override
+  Map<String, Object?> get duelResultData => {
+    'points': {for (final player in DuelPlayer.values) player.name: _points[player]},
+    'penalties': {for (final player in DuelPlayer.values) player.name: _penalties[player]},
+  };
 
   int points(DuelPlayer player) => _points[player]!;
 
@@ -124,8 +129,7 @@ class SnatchGameController extends GameController with RealtimeGameController, D
 
   @override
   void tick(Duration delta) {
-    tickDuel(delta);
-    if (phase != DuelPhase.playing) return;
+    if (!tickDuel(delta)) return;
     var changed = false;
     for (final player in DuelPlayer.values) {
       final remaining = _lockRemaining[player]!;
@@ -148,17 +152,6 @@ class SnatchGameController extends GameController with RealtimeGameController, D
     }
     if (changed) notifyListeners();
   }
-
-  @override
-  GameResult finish(GameOutcome outcome, {int? score, Map<String, Object?> data = const {}}) => super.finish(
-    outcome,
-    score: score,
-    data: {
-      ...data,
-      'points': {for (final player in DuelPlayer.values) player.name: _points[player]},
-      'penalties': {for (final player in DuelPlayer.values) player.name: _penalties[player]},
-    },
-  );
 
   @override
   void resetRound() {

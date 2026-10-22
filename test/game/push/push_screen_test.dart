@@ -34,6 +34,7 @@ void main() {
 
     final controller = _controller(tester);
     expect(find.text('Tap when ready'), findsNWidgets(2));
+    expect(find.text('How to play'), findsNWidgets(2));
     await tester.tap(find.text('Tap when ready').first);
     await tester.tap(find.text('Tap when ready').last);
     await tester.pump();
@@ -75,6 +76,12 @@ void main() {
       await tester.pump(const Duration(milliseconds: 50));
     }
     expect(controller.phase, equals(DuelPhase.roundOver));
+    if (controller.roundWinner == null) {
+      expect(find.text('Both out of the ring'), findsNWidgets(2));
+    } else {
+      expect(find.text('Pushed out!'), findsOneWidget);
+      expect(find.text('Out of the ring'), findsOneWidget);
+    }
     expect(tester.takeException(), isNull);
   });
 }

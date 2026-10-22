@@ -33,6 +33,7 @@ void main() {
     }
 
     expect(find.text('Tap when ready'), findsNWidgets(2));
+    expect(find.text('How to play'), findsNWidgets(2));
     await tester.tap(find.text('Tap when ready').first);
     await tester.tap(find.text('Tap when ready').last);
     await tester.pump();
@@ -62,6 +63,8 @@ void main() {
     expect(controller().penalties(DuelPlayer.top), equals(1));
     expect(controller().points(DuelPlayer.bottom), equals(1));
     expect(find.text('-1'), findsOneWidget);
+    // The overlay shows the points as the score
+    expect(find.text('Player 1  1 – 0'), findsOneWidget);
 
     for (var i = 0; i < 6; i++) {
       await advance(SnatchGameController.revealDuration);
@@ -72,6 +75,8 @@ void main() {
     expect(find.text('You win!'), findsOneWidget);
     expect(results.single.gameId, equals('snatch'));
     expect(results.single.data['winner'], equals('bottom'));
+    expect(results.single.data['points'], equals({'bottom': 7, 'top': 0}));
+    expect(results.single.data['penalties'], equals({'bottom': 0, 'top': 1}));
 
     await tester.tap(find.text('Rematch').first);
     await tester.pump();

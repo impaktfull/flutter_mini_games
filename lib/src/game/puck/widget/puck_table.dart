@@ -5,6 +5,7 @@ import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_board.dart';
+import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
 import 'package:flutter_mini_games/src/game/puck/game/logic/puck_game_controller.dart';
 import 'package:flutter_mini_games/src/game/puck/style/puck_theme.dart';
@@ -42,6 +43,12 @@ class _PuckTableState extends State<PuckTable> {
 
   void _onEnd(PointerEvent event) => _pointers.remove(event.pointer);
 
+  List<GameHowToPlayItem> get _rules => [
+    const GameHowToPlayItem(icon: Icons.pan_tool, text: 'Drag your mallet\nin your half'),
+    const GameHowToPlayItem(icon: Icons.sports_hockey, text: 'Shoot the puck into\nthe other goal'),
+    GameHowToPlayItem(icon: Icons.emoji_events, text: 'First to ${widget.controller.goalsToWin}\ngoals wins'),
+  ];
+
   @override
   Widget build(BuildContext context) {
     final controller = widget.controller;
@@ -76,7 +83,14 @@ class _PuckTableState extends State<PuckTable> {
                 ),
                 // Lets touches through to the table while a round is playing
                 DuelLayout(
-                  side: (context, player) => DuelPhaseOverlay(controller: controller, player: player),
+                  side: (context, player) => DuelPhaseOverlay(
+                    controller: controller,
+                    player: player,
+                    rules: _rules,
+                    roundMessage: controller.roundWinner == null ? null : (controller.roundWinner == player ? 'Goal!' : 'Conceded'),
+                    // The table paints the goals next to the center line
+                    showScore: false,
+                  ),
                 ),
               ],
             );

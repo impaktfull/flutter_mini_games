@@ -36,3 +36,5 @@ export 'src/game/snake/game/snake_game_builder.dart';
 export 'src/game/snake/style/snake_theme.dart';
 export 'src/game/twenty_forty_eight/game/twenty_forty_eight_game_builder.dart';
 export 'src/game/twenty_forty_eight/style/twenty_forty_eight_theme.dart';
+export 'src/game/reflex/game/reflex_game_builder.dart';
+export 'src/game/reflex/style/reflex_theme.dart';

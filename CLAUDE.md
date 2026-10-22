@@ -457,6 +457,15 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `initialBoard` on the controller sets up a board for tests
 - Tiles keep their id while sliding (`AnimatedPositioned`), new and merged tiles pop (`TweenAnimationBuilder`)
 - Tile colors blend `surface` → `primary` by log2(value); the text color (`text` or `onPrimary`) is picked by contrast
+### Code (`lib/src/game/code/`)
+
+- Single-player code breaker, id `code`, turn based (no game loop): guess a hidden code of 4 pegs out of 6 symbols in 8 tries, repeats allowed
+- `CodePeg` (circle, square, triangle, diamond, star, hexagon): every peg has its own shape, so the game is playable without colors; peg colors are core tokens and `Color.lerp` mixes of them (`CodeColors.pegs`)
+- `CodeFeedback.evaluate(secret, guess)`: `exact` (right symbol, right place) and `misplaced` (standard min-count rule with repeats: per symbol `min(count in code, count in guess)` minus the exact hits)
+- Feedback is a 2x2 grid of markers: filled = exact, hollow ring = misplaced
+- Tap a symbol to fill the next empty slot, tap a slot to clear it, Clear empties the guess, Submit checks a full guess; the hidden code is shown on top of the board when the game ends
+- The first peg starts the timer (`startSession()`), every submitted guess is a move; `Random` and the first `secret` are injectable
+- Score: `(9 - tries) * 100`. Cracked: `won` with the score, out of tries: `lost` without score; `data['tries']`
 ### Echo (`lib/src/game/echo/`)
 
 - Single-player memory game, id `echo`: four pads light up in a sequence that grows by one every round, repeat it by tapping the pads in the same order

@@ -524,6 +524,35 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Input: one raw `Listener` on the board (every finger counts, fast players tap with two fingers), mapped to column and row; every tap on a tile is a move
 - Feedback: a tapped tile flashes `primary` and fades to `tappedTile`; the mistake tile is drawn in `error` with a cross (wrong tile) or a ring (missed tile), the overlay moves to the other half of the board
 - Score: tiles tapped; game over finishes with `GameOutcome.lost`, the score and `data` with `reason` and `speed`
+### Flip (`lib/src/game/flip/`)
+
+- Two-player reversi on one device, id `flip`, turn based (no `GameLoop`, no rounds): 8x8 board, standard 4-disc start, `DuelPlayer.bottom` (Player 1) moves first
+- A move must outflank at least one line of opponent discs in any of the 8 directions; all outflanked discs flip (`flipsFor`, `movesFor`); illegal taps are ignored
+- A player without a legal move passes automatically (`passedPlayer`, shown in the banners); the game ends when neither player can move
+- `GameScreenLayout`: Player 2's turn banner in the header rotated 180°, Player 1's banner above the Reset / Play Again button; each banner shows the player, status (your turn / waiting / passed / result) and disc count
+- One `GameInputDetector(onTapAt:)` on the board maps a tap to a cell; legal moves are hinted with a small disc of the current player
+- Discs: Player 1 filled, Player 2 a ring (never color only), colors from `coreTheme.playerColor`; flips turn the disc around its vertical axis, placed discs pop in; `gameNumber` keys the discs so a reset does not animate
+- `registerMove()` per placed disc; finishes with `won` + `data['winner']` (`'bottom'` / `'top'`) or `draw`, `data['discs']` holds both disc counts, no score
+- `initialBoard` / `startingPlayer` on the controller set up positions for tests
+### Snatch (`lib/src/game/snatch/`)
+
+- Two-player real-time game on one device, id `snatch`: a target symbol is shown in the middle, the first player to tap the matching tile in their half scores a point
+- Built on the duel core: `GameController with RealtimeGameController, DuelGameController`, `DuelLayout` with `SnatchTarget` as `center` (the target twice, once rotated for the top player), each half a `Stack` of `SnatchHalf` and `DuelPhaseOverlay`
+- Each half shows the same 6 symbols (Material `Icons`, `SnatchSymbols`) in its own shuffled order (injectable `Random`, the halves never in the same order); the target never repeats twice in a row and is only shown while playing
+- Point mapping: the whole match is one duel round (`roundsToWin = 1`), points live in the controller; `roundWins` is overridden to return the points, so the shared overlay shows them as the score and no countdown runs between points
+- A correct tap: +1, a short pause (`revealDuration`, the tile and the center in the scorer's color, the other half's matching tile ringed), then a new target and new orders; taps during the pause are ignored, so with simultaneous taps the first one wins
+- A wrong tap: -1 (never below 0) and the half is locked for `wrongLockDuration`, so tapping every tile does not pay off
+- Every tile is its own raw `Listener` (both players can tap at once); every tap during play is a move
+- First to 7 points wins: `GameOutcome.won` with `data['winner']`, `data['points']`, `data['penalties']` (and the core's `rounds`), no score
+
+### Tug (`lib/src/game/tug/`)
+
+- Two-player tug of war on one device, id `tug`, built on the duel core (`DuelGameController` + `RealtimeGameController`), best of 3
+- Both players mash their half (`DuelTapArea`, both at once); each tap (`pull(player)`) is a move and pulls the marker one step toward the tapping player
+- The marker position is kept in whole steps (`position`, -`stepsToWin`..`stepsToWin`, `progress` -1..1); the first to reach `stepsToWin` (15) steps from the middle wins the round
+- Screen: `DuelLayout` with a vertical rope as `center` (`TugRope`, `CustomPaint`, `ropeLengthFraction` of the height) between the halves; each half is a `TugSide` (`DuelTapArea` + `DuelPhaseOverlay`)
+- Every pull slides the marker (`TweenAnimationBuilder`), pulses the "Tap!" hint and gives a selection haptic; the marker takes the color of the leading player
+- The result is `GameOutcome.won` with `data['winner']` and `data['rounds']`, no score
 
 ## Testing
 

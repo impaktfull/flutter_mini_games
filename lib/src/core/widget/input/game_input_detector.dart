@@ -99,8 +99,8 @@ class _GameInputDetectorState extends State<GameInputDetector> {
   }
 
   void _onPointerDown(PointerDownEvent event) {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null) return;
+    final box = context.findRenderObject();
+    if (box is! RenderBox) return;
     final isLeft = box.globalToLocal(event.position).dx < box.size.width / 2;
     _startHold(event.pointer, isLeft ? GameDirection.left : GameDirection.right);
   }

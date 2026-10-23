@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
@@ -54,7 +56,7 @@ class _GameLoopState extends State<GameLoop> with SingleTickerProviderStateMixin
     final shouldRun = widget.controller.isRunning && _isAppActive;
     if (shouldRun && !_ticker.isActive) {
       _lastElapsed = Duration.zero;
-      _ticker.start();
+      unawaited(_ticker.start());
     } else if (!shouldRun && _ticker.isActive) {
       _ticker.stop();
     }

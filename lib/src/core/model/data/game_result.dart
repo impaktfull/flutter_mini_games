@@ -42,13 +42,33 @@ class GameResult {
     'data': data,
   };
 
-  factory GameResult.fromJson(Map<String, Object?> json) => GameResult(
-    gameId: json['gameId'] as String,
-    outcome: GameOutcome.values.byName(json['outcome'] as String),
-    score: json['score'] as int?,
-    duration: Duration(milliseconds: json['durationMs'] as int),
-    moves: json['moves'] as int,
-    finishedAt: DateTime.parse(json['finishedAt'] as String),
-    data: Map<String, Object?>.from(json['data'] as Map? ?? const {}),
-  );
+  /// Reads the output of [toJson]. Throws a [FormatException] when a field is missing or has the wrong type.
+  factory GameResult.fromJson(Map<String, Object?> json) {
+    if (json case {
+      'gameId': final String gameId,
+      'outcome': final String outcome,
+      'durationMs': final int durationMs,
+      'moves': final int moves,
+      'finishedAt': final String finishedAt,
+    }) {
+      return GameResult(
+        gameId: gameId,
+        outcome: GameOutcome.values.byName(outcome),
+        score: switch (json['score']) {
+          null => null,
+          final int score => score,
+          _ => throw FormatException('GameResult score is not an int', json),
+        },
+        duration: Duration(milliseconds: durationMs),
+        moves: moves,
+        finishedAt: DateTime.parse(finishedAt),
+        data: switch (json['data']) {
+          null => const {},
+          final Map<String, Object?> data => Map.of(data),
+          _ => throw FormatException('GameResult data is not a map', json),
+        },
+      );
+    }
+    throw FormatException('Invalid GameResult', json);
+  }
 }

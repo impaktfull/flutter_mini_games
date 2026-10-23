@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -37,6 +39,24 @@ void main() {
       expect(copy.moves, equals(24));
       expect(copy.finishedAt, equals(DateTime.utc(2026, 1, 29, 12)));
       expect(copy.data, equals({'puzzle': 'Tutorial'}));
+    });
+
+    test('reads results stored as JSON text', () {
+      final json = jsonDecode(jsonEncode(_result(GameOutcome.lost, score: 3).toJson()));
+
+      final copy = GameResult.fromJson(json as Map<String, Object?>);
+
+      expect(copy.score, equals(3));
+      expect(copy.data, isEmpty);
+    });
+
+    test('rejects JSON with missing fields or wrong types', () {
+      final json = _result(GameOutcome.won).toJson();
+
+      expect(() => GameResult.fromJson({...json}..remove('moves')), throwsFormatException);
+      expect(() => GameResult.fromJson({...json, 'durationMs': '10'}), throwsFormatException);
+      expect(() => GameResult.fromJson({...json, 'score': 1.5}), throwsFormatException);
+      expect(() => GameResult.fromJson({...json, 'data': 'x'}), throwsFormatException);
     });
   });
 

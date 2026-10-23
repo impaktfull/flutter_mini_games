@@ -18,8 +18,8 @@ class _TrailGridState extends State<TrailGrid> {
   final GlobalKey _gridKey = GlobalKey();
 
   (int row, int col)? _getCellFromPosition(Offset localPosition) {
-    final renderBox = _gridKey.currentContext?.findRenderObject() as RenderBox?;
-    if (renderBox == null) return null;
+    final renderBox = _gridKey.currentContext?.findRenderObject();
+    if (renderBox is! RenderBox) return null;
 
     final size = renderBox.size;
     final rows = widget.controller.puzzle.rows;

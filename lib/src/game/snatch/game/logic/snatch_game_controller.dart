@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 
@@ -44,11 +45,11 @@ class SnatchGameController extends GameController with RealtimeGameController, D
 
   final Random _random;
 
-  final Map<DuelPlayer, List<int>> _layouts = {};
-  final Map<DuelPlayer, int> _points = {DuelPlayer.bottom: 0, DuelPlayer.top: 0};
-  final Map<DuelPlayer, int> _penalties = {DuelPlayer.bottom: 0, DuelPlayer.top: 0};
-  final Map<DuelPlayer, int?> _wrongTile = {DuelPlayer.bottom: null, DuelPlayer.top: null};
-  final Map<DuelPlayer, Duration> _lockRemaining = {DuelPlayer.bottom: Duration.zero, DuelPlayer.top: Duration.zero};
+  final DuelPair<List<int>> _layouts = DuelPair(const [], const []);
+  final DuelPair<int> _points = DuelPair.generate((player) => 0);
+  final DuelPair<int> _penalties = DuelPair.generate((player) => 0);
+  final DuelPair<int?> _wrongTile = DuelPair.generate((player) => null);
+  final DuelPair<Duration> _lockRemaining = DuelPair.generate((player) => Duration.zero);
   int _target = 0;
   DuelPlayer? _lastScorer;
   Duration _revealRemaining = Duration.zero;
@@ -69,17 +70,17 @@ class SnatchGameController extends GameController with RealtimeGameController, D
 
   @override
   Map<String, Object?> get duelResultData => {
-    'points': {for (final player in DuelPlayer.values) player.name: _points[player]},
-    'penalties': {for (final player in DuelPlayer.values) player.name: _penalties[player]},
+    'points': _points.toJson(),
+    'penalties': _penalties.toJson(),
   };
 
-  int points(DuelPlayer player) => _points[player]!;
+  int points(DuelPlayer player) => _points[player];
 
   /// Wrong taps of [player] in this match
-  int penalties(DuelPlayer player) => _penalties[player]!;
+  int penalties(DuelPlayer player) => _penalties[player];
 
   /// The symbols of the half of [player], in tile order
-  List<int> layoutOf(DuelPlayer player) => List.unmodifiable(_layouts[player]!);
+  List<int> layoutOf(DuelPlayer player) => List.unmodifiable(_layouts[player]);
 
   /// The symbol to find
   int get target => _target;
@@ -94,11 +95,11 @@ class SnatchGameController extends GameController with RealtimeGameController, D
   bool get isRevealing => _revealRemaining > Duration.zero;
 
   /// Whether the half of [player] is locked after a wrong tap
-  bool isLocked(DuelPlayer player) => _lockRemaining[player]! > Duration.zero;
+  bool isLocked(DuelPlayer player) => _lockRemaining[player] > Duration.zero;
 
   SnatchTileState tileState(DuelPlayer player, int tile) {
     final scorer = lastScorer;
-    if (scorer != null && _layouts[player]![tile] == _target) {
+    if (scorer != null && _layouts[player][tile] == _target) {
       return scorer == player ? SnatchTileState.hit : SnatchTileState.missed;
     }
     if (isLocked(player) && _wrongTile[player] == tile) return SnatchTileState.wrong;
@@ -110,17 +111,17 @@ class SnatchGameController extends GameController with RealtimeGameController, D
     if (phase != DuelPhase.playing || isRevealing || isLocked(player)) return;
     if (tile < 0 || tile >= symbolCount) return;
     registerMove();
-    if (_layouts[player]![tile] == _target) {
-      _points[player] = _points[player]! + 1;
+    if (_layouts[player][tile] == _target) {
+      _points[player] = _points[player] + 1;
       _lastScorer = player;
-      if (_points[player]! >= pointsToWin) {
+      if (_points[player] >= pointsToWin) {
         endRound(player);
         return;
       }
       _revealRemaining = revealDuration;
     } else {
-      _points[player] = max(0, _points[player]! - 1);
-      _penalties[player] = _penalties[player]! + 1;
+      _points[player] = max(0, _points[player] - 1);
+      _penalties[player] = _penalties[player] + 1;
       _wrongTile[player] = tile;
       _lockRemaining[player] = wrongLockDuration;
     }
@@ -132,7 +133,7 @@ class SnatchGameController extends GameController with RealtimeGameController, D
     if (!tickDuel(delta)) return;
     var changed = false;
     for (final player in DuelPlayer.values) {
-      final remaining = _lockRemaining[player]!;
+      final remaining = _lockRemaining[player];
       if (remaining <= Duration.zero) continue;
       _lockRemaining[player] = remaining - delta;
       if (!isLocked(player)) {

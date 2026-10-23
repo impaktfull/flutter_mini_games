@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/slap/game/model/slap_attack.dart';
@@ -44,7 +45,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
   static const maxFakes = 3;
 
   final Random _random;
-  final Map<DuelPlayer, Set<int>> _pointers = {for (final player in DuelPlayer.values) player: <int>{}};
+  final DuelPair<Set<int>> _pointers = DuelPair.generate((player) => <int>{});
 
   DuelPlayer _attacker = DuelPlayer.bottom;
   SlapAttackState _attack = SlapAttackState.waitingForHold;
@@ -68,7 +69,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
   DuelPlayer get defender => _attacker.opponent;
 
   /// Whether [player] has a finger on their target
-  bool isHolding(DuelPlayer player) => _pointers[player]!.isNotEmpty;
+  bool isHolding(DuelPlayer player) => _pointers[player].isNotEmpty;
 
   SlapAttackState get attack => _attack;
 
@@ -121,7 +122,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
   void resetRound() {
     _attacker = (roundWins(DuelPlayer.bottom) + roundWins(DuelPlayer.top)).isEven ? DuelPlayer.bottom : DuelPlayer.top;
     // The attacker has no target: forget their fingers, the target they were on is gone
-    _pointers[_attacker]!.clear();
+    _pointers[_attacker].clear();
     _attack = SlapAttackState.waitingForHold;
     _isFake = false;
     _windUp = Duration.zero;
@@ -139,7 +140,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
   /// A finger of [player] touches their target. Tracked in every phase, so a finger that
   /// is put down during the countdown counts as holding when the round starts
   void press(DuelPlayer player, int pointer) {
-    if (!_pointers[player]!.add(pointer)) return;
+    if (!_pointers[player].add(pointer)) return;
     if (isPlaying && player == defender && _attack == SlapAttackState.waitingForHold) {
       _attack = SlapAttackState.armed;
     }
@@ -148,7 +149,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
 
   /// A finger of [player] leaves their target (lifted or cancelled)
   void release(DuelPlayer player, int pointer) {
-    if (!_pointers[player]!.remove(pointer)) return;
+    if (!_pointers[player].remove(pointer)) return;
     if (isPlaying && player == defender && !isHolding(player)) _onDefenderLifted();
     notifyListeners();
   }

@@ -1,5 +1,6 @@
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 
@@ -17,7 +18,7 @@ class TugGameController extends GameController with RealtimeGameController, Duel
   static const stepsToWin = 15;
 
   int _position = 0;
-  final Map<DuelPlayer, int> _pulls = {DuelPlayer.bottom: 0, DuelPlayer.top: 0};
+  final DuelPair<int> _pulls = DuelPair.generate((player) => 0);
 
   TugGameController() : super(gameId: id);
 
@@ -34,7 +35,7 @@ class TugGameController extends GameController with RealtimeGameController, Duel
   double get progress => _position / stepsToWin;
 
   /// Taps of [player] in the current round, e.g. to animate each pull
-  int pulls(DuelPlayer player) => _pulls[player]!;
+  int pulls(DuelPlayer player) => _pulls[player];
 
   /// The player whose edge the marker is closest to, null in the middle
   DuelPlayer? get leader => _position == 0 ? null : (_position > 0 ? DuelPlayer.bottom : DuelPlayer.top);
@@ -49,7 +50,7 @@ class TugGameController extends GameController with RealtimeGameController, Duel
   void pull(DuelPlayer player) {
     if (phase != DuelPhase.playing) return;
     registerMove();
-    _pulls[player] = _pulls[player]! + 1;
+    _pulls[player] = _pulls[player] + 1;
     _position += player == DuelPlayer.bottom ? 1 : -1;
     if (_position.abs() >= stepsToWin) {
       endRound(player);

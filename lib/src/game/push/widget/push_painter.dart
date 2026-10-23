@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/widget/components/cached_text_painter.dart';
 import 'package:flutter_mini_games/src/game/push/game/logic/push_game_controller.dart';
@@ -15,7 +16,7 @@ class PushPainter extends CustomPainter {
   final PushTheme theme;
 
   /// Player numbers on the discs, owned by the widget
-  final Map<DuelPlayer, CachedTextPainter> labels;
+  final DuelPair<CachedTextPainter> labels;
 
   PushPainter({
     required this.controller,
@@ -91,7 +92,7 @@ class PushPainter extends CustomPainter {
 
   /// Player number, upright for the player it belongs to
   void _paintLabel(Canvas canvas, Offset position, DuelPlayer player) {
-    final painter = labels[player]!.layout(player == DuelPlayer.bottom ? '1' : '2', theme.textStyles.discLabel.copyWith(color: theme.colors.onDisc(player)));
+    final painter = labels[player].layout(player == DuelPlayer.bottom ? '1' : '2', theme.textStyles.discLabel.copyWith(color: theme.colors.onDisc(player)));
     canvas
       ..save()
       ..translate(position.dx, position.dy);

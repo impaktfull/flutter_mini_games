@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 
@@ -54,9 +55,9 @@ class PuckGameController extends GameController with RealtimeGameController, Due
 
   Offset _puck = const Offset(width / 2, height / 2);
   Offset _puckVelocity = Offset.zero;
-  final Map<DuelPlayer, Offset> _mallets = {for (final player in DuelPlayer.values) player: malletStart(player)};
-  final Map<DuelPlayer, Offset> _targets = {for (final player in DuelPlayer.values) player: malletStart(player)};
-  final Map<DuelPlayer, Offset> _malletVelocities = {for (final player in DuelPlayer.values) player: Offset.zero};
+  final DuelPair<Offset> _mallets = DuelPair.generate((player) => malletStart(player));
+  final DuelPair<Offset> _targets = DuelPair.generate((player) => malletStart(player));
+  final DuelPair<Offset> _malletVelocities = DuelPair.generate((player) => Offset.zero);
   DuelPlayer? _lastConceded;
 
   PuckGameController({this.goalsToWin = 5}) : super(gameId: id);
@@ -66,8 +67,8 @@ class PuckGameController extends GameController with RealtimeGameController, Due
 
   Offset get puck => _puck;
   Offset get puckVelocity => _puckVelocity;
-  Offset mallet(DuelPlayer player) => _mallets[player]!;
-  Offset malletVelocity(DuelPlayer player) => _malletVelocities[player]!;
+  Offset mallet(DuelPlayer player) => _mallets[player];
+  Offset malletVelocity(DuelPlayer player) => _malletVelocities[player];
   int goals(DuelPlayer player) => roundWins(player);
 
   @override
@@ -107,12 +108,12 @@ class PuckGameController extends GameController with RealtimeGameController, Due
     if (seconds <= 0) return;
 
     // Every mallet moves towards its finger at a limited speed, spread evenly over the frame
-    final movements = <DuelPlayer, Offset>{};
+    final movements = DuelPair(Offset.zero, Offset.zero);
     for (final player in DuelPlayer.values) {
-      final toTarget = _targets[player]! - _mallets[player]!;
+      final toTarget = _targets[player] - _mallets[player];
       final maxDistance = maxMalletSpeed * seconds;
       movements[player] = toTarget.distance <= maxDistance ? toTarget : toTarget / toTarget.distance * maxDistance;
-      _malletVelocities[player] = movements[player]! / seconds;
+      _malletVelocities[player] = movements[player] / seconds;
     }
 
     // Sub steps keep every move shorter than maxStep, also at full speed
@@ -122,7 +123,7 @@ class PuckGameController extends GameController with RealtimeGameController, Due
 
     for (var i = 0; i < steps; i++) {
       for (final player in DuelPlayer.values) {
-        _mallets[player] = _mallets[player]! + movements[player]! / steps.toDouble();
+        _mallets[player] = _mallets[player] + movements[player] / steps.toDouble();
       }
       _puck += _puckVelocity * step;
       _puckVelocity *= exp(-friction * step);
@@ -139,14 +140,14 @@ class PuckGameController extends GameController with RealtimeGameController, Due
   }
 
   void _collideWithMallet(DuelPlayer player) {
-    final mallet = _mallets[player]!;
+    final mallet = _mallets[player];
     final offset = _puck - mallet;
     final distance = offset.distance;
     const minDistance = puckRadius + malletRadius;
     if (distance >= minDistance) return;
     // Pushes the puck towards the opponent when it lies exactly on the mallet's center
     final normal = distance == 0 ? Offset(0, player == DuelPlayer.bottom ? -1 : 1) : offset / distance;
-    final malletVelocity = _malletVelocities[player]!;
+    final malletVelocity = _malletVelocities[player];
     final approach = _dot(_puckVelocity - malletVelocity, normal);
     if (approach < 0) _puckVelocity -= normal * ((1 + malletRestitution) * approach);
     _puck = mallet + normal * minDistance;
@@ -198,7 +199,7 @@ class PuckGameController extends GameController with RealtimeGameController, Due
   /// A puck pinned against a wall pushes the mallet back instead of passing through it
   void _separateFromMallets() {
     for (final player in DuelPlayer.values) {
-      final offset = _puck - _mallets[player]!;
+      final offset = _puck - _mallets[player];
       final distance = offset.distance;
       const minDistance = puckRadius + malletRadius;
       if (distance >= minDistance || distance == 0) continue;
@@ -264,7 +265,7 @@ class PuckGameController extends GameController with RealtimeGameController, Due
   @visibleForTesting
   void debugSetMallet(DuelPlayer player, Offset position) {
     _mallets[player] = clampToHalf(player, position);
-    _targets[player] = _mallets[player]!;
+    _targets[player] = _mallets[player];
   }
 
   static double _dot(Offset a, Offset b) => a.dx * b.dx + a.dy * b.dy;

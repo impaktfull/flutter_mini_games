@@ -316,6 +316,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
   - The result is `GameOutcome.won` with `data: {'winner': 'top' | 'bottom', 'rounds': {...}}`, no score
 - Put `DuelPhaseOverlay(controller: ..., player: ...)` on top of each half: ready buttons, countdown, round result, winner, rematch and the score. Pass `rules` (how to play, shown while getting ready), `roundMessage` (why the round ended, e.g. "Dodged!"), `finishMessage` (shown with the winner, e.g. a best time) and `showScore: false` when the game draws its own score
 - Mark ownership with `player.symbol` (`1` / `2`) next to the player color
+- Per-player state lives in a `DuelPair<T>` (`lib/src/core/duel/duel_pair.dart`: `pair[player]`, `DuelPair.generate`, `updateAll`, `toJson()` for result data), never in a `Map<DuelPlayer, T>`: every player always has a value, so lookups never need `!`
 - Turn-based games on a shared board (Four Up, Boxes, Flip) don't need rounds: use `GameScreenLayout` with a `DuelTurnBanner` per player (top one in the header, rotated automatically; bottom one with the controls), and finish with `won` + `data['winner']` or `draw`
 
 ## Adding a New Game - Checklist

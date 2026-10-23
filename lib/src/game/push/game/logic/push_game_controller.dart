@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
@@ -57,8 +58,8 @@ class PushGameController extends GameController with RealtimeGameController, Due
   @override
   final int roundsToWin;
 
-  final Map<DuelPlayer, PushDisc> _discs = {};
-  final Map<DuelPlayer, double> _holdAim = {};
+  final DuelPair<PushDisc> _discs = DuelPair.generate((player) => PushDisc(position: startPosition(player)));
+  final DuelPair<double?> _holdAim = DuelPair(null, null);
   double _ringRadius = initialRingRadius;
   double _roundSeconds = 0;
 
@@ -66,7 +67,7 @@ class PushGameController extends GameController with RealtimeGameController, Due
     resetRound();
   }
 
-  PushDisc disc(DuelPlayer player) => _discs[player]!;
+  PushDisc disc(DuelPlayer player) => _discs[player];
 
   /// Current radius of the shrinking ring
   double get ringRadius => _ringRadius;
@@ -110,7 +111,7 @@ class PushGameController extends GameController with RealtimeGameController, Due
   /// Starts, updates ([aim]) or stops (null) the weak push while a finger is held down
   void hold(DuelPlayer player, double? aim) {
     if (aim == null) {
-      _holdAim.remove(player);
+      _holdAim[player] = null;
     } else {
       _holdAim[player] = aim.clamp(-1.0, 1.0);
     }

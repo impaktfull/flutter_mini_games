@@ -1,5 +1,7 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_difficulty.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_puzzle.dart';
 
@@ -14,14 +16,12 @@ class TrailPuzzleGenerator {
   /// [rows] - Number of rows (minimum 3)
   /// [cols] - Number of columns (minimum 3)
   /// [checkpointCount] - Number of checkpoints to place (minimum 2, maximum rows*cols)
-  /// [maxAttempts] - Maximum attempts to generate a valid puzzle
   ///
-  /// Returns null if unable to generate a valid puzzle within maxAttempts
-  TrailPuzzle? generate({
+  /// Always succeeds and runs in a few milliseconds, also for large grids.
+  TrailPuzzle generate({
     int rows = 5,
     int cols = 5,
     int? checkpointCount,
-    int maxAttempts = 100,
     String? name,
     TrailDifficulty? difficulty,
   }) {
@@ -37,25 +37,18 @@ class TrailPuzzleGenerator {
       'Checkpoint count cannot exceed total cells',
     );
 
-    for (int attempt = 0; attempt < maxAttempts; attempt++) {
-      final path = _generateHamiltonianPath(rows, cols);
-      if (path != null && path.length == totalCells) {
-        final checkpoints = _placeCheckpoints(path, actualCheckpointCount);
-        return TrailPuzzle(
-          rows: rows,
-          cols: cols,
-          checkpoints: checkpoints,
-          name: name ?? 'Random ${rows}x$cols',
-          difficulty: difficulty ?? _estimateDifficulty(rows, cols),
-        );
-      }
-    }
-
-    return null;
+    final path = generatePath(rows, cols);
+    return TrailPuzzle(
+      rows: rows,
+      cols: cols,
+      checkpoints: _placeCheckpoints(path, actualCheckpointCount),
+      name: name ?? 'Random ${rows}x$cols',
+      difficulty: difficulty ?? _estimateDifficulty(rows, cols),
+    );
   }
 
   /// Generates a puzzle with a specific difficulty level
-  TrailPuzzle? generateWithDifficulty(TrailDifficulty difficulty) {
+  TrailPuzzle generateWithDifficulty(TrailDifficulty difficulty) {
     final size = difficulty.gridSize;
     final baseCheckpoints = difficulty.baseCheckpoints;
 
@@ -76,110 +69,47 @@ class TrailPuzzleGenerator {
     );
   }
 
-  /// Generates a Hamiltonian path (path that visits every cell exactly once)
-  /// using randomized backtracking
-  List<(int, int)>? _generateHamiltonianPath(int rows, int cols) {
-    final totalCells = rows * cols;
-    final visited = List.generate(rows, (_) => List.filled(cols, false));
-    final path = <(int, int)>[];
-
-    // Start from a random position
-    final startRow = _random.nextInt(rows);
-    final startCol = _random.nextInt(cols);
-
-    if (_backtrack(startRow, startCol, rows, cols, visited, path, totalCells)) {
-      return path;
-    }
-
-    // Try different starting positions if the first one fails
-    for (int r = 0; r < rows; r++) {
-      for (int c = 0; c < cols; c++) {
-        // Reset
-        for (int i = 0; i < rows; i++) {
-          for (int j = 0; j < cols; j++) {
-            visited[i][j] = false;
-          }
-        }
-        path.clear();
-
-        if (_backtrack(r, c, rows, cols, visited, path, totalCells)) {
-          return path;
-        }
+  /// Generates a random Hamiltonian path (a path that visits every cell exactly once)
+  /// with backbite moves: start from a zigzag path, then repeatedly connect one end to a
+  /// random grid neighbour and reverse the part of the path after that neighbour.
+  /// Every move keeps a valid path, so this always finishes after `cells²` moves (a few milliseconds)
+  /// (random backtracking can take exponential time and froze the app on a 7x7 grid).
+  @visibleForTesting
+  List<(int, int)> generatePath(int rows, int cols) {
+    final path = <(int, int)>[
+      for (var row = 0; row < rows; row++)
+        for (var i = 0; i < cols; i++) (row, row.isEven ? i : cols - 1 - i),
+    ];
+    // Position of every cell (row * cols + col) in the path
+    final indexOf = List<int>.filled(path.length, 0);
+    void reverse(int from) {
+      for (var i = from, j = path.length - 1; i < j; i++, j--) {
+        final cell = path[i];
+        path[i] = path[j];
+        path[j] = cell;
+      }
+      for (var i = from; i < path.length; i++) {
+        indexOf[path[i].$1 * cols + path[i].$2] = i;
       }
     }
 
-    return null;
-  }
-
-  bool _backtrack(
-    int row,
-    int col,
-    int rows,
-    int cols,
-    List<List<bool>> visited,
-    List<(int, int)> path,
-    int totalCells,
-  ) {
-    // Mark current cell as visited
-    visited[row][col] = true;
-    path.add((row, col));
-
-    // If we've visited all cells, we're done
-    if (path.length == totalCells) {
-      return true;
+    reverse(0);
+    final moves = path.length * path.length;
+    for (var move = 0; move < moves; move++) {
+      // Backbite from either end
+      if (_random.nextBool()) reverse(0);
+      final (row, col) = path.last;
+      final neighbours = [
+        if (row > 0) (row - 1, col),
+        if (row < rows - 1) (row + 1, col),
+        if (col > 0) (row, col - 1),
+        if (col < cols - 1) (row, col + 1),
+      ];
+      final (nRow, nCol) = neighbours[_random.nextInt(neighbours.length)];
+      final index = indexOf[nRow * cols + nCol];
+      if (index < path.length - 2) reverse(index + 1);
     }
-
-    // Get all valid neighbors and shuffle them for randomness
-    final neighbors = _getUnvisitedNeighbors(row, col, rows, cols, visited);
-    neighbors.shuffle(_random);
-
-    // Use Warnsdorff's rule heuristic: prefer cells with fewer unvisited neighbors
-    // This significantly improves success rate for Hamiltonian path generation
-    neighbors.sort((a, b) {
-      final aNeighbors = _getUnvisitedNeighbors(a.$1, a.$2, rows, cols, visited);
-      final bNeighbors = _getUnvisitedNeighbors(b.$1, b.$2, rows, cols, visited);
-      return aNeighbors.length.compareTo(bNeighbors.length);
-    });
-
-    for (final neighbor in neighbors) {
-      if (_backtrack(
-        neighbor.$1,
-        neighbor.$2,
-        rows,
-        cols,
-        visited,
-        path,
-        totalCells,
-      )) {
-        return true;
-      }
-    }
-
-    // Backtrack
-    visited[row][col] = false;
-    path.removeLast();
-    return false;
-  }
-
-  List<(int, int)> _getUnvisitedNeighbors(
-    int row,
-    int col,
-    int rows,
-    int cols,
-    List<List<bool>> visited,
-  ) {
-    final neighbors = <(int, int)>[];
-    final directions = [(-1, 0), (1, 0), (0, -1), (0, 1)];
-
-    for (final dir in directions) {
-      final newRow = row + dir.$1;
-      final newCol = col + dir.$2;
-      if (newRow >= 0 && newRow < rows && newCol >= 0 && newCol < cols && !visited[newRow][newCol]) {
-        neighbors.add((newRow, newCol));
-      }
-    }
-
-    return neighbors;
+    return path;
   }
 
   /// Places checkpoints along the path at evenly distributed positions

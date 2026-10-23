@@ -31,20 +31,7 @@ class TrailGameController extends GameController {
     _startPuzzle();
   }
 
-  static TrailPuzzle _generatePuzzle(TrailDifficulty difficulty) {
-    final generator = TrailPuzzleGenerator();
-    final puzzle = generator.generateWithDifficulty(difficulty);
-    if (puzzle != null) return puzzle;
-
-    // Fallback to predefined puzzles
-    return switch (difficulty) {
-      TrailDifficulty.easy => TrailPuzzles.tutorial,
-      TrailDifficulty.medium => TrailPuzzles.easy1,
-      TrailDifficulty.hard => TrailPuzzles.medium1,
-      TrailDifficulty.expert => TrailPuzzles.hard1,
-      TrailDifficulty.master => TrailPuzzles.hard1,
-    };
-  }
+  static TrailPuzzle _generatePuzzle(TrailDifficulty difficulty) => TrailPuzzleGenerator().generateWithDifficulty(difficulty);
 
   TrailPuzzle get puzzle => _puzzle;
   List<List<int?>> get grid => _grid;

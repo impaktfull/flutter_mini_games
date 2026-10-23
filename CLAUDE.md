@@ -377,7 +377,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Trail must START at checkpoint 1 and END at the last checkpoint
 - Features:
   - `TrailPuzzleGenerator` for random solvable puzzle generation
-  - Hamiltonian path algorithm with Warnsdorff's heuristic
+  - Random Hamiltonian path with backbite moves (zigzag start, a few milliseconds for any size; random backtracking froze the app on 7x7)
   - 5 difficulty levels (3x3 to 7x7 grids)
   - Support for custom puzzle lists OR auto-generation
   - `nextPuzzle()` method for progression, `undo()` to step back (also when stuck)

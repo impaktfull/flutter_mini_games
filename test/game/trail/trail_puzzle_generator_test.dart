@@ -19,7 +19,7 @@ void main() {
         final puzzle = generator.generate(rows: 3, cols: 3, checkpointCount: 2);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(3));
+        expect(puzzle.rows, equals(3));
         expect(puzzle.cols, equals(3));
         expect(puzzle.checkpoints.length, equals(2));
         expect(puzzle.isValid(), isTrue);
@@ -29,7 +29,7 @@ void main() {
         final puzzle = generator.generate(rows: 4, cols: 4, checkpointCount: 3);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(4));
+        expect(puzzle.rows, equals(4));
         expect(puzzle.cols, equals(4));
         expect(puzzle.checkpoints.length, equals(3));
         expect(puzzle.isValid(), isTrue);
@@ -39,7 +39,7 @@ void main() {
         final puzzle = generator.generate(rows: 5, cols: 5, checkpointCount: 5);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(5));
+        expect(puzzle.rows, equals(5));
         expect(puzzle.cols, equals(5));
         expect(puzzle.checkpoints.length, equals(5));
         expect(puzzle.isValid(), isTrue);
@@ -49,7 +49,7 @@ void main() {
         final puzzle = generator.generate(rows: 6, cols: 6, checkpointCount: 6);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(6));
+        expect(puzzle.rows, equals(6));
         expect(puzzle.cols, equals(6));
         expect(puzzle.checkpoints.length, equals(6));
         expect(puzzle.isValid(), isTrue);
@@ -60,7 +60,7 @@ void main() {
 
         expect(puzzle, isNotNull);
         for (int i = 1; i <= 4; i++) {
-          expect(puzzle!.checkpoints.containsKey(i), isTrue);
+          expect(puzzle.checkpoints.containsKey(i), isTrue);
         }
       });
 
@@ -68,7 +68,7 @@ void main() {
         final puzzle = generator.generate(rows: 5, cols: 5, checkpointCount: 5);
 
         expect(puzzle, isNotNull);
-        for (final pos in puzzle!.checkpoints.values) {
+        for (final pos in puzzle.checkpoints.values) {
           expect(pos.$1, greaterThanOrEqualTo(0));
           expect(pos.$1, lessThan(5));
           expect(pos.$2, greaterThanOrEqualTo(0));
@@ -81,7 +81,7 @@ void main() {
 
         expect(puzzle, isNotNull);
         // Default should be roughly totalCells / 4.5 = 25 / 4.5 ≈ 6
-        expect(puzzle!.checkpoints.length, greaterThanOrEqualTo(2));
+        expect(puzzle.checkpoints.length, greaterThanOrEqualTo(2));
         expect(puzzle.checkpoints.length, lessThanOrEqualTo(10));
       });
 
@@ -94,7 +94,7 @@ void main() {
         );
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.name, equals('Test Puzzle'));
+        expect(puzzle.name, equals('Test Puzzle'));
       });
 
       test('assigns difficulty when provided', () {
@@ -106,7 +106,7 @@ void main() {
         );
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.difficulty, equals(TrailDifficulty.medium));
+        expect(puzzle.difficulty, equals(TrailDifficulty.medium));
       });
     });
 
@@ -115,7 +115,7 @@ void main() {
         final puzzle = generator.generateWithDifficulty(TrailDifficulty.easy);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(3));
+        expect(puzzle.rows, equals(3));
         expect(puzzle.cols, equals(3));
         expect(puzzle.checkpoints.length, equals(2));
         expect(puzzle.difficulty, equals(TrailDifficulty.easy));
@@ -125,7 +125,7 @@ void main() {
         final puzzle = generator.generateWithDifficulty(TrailDifficulty.medium);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(4));
+        expect(puzzle.rows, equals(4));
         expect(puzzle.cols, equals(4));
         expect(puzzle.checkpoints.length, greaterThanOrEqualTo(3));
         expect(puzzle.checkpoints.length, lessThanOrEqualTo(4));
@@ -136,7 +136,7 @@ void main() {
         final puzzle = generator.generateWithDifficulty(TrailDifficulty.hard);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(5));
+        expect(puzzle.rows, equals(5));
         expect(puzzle.cols, equals(5));
         expect(puzzle.checkpoints.length, greaterThanOrEqualTo(5));
         expect(puzzle.checkpoints.length, lessThanOrEqualTo(7));
@@ -147,7 +147,7 @@ void main() {
         final puzzle = generator.generateWithDifficulty(TrailDifficulty.expert);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(6));
+        expect(puzzle.rows, equals(6));
         expect(puzzle.cols, equals(6));
         expect(puzzle.checkpoints.length, greaterThanOrEqualTo(6));
         expect(puzzle.checkpoints.length, lessThanOrEqualTo(9));
@@ -158,12 +158,50 @@ void main() {
         final puzzle = generator.generateWithDifficulty(TrailDifficulty.master);
 
         expect(puzzle, isNotNull);
-        expect(puzzle!.rows, equals(7));
+        expect(puzzle.rows, equals(7));
         expect(puzzle.cols, equals(7));
         expect(puzzle.checkpoints.length, greaterThanOrEqualTo(7));
         expect(puzzle.checkpoints.length, lessThanOrEqualTo(9));
         expect(puzzle.difficulty, equals(TrailDifficulty.master));
-      }, timeout: const Timeout(Duration(minutes: 2)));
+      });
+    });
+
+    group('generatePath', () {
+      test('visits every cell once with only orthogonal steps, for every size', () {
+        for (final (rows, cols) in [(3, 3), (4, 4), (5, 5), (6, 6), (7, 7), (3, 8), (9, 9)]) {
+          for (var seed = 0; seed < 20; seed++) {
+            final path = TrailPuzzleGenerator(random: Random(seed)).generatePath(rows, cols);
+
+            expect(path.toSet().length, equals(rows * cols), reason: '${rows}x$cols seed $seed');
+            for (final (row, col) in path) {
+              expect(row >= 0 && row < rows && col >= 0 && col < cols, isTrue);
+            }
+            for (var i = 1; i < path.length; i++) {
+              final distance = (path[i].$1 - path[i - 1].$1).abs() + (path[i].$2 - path[i - 1].$2).abs();
+              expect(distance, equals(1), reason: '${rows}x$cols seed $seed step $i');
+            }
+          }
+        }
+      });
+
+      test('is random: different seeds give different paths', () {
+        final paths = {
+          for (var seed = 0; seed < 10; seed++) TrailPuzzleGenerator(random: Random(seed)).generatePath(7, 7).join(),
+        };
+
+        expect(paths.length, greaterThan(5));
+      });
+
+      test('generates every difficulty quickly, never hangs (master froze the app)', () {
+        final stopwatch = Stopwatch()..start();
+        for (var seed = 0; seed < 50; seed++) {
+          for (final difficulty in TrailDifficulty.values) {
+            TrailPuzzleGenerator(random: Random(seed)).generateWithDifficulty(difficulty);
+          }
+        }
+
+        expect(stopwatch.elapsed, lessThan(const Duration(seconds: 5)));
+      });
     });
 
     group('verifySolvable', () {
@@ -175,7 +213,7 @@ void main() {
 
           expect(puzzle, isNotNull, reason: 'Puzzle $i should be generated');
 
-          final solution = TrailPuzzleGenerator.verifySolvable(puzzle!);
+          final solution = TrailPuzzleGenerator.verifySolvable(puzzle);
           expect(
             solution,
             isNotNull,
@@ -195,7 +233,7 @@ void main() {
           final puzzle = genWithSeed.generate(rows: 3, cols: 3, checkpointCount: 2);
 
           expect(puzzle, isNotNull);
-          final solution = TrailPuzzleGenerator.verifySolvable(puzzle!);
+          final solution = TrailPuzzleGenerator.verifySolvable(puzzle);
           expect(solution, isNotNull);
           expect(solution!.length, equals(9));
         }
@@ -207,7 +245,7 @@ void main() {
           final puzzle = genWithSeed.generate(rows: 5, cols: 5, checkpointCount: 4);
 
           expect(puzzle, isNotNull);
-          final solution = TrailPuzzleGenerator.verifySolvable(puzzle!);
+          final solution = TrailPuzzleGenerator.verifySolvable(puzzle);
           expect(solution, isNotNull);
           expect(solution!.length, equals(25));
         }
@@ -217,7 +255,7 @@ void main() {
         final puzzle = generator.generate(rows: 4, cols: 4, checkpointCount: 3);
         expect(puzzle, isNotNull);
 
-        final solution = TrailPuzzleGenerator.verifySolvable(puzzle!);
+        final solution = TrailPuzzleGenerator.verifySolvable(puzzle);
         expect(solution, isNotNull);
         expect(solution!.first, equals(puzzle.checkpoints[1]));
       });
@@ -226,7 +264,7 @@ void main() {
         final puzzle = generator.generate(rows: 4, cols: 4, checkpointCount: 4);
         expect(puzzle, isNotNull);
 
-        final solution = TrailPuzzleGenerator.verifySolvable(puzzle!);
+        final solution = TrailPuzzleGenerator.verifySolvable(puzzle);
         expect(solution, isNotNull);
 
         // Check that each checkpoint appears in the solution in order
@@ -243,7 +281,7 @@ void main() {
         final puzzle = generator.generate(rows: 4, cols: 4, checkpointCount: 4);
         expect(puzzle, isNotNull);
 
-        final solution = TrailPuzzleGenerator.verifySolvable(puzzle!);
+        final solution = TrailPuzzleGenerator.verifySolvable(puzzle);
         expect(solution, isNotNull);
 
         // Solution must start at checkpoint 1
@@ -282,20 +320,20 @@ void main() {
       test('handles minimum grid size (3x3)', () {
         final puzzle = generator.generate(rows: 3, cols: 3, checkpointCount: 2);
         expect(puzzle, isNotNull);
-        expect(TrailPuzzleGenerator.verifySolvable(puzzle!), isNotNull);
+        expect(TrailPuzzleGenerator.verifySolvable(puzzle), isNotNull);
       });
 
       test('handles minimum checkpoint count (2)', () {
         final puzzle = generator.generate(rows: 4, cols: 4, checkpointCount: 2);
         expect(puzzle, isNotNull);
-        expect(puzzle!.checkpoints.length, equals(2));
+        expect(puzzle.checkpoints.length, equals(2));
         expect(TrailPuzzleGenerator.verifySolvable(puzzle), isNotNull);
       });
 
       test('handles maximum reasonable checkpoint count', () {
         final puzzle = generator.generate(rows: 4, cols: 4, checkpointCount: 8);
         expect(puzzle, isNotNull);
-        expect(puzzle!.checkpoints.length, equals(8));
+        expect(puzzle.checkpoints.length, equals(8));
         expect(TrailPuzzleGenerator.verifySolvable(puzzle), isNotNull);
       });
 
@@ -310,8 +348,8 @@ void main() {
         expect(puzzle2, isNotNull);
 
         // Puzzles should be different (though technically could be same by chance)
-        final checkpoints1 = puzzle1!.checkpoints.values.toList();
-        final checkpoints2 = puzzle2!.checkpoints.values.toList();
+        final checkpoints1 = puzzle1.checkpoints.values.toList();
+        final checkpoints2 = puzzle2.checkpoints.values.toList();
 
         // At least one checkpoint position should differ
         bool different = false;
@@ -337,7 +375,7 @@ void main() {
 
         expect(puzzle1, isNotNull);
         expect(puzzle2, isNotNull);
-        expect(puzzle1!.checkpoints, equals(puzzle2!.checkpoints));
+        expect(puzzle1.checkpoints, equals(puzzle2.checkpoints));
       });
     });
   });

@@ -1,0 +1,35 @@
+---
+title: Configuration
+description: Configure the theme, the score store and a finished-game callback for all games at once with the FlutterMiniGames widget.
+---
+
+`FlutterMiniGames` is an optional widget for settings that apply to every game. Place it above your `MaterialApp` (or anywhere above the place you launch games from):
+
+```dart
+FlutterMiniGames(
+  theme: CoreGameTheme.light(),
+  darkTheme: CoreGameTheme.dark(),
+  scoreStore: MyPersistentScoreStore(),
+  onGameFinished: (result) => analytics.log(result.toJson()),
+  child: MaterialApp(...),
+)
+```
+
+| Property | Default | Description |
+|---|---|---|
+| `theme` | `CoreGameTheme.light()` | Core theme of every game |
+| `darkTheme` | `theme`, else `CoreGameTheme.dark()` | Used when the app's `Theme` brightness is dark |
+| `scoreStore` | `FlutterMiniGames.defaultScoreStore` (in memory) | Where results are saved, see [Scores](/guides/scores) |
+| `onGameFinished` | none | Called for every finished or abandoned game, after it is saved |
+
+All properties are optional, and so is the widget: without it, games follow your app's brightness with the default themes and keep results in memory for as long as the app runs.
+
+## Per game
+
+A builder can override the core theme for one game:
+
+```dart
+const TicTacToeGameBuilder(coreTheme: myPartyTheme)
+```
+
+See [Theming](/guides/theming) for tweaking a single game's colors, text styles and dimensions.

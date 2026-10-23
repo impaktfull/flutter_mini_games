@@ -1,6 +1,7 @@
 # flutter_mini_games
 
 [![pub package](https://img.shields.io/pub/v/flutter_mini_games.svg)](https://pub.dev/packages/flutter_mini_games)
+[![docs](https://img.shields.io/badge/docs-docs.page-7D64F2)](https://docs.page/impaktfull/flutter_mini_games)
 
 A Flutter package that makes it easy to embed casual mini games into your app, with a shared scores system and theming that matches your app.
 
@@ -36,15 +37,17 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 | Snatch: be the first to tap the symbol shown in the middle, first to 7 points wins | `SnatchGameBuilder` | 2 |
 | Tug: tug of war, mash your half to pull the rope to your side (best of 3) | `TugGameBuilder` | 2 |
 
-Only the games you reference are compiled into your app.
+Only the games you reference are compiled into your app, see [App size](https://docs.page/impaktfull/flutter_mini_games/guides/app-size).
 
 Play every game in the browser: [live demo](https://impaktfull.github.io/flutter_mini_games/).
+
+Full documentation (rules and options of every game, scores, theming, app size): **[docs.page/impaktfull/flutter_mini_games](https://docs.page/impaktfull/flutter_mini_games)**.
 
 ## Getting started
 
 ```yaml
 dependencies:
-  flutter_mini_games: ^0.1.0 # x-release-please-version
+  flutter_mini_games: ^0.0.1 # x-release-please-version
 ```
 
 Requires Flutter 3.32 or newer.

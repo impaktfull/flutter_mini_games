@@ -1,0 +1,51 @@
+---
+title: Theming
+description: Style every game from one CoreGameTheme and tweak a single game with copyWith.
+---
+
+## Core theme
+
+All games take their look from a `CoreGameTheme`: colors, text styles and dimensions shared by every game. Shared UI (the screen, buttons, stats bar and "How to play") uses it directly, and every game derives its board from it.
+
+```dart
+CoreGameTheme.light()
+CoreGameTheme.dark()
+CoreGameTheme.fromMaterial(Theme.of(context)) // from your Material ThemeData
+CoreGameTheme.fromColors(CoreGameColors(...), fontFamily: 'Inter')
+CoreGameTheme.light().copyWith(...)
+```
+
+| Group | Tokens |
+|---|---|
+| Colors | `primary` / `onPrimary`, `secondary` / `onSecondary`, `background`, `surface`, `text`, `textMuted`, `error` / `onError`, `shadow` |
+| Text styles | `title` (bold 24), `body` (16), `label` (bold 16), `caption` (12, muted) |
+| Dimens | `radiusLarge`, `radiusSmall`, `padding` |
+
+In two-player games, Player 1 uses `primary` and Player 2 uses `secondary`.
+
+Set it for all games with [`FlutterMiniGames`](/guides/configuration), or for one game with the builder's `coreTheme`.
+
+## Game themes
+
+Every game has its own theme class with the same shape: `colors`, `textStyles` and `dimens`, each with `copyWith`. Tweak a game with the builder's `theme` callback, which receives the defaults derived from the core theme:
+
+```dart
+TrailGameBuilder(
+  theme: (theme) => theme.copyWith(
+    colors: theme.colors.copyWith(pathLine: Colors.teal),
+    dimens: theme.dimens.copyWith(lineThickness: 10),
+  ),
+)
+
+SnakeGameBuilder(
+  theme: (theme) => theme.copyWith(
+    colors: theme.colors.copyWith(snakeHead: Colors.green.shade800, snakeBody: Colors.green),
+  ),
+)
+```
+
+The theme classes are named after the game: `TrailTheme`, `SudokuTheme`, `SnakeTheme`, ... (Switch uses `SwitchGameTheme`, because Flutter already has a `SwitchTheme`). Your IDE lists the available tokens on `theme.colors.copyWith(`.
+
+## Accessibility
+
+Games never rely on color alone: players have their own symbol (`1` / `2`), pads and pegs have their own shape, and mistakes get an icon. Keep enough contrast between `primary`/`secondary` and their `on` colors when you change them.

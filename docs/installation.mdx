@@ -1,0 +1,36 @@
+---
+title: Installation
+description: Add flutter_mini_games to your Flutter project.
+---
+
+## Requirements
+
+- Flutter 3.32 or newer (Dart 3.8)
+- Android, iOS, web, macOS, Windows and Linux
+
+## Add the dependency
+
+```bash
+flutter pub add flutter_mini_games
+```
+
+Or add it to your `pubspec.yaml`:
+
+```yaml
+dependencies:
+  flutter_mini_games: ^0.0.1 # x-release-please-version
+```
+
+## Import
+
+One import gives you every game builder, theme and the scores API:
+
+```dart
+import 'package:flutter_mini_games/flutter_mini_games.dart';
+```
+
+<Info>
+Importing the library does not add every game to your app. Only the builders you reference are compiled in. See [App size](/guides/app-size).
+</Info>
+
+The package has no assets or fonts and only depends on Flutter and `provider`.

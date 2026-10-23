@@ -1,0 +1,60 @@
+---
+title: Two players
+description: Rules and results of the two-player games played on one phone.
+---
+
+Two players share one phone, sitting opposite each other: **Player 1** holds the phone (bottom, `primary` color) and **Player 2** sits across (top, `secondary` color). The top half is rotated so both players read their side. Ownership is never shown by color alone: players also have their own symbol or pattern.
+
+All two-player games end with `GameOutcome.won` and `data['winner']` (`'bottom'` or `'top'`), or `GameOutcome.draw`. They have no score.
+
+## Turn based
+
+Players take turns on one shared board. A banner on each side shows whose turn it is.
+
+### Tic Tac Toe
+
+Take turns as X (Player 1, starts) and O. Three in a row wins, a full board is a draw.
+
+### Boxes
+
+Dots and boxes on a 4x4 grid. Take turns drawing a line between two dots. Close the fourth side of a box to claim it and draw again. Most boxes wins. `data`: `boxes` (per player).
+
+### Four Up
+
+Take turns dropping a disc in one of 7 columns. Four in a row (horizontal, vertical or diagonal) wins, a full grid is a draw. Also arrow keys to select a column and arrow down to drop.
+
+### Flip
+
+Reversi on an 8x8 board. Place a disc so it outflanks discs of your opponent: those flip to your color. A player without a legal move passes. Most discs when neither can move wins. `data`: `discs` (per player).
+
+## Real time
+
+Real-time duels are matches of rounds: both players tap "ready", a 3-2-1 countdown starts every round, and the first to win enough rounds wins the match. Both players can touch the screen at the same time. `data['rounds']` holds the rounds won per player.
+
+### Puck
+
+Air hockey. Drag your mallet in your own half and shoot the puck into the other goal. First to 5 goals.
+
+```dart
+PuckGameBuilder(goalsToWin: 7)
+```
+
+### Quickdraw
+
+Best of 5. After a random wait the signal shows "GO!". The first to tap their half wins the round, tapping before the signal loses it. `data`: `bestReactionMs` (per player).
+
+### Push
+
+Best of 3, sumo style. Tap your half to push your disc toward the other one. Where you tap aims the push. The ring shrinks until a disc is out.
+
+### Slap
+
+First to 5 points. The attacker slaps or fakes, the defender holds the target and pulls away in time. Pull away from a slap and the defender scores, flinch at a fake or get slapped and the attacker scores. Roles swap every round.
+
+### Snatch
+
+First to 7 points. A symbol appears in the middle: be the first to tap it in your half. A wrong tap costs a point and locks your half for a moment. `data`: `points`, `penalties`.
+
+### Tug
+
+Best of 3 tug of war. Tap your half as fast as you can to pull the marker to your side.

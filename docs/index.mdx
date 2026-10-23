@@ -1,0 +1,35 @@
+---
+title: Flutter Mini Games
+description: 27 ready-to-play mini games for your Flutter app. Puzzles, arcade and two-player games with one scores system and theming that follows your app.
+---
+
+**Add a game to your app with one line.** `flutter_mini_games` ships 27 casual games, from Sudoku and Minesweeper to an endless runner and air hockey for two players on one phone. Every game reports its results to one scores system and takes its look from your app's theme.
+
+```dart
+await FlutterMiniGames.launch(context, const SudokuGameBuilder());
+```
+
+Try every game in the browser: [live demo](https://impaktfull.github.io/flutter_mini_games/).
+
+## Why Flutter Mini Games
+
+- **Minimal code in your app**: create a game builder and launch it. No per-game setup.
+- **Only what you use is shipped**: games you don't reference are not compiled into your app. A game adds 12 to 17 KB gzipped on the web, see [App size](/guides/app-size).
+- **One scores system**: every game reports a `GameResult` (outcome, score, duration, moves). Store them anywhere and read statistics per game. See [Scores](/guides/scores).
+- **Themed like your app**: one `CoreGameTheme` (light, dark, or from your Material theme) styles every game, and every game theme can be tweaked the same way. See [Theming](/guides/theming).
+- **Built for phones**: every board scales to the screen, games work with touch and with a keyboard where it makes sense, and real-time games pause in the background.
+- **No dependencies on assets**: everything is drawn in code, so there is nothing to bundle.
+
+## The games
+
+| Puzzles | Arcade | Two players (one phone) |
+|---|---|---|
+| Trail, Sudoku, Minesweeper, 2048, Switch, Code, Pairs | Stack, Dash, Flit, Hop, Snake, Whack, Reflex, Breaker, Tiles, Echo | Tic Tac Toe, Boxes, Four Up, Flip, Puck, Quickdraw, Push, Slap, Snatch, Tug |
+
+See [All games](/games) for the rules, controls and options of each game.
+
+## Next steps
+
+- [Installation](/installation): add the package.
+- [Quick Start](/quick-start): launch your first game and read its result.
+- [Configuration](/guides/configuration): theme, score store and a callback for all games at once.

@@ -1,0 +1,83 @@
+---
+title: Scores
+description: Every game reports a GameResult to one score store. Persist results and read statistics per game.
+---
+
+## GameResult
+
+Every game reports a `GameResult` when it ends, and when the player leaves a game in progress:
+
+| Field | Description |
+|---|---|
+| `gameId` | Id of the game, e.g. `sudoku` (the builder's `id`) |
+| `outcome` | `GameOutcome.won`, `lost`, `draw` or `abandoned` |
+| `score` | Higher is better. `null` for games without a score (two-player games, Minesweeper when lost, ...) |
+| `duration` | Time played |
+| `moves` | Number of moves (taps, swipes, placed discs, ...) |
+| `finishedAt` | When the game ended |
+| `data` | Game-specific extras, e.g. `{'winner': 'bottom', 'rounds': {...}}` for two-player games or `{'difficulty': 'hard'}` |
+
+Endless games (Snake, Flit, Dash, ...) always end with `lost` and the score reached.
+
+Two-player games put the winner in `data['winner']`: `'bottom'` (Player 1, holding the phone) or `'top'` (Player 2, sitting opposite).
+
+`toJson()` and `GameResult.fromJson()` convert a result to and from a JSON map. `fromJson` throws a `FormatException` for invalid input.
+
+## Where results go
+
+1. The score store (`FlutterMiniGames.scoreStore`, in memory by default)
+2. `FlutterMiniGames.onGameFinished`
+3. The return value of `FlutterMiniGames.launch` (the last result)
+
+## Persisting results
+
+Implement `GameScoreStore` with two methods. For example with `shared_preferences`:
+
+```dart
+import 'dart:convert';
+
+import 'package:flutter_mini_games/flutter_mini_games.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+class SharedPreferencesScoreStore extends GameScoreStore {
+  final SharedPreferencesAsync _preferences;
+
+  SharedPreferencesScoreStore(this._preferences);
+
+  String _key(String gameId) => 'mini_games_$gameId';
+
+  @override
+  Future<void> save(GameResult result) async {
+    final results = await _preferences.getStringList(_key(result.gameId)) ?? [];
+    await _preferences.setStringList(_key(result.gameId), [...results, jsonEncode(result.toJson())]);
+  }
+
+  @override
+  Future<List<GameResult>> results(String gameId) async {
+    final results = await _preferences.getStringList(_key(gameId)) ?? [];
+    return [
+      for (final json in results)
+        if (jsonDecode(json) case final Map<String, Object?> map) GameResult.fromJson(map),
+    ];
+  }
+}
+```
+
+Then pass it to `FlutterMiniGames(scoreStore: SharedPreferencesScoreStore(SharedPreferencesAsync()), ...)`. Saving to your backend works the same way.
+
+## Statistics
+
+`stats(gameId)` calculates `GameStats` from the stored results:
+
+```dart
+final stats = await FlutterMiniGames.scoreStoreOf(context).stats(SudokuGameBuilder().id);
+print('${stats.won} / ${stats.played} won, best ${stats.bestScore}, fastest ${stats.fastestWin}');
+```
+
+| Field | Description |
+|---|---|
+| `played`, `won`, `lost`, `draw`, `abandoned` | Number of games per outcome |
+| `bestScore` | Highest score of a game that was not abandoned |
+| `fastestWin` | Shortest duration of a won game |
+
+The best score is also shown in each game's stats bar.

@@ -1,0 +1,61 @@
+---
+title: App size
+description: Only the games you use are compiled into your app. How much each game adds, measured on every CI run.
+---
+
+## Only what you use
+
+Games you don't reference are not compiled into your app. The library has no list of all games, the shared core never imports a game, and the package has no assets or fonts. Import the library and use one builder, and only that game ends up in your build.
+
+CI checks this for every game: it builds an app per game and fails when the compiler report shows any other game in it.
+
+## How much a game adds
+
+Measured with `tool/check_tree_shaking.sh` (the same script CI runs): a web release build (dart2js) with Flutter 3.38. The baseline is a typical app screen: a `Scaffold` with an `AppBar`, a `ListView` and a bottom sheet (2022.6 KB, 594.9 KB gzipped). Each game is measured as that same screen with a list item that launches it.
+
+- **Added to your app**: how much `main.dart.js` grows, including the Flutter widgets the game uses that the baseline does not
+- **Package code**: the code of `flutter_mini_games` itself, from the compiler report: the shared core (screen, theme, scores, input) plus the game
+
+| Game | Added to your app | Gzipped | Package code (shared core + game) |
+|---|---:|---:|---:|
+| 2048 | 49.2 KB | 14.8 KB | 17.0 KB (11.0 KB + 6.0 KB) |
+| Boxes | 54.9 KB | 16.6 KB | 18.4 KB (10.9 KB + 7.5 KB) |
+| Breaker | 51.2 KB | 15.8 KB | 20.8 KB (12.9 KB + 7.9 KB) |
+| Code | 51.6 KB | 15.5 KB | 19.4 KB (9.5 KB + 9.9 KB) |
+| Dash | 51.1 KB | 15.9 KB | 20.5 KB (12.3 KB + 8.2 KB) |
+| Echo | 57.7 KB | 17.0 KB | 17.5 KB (12.3 KB + 5.2 KB) |
+| Flip | 53.8 KB | 16.2 KB | 17.6 KB (10.8 KB + 6.7 KB) |
+| Flit | 48.4 KB | 14.5 KB | 18.1 KB (12.0 KB + 6.1 KB) |
+| Four Up | 54.8 KB | 16.5 KB | 17.3 KB (11.3 KB + 6.0 KB) |
+| Hop | 50.1 KB | 15.4 KB | 20.2 KB (12.9 KB + 7.3 KB) |
+| Minesweeper | 42.4 KB | 12.8 KB | 16.9 KB (9.5 KB + 7.3 KB) |
+| Pairs | 42.2 KB | 12.5 KB | 15.2 KB (9.5 KB + 5.8 KB) |
+| Puck | 46.4 KB | 14.3 KB | 17.5 KB (10.0 KB + 7.5 KB) |
+| Push | 41.9 KB | 13.1 KB | 16.4 KB (9.8 KB + 6.6 KB) |
+| Quickdraw | 39.3 KB | 11.9 KB | 13.6 KB (10.1 KB + 3.5 KB) |
+| Reflex | 47.9 KB | 14.4 KB | 16.5 KB (11.6 KB + 4.9 KB) |
+| Slap | 51.3 KB | 15.9 KB | 20.8 KB (10.0 KB + 10.8 KB) |
+| Snake | 47.8 KB | 14.4 KB | 18.0 KB (12.1 KB + 5.9 KB) |
+| Snatch | 43.7 KB | 13.4 KB | 16.2 KB (10.0 KB + 6.3 KB) |
+| Stack | 47.1 KB | 14.1 KB | 17.4 KB (12.0 KB + 5.4 KB) |
+| Sudoku | 48.7 KB | 14.9 KB | 19.1 KB (9.5 KB + 9.6 KB) |
+| Switch | 52.7 KB | 15.8 KB | 18.5 KB (10.4 KB + 8.1 KB) |
+| Tic Tac Toe | 53.4 KB | 15.8 KB | 14.1 KB (10.5 KB + 3.6 KB) |
+| Tiles | 50.3 KB | 15.3 KB | 18.8 KB (12.3 KB + 6.4 KB) |
+| Trail | 48.4 KB | 14.6 KB | 17.3 KB (9.2 KB + 8.2 KB) |
+| Tug | 42.1 KB | 12.8 KB | 14.3 KB (9.9 KB + 4.4 KB) |
+| Whack | 51.4 KB | 15.6 KB | 20.1 KB (12.0 KB + 8.2 KB) |
+
+A game adds **39 to 58 KB (12 to 17 KB gzipped)**. A second game adds less: the shared core (about 10 to 13 KB) and the Flutter widgets are only included once.
+
+These are web numbers. Native (AOT) builds differ in absolute size, but the comparison between games is similar.
+
+## Measure it yourself
+
+```bash
+tool/check_tree_shaking.sh                 # every game
+tool/check_tree_shaking.sh snake sudoku    # some games
+SIZE_REPORT=sizes.md tool/check_tree_shaking.sh   # also write the table as Markdown
+```
+
+Every CI run prints the table in the job summary of the tree shaking job.

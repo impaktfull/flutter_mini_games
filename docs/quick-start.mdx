@@ -1,0 +1,77 @@
+---
+title: Quick Start
+description: Launch your first game and read its result in a few minutes.
+---
+
+## 1. Launch a game
+
+`FlutterMiniGames.launch` opens a game full screen and returns the result of the last game played when the player leaves:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/flutter_mini_games.dart';
+
+class PlayButton extends StatelessWidget {
+  const PlayButton({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton(
+      onPressed: () async {
+        final result = await FlutterMiniGames.launch(context, const TrailGameBuilder());
+        if (result != null) debugPrint('${result.outcome.name}, score ${result.score}');
+      },
+      child: const Text('Play Trail'),
+    );
+  }
+}
+```
+
+The game screen has its own app bar with a back button, a stats bar (time, moves, best score) and a "How to play" sheet.
+
+## 2. Offer a few games
+
+A builder knows its name and description, so a game picker is a list of builders:
+
+```dart
+const games = <FlutterMiniGameBuilder>[
+  SudokuGameBuilder(difficulty: SudokuDifficulty.easy),
+  SnakeGameBuilder(),
+  FourUpGameBuilder(),
+];
+
+ListView(
+  children: [
+    for (final game in games)
+      ListTile(
+        title: Text(game.name),
+        subtitle: Text(game.description),
+        trailing: Icon(game.isMultiPlayer ? Icons.people : Icons.person),
+        onTap: () => FlutterMiniGames.launch(context, game),
+      ),
+  ],
+)
+```
+
+Only the games in your list end up in your app.
+
+## 3. Configure all games (optional)
+
+Wrap your app once to set the theme, store results and get a callback for every game:
+
+```dart
+FlutterMiniGames(
+  theme: CoreGameTheme.fromMaterial(lightTheme),
+  darkTheme: CoreGameTheme.fromMaterial(darkTheme),
+  onGameFinished: (result) => analytics.log('game_finished', result.toJson()),
+  child: MaterialApp(theme: lightTheme, darkTheme: darkTheme, home: const HomeScreen()),
+)
+```
+
+Without it, games use the default light and dark theme (following your app's brightness) and keep results in memory. See [Configuration](/guides/configuration).
+
+## Next steps
+
+- [Scores](/guides/scores): persist results and show statistics.
+- [Theming](/guides/theming): match the games to your brand.
+- [All games](/games): rules and options of every game.

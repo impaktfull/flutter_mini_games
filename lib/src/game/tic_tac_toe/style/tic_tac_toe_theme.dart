@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 
 class TicTacToeTheme extends GameTheme {
@@ -14,34 +15,23 @@ class TicTacToeTheme extends GameTheme {
     required this.dimens,
   });
 
-  factory TicTacToeTheme.fromCore(CoreGameTheme core) {
-    final colors = TicTacToeColors(
+  factory TicTacToeTheme.fromCore(CoreGameTheme core) => TicTacToeTheme(
+    colors: TicTacToeColors(
       cellBackground: core.colors.surface,
-      playerX: core.colors.secondary,
-      onPlayerX: core.colors.onSecondary,
-      playerO: core.colors.primary,
-      onPlayerO: core.colors.onPrimary,
-    );
-    final symbol = core.textStyles.title.copyWith(fontSize: 48);
-    return TicTacToeTheme(
-      colors: colors,
-      textStyles: TicTacToeTextStyles(
-        header: core.textStyles.title,
-        headerDraw: core.textStyles.title,
-        headerWinnerX: core.textStyles.title.copyWith(color: colors.playerX),
-        headerWinnerO: core.textStyles.title.copyWith(color: colors.playerO),
-        cellX: symbol.copyWith(color: colors.playerX),
-        cellO: symbol.copyWith(color: colors.playerO),
-        cellXWinning: symbol.copyWith(color: colors.onPlayerX),
-        cellOWinning: symbol.copyWith(color: colors.onPlayerO),
-      ),
-      dimens: TicTacToeDimens(
-        cellRadius: core.dimens.radiusSmall,
-        cellSpacing: 4,
-        winningBorderWidth: 2,
-      ),
-    );
-  }
+      bottomPlayer: core.playerColor(DuelPlayer.bottom),
+      onBottomPlayer: core.onPlayerColor(DuelPlayer.bottom),
+      topPlayer: core.playerColor(DuelPlayer.top),
+      onTopPlayer: core.onPlayerColor(DuelPlayer.top),
+    ),
+    textStyles: TicTacToeTextStyles(
+      mark: core.textStyles.title.copyWith(fontSize: 48),
+      bannerMark: core.textStyles.caption.copyWith(fontWeight: FontWeight.bold),
+    ),
+    dimens: TicTacToeDimens(
+      cellRadius: core.dimens.radiusSmall,
+      cellSpacing: 8,
+    ),
+  );
 
   TicTacToeTheme copyWith({
     TicTacToeColors? colors,
@@ -57,101 +47,80 @@ class TicTacToeTheme extends GameTheme {
 class TicTacToeColors {
   final Color cellBackground;
 
-  /// Color of X, also the background of X's winning cells
-  final Color playerX;
+  /// Color of Player 1's X (bottom), also the background of their winning cells
+  final Color bottomPlayer;
 
   /// Color of X on a winning cell
-  final Color onPlayerX;
+  final Color onBottomPlayer;
 
-  /// Color of O, also the background of O's winning cells
-  final Color playerO;
+  /// Color of Player 2's O (top), also the background of their winning cells
+  final Color topPlayer;
 
   /// Color of O on a winning cell
-  final Color onPlayerO;
+  final Color onTopPlayer;
 
   const TicTacToeColors({
     required this.cellBackground,
-    required this.playerX,
-    required this.onPlayerX,
-    required this.playerO,
-    required this.onPlayerO,
+    required this.bottomPlayer,
+    required this.onBottomPlayer,
+    required this.topPlayer,
+    required this.onTopPlayer,
   });
+
+  Color playerColor(DuelPlayer player) => player == DuelPlayer.bottom ? bottomPlayer : topPlayer;
+
+  Color onPlayerColor(DuelPlayer player) => player == DuelPlayer.bottom ? onBottomPlayer : onTopPlayer;
 
   TicTacToeColors copyWith({
     Color? cellBackground,
-    Color? playerX,
-    Color? onPlayerX,
-    Color? playerO,
-    Color? onPlayerO,
+    Color? bottomPlayer,
+    Color? onBottomPlayer,
+    Color? topPlayer,
+    Color? onTopPlayer,
   }) => TicTacToeColors(
     cellBackground: cellBackground ?? this.cellBackground,
-    playerX: playerX ?? this.playerX,
-    onPlayerX: onPlayerX ?? this.onPlayerX,
-    playerO: playerO ?? this.playerO,
-    onPlayerO: onPlayerO ?? this.onPlayerO,
+    bottomPlayer: bottomPlayer ?? this.bottomPlayer,
+    onBottomPlayer: onBottomPlayer ?? this.onBottomPlayer,
+    topPlayer: topPlayer ?? this.topPlayer,
+    onTopPlayer: onTopPlayer ?? this.onTopPlayer,
   );
 }
 
 class TicTacToeTextStyles {
-  final TextStyle header;
-  final TextStyle headerDraw;
-  final TextStyle headerWinnerX;
-  final TextStyle headerWinnerO;
-  final TextStyle cellX;
-  final TextStyle cellO;
-  final TextStyle cellXWinning;
-  final TextStyle cellOWinning;
+  /// X and O on the board, colored with the player color
+  final TextStyle mark;
+
+  /// X and O in the turn banners
+  final TextStyle bannerMark;
 
   const TicTacToeTextStyles({
-    required this.header,
-    required this.headerDraw,
-    required this.headerWinnerX,
-    required this.headerWinnerO,
-    required this.cellX,
-    required this.cellO,
-    required this.cellXWinning,
-    required this.cellOWinning,
+    required this.mark,
+    required this.bannerMark,
   });
 
   TicTacToeTextStyles copyWith({
-    TextStyle? header,
-    TextStyle? headerDraw,
-    TextStyle? headerWinnerX,
-    TextStyle? headerWinnerO,
-    TextStyle? cellX,
-    TextStyle? cellO,
-    TextStyle? cellXWinning,
-    TextStyle? cellOWinning,
+    TextStyle? mark,
+    TextStyle? bannerMark,
   }) => TicTacToeTextStyles(
-    header: header ?? this.header,
-    headerDraw: headerDraw ?? this.headerDraw,
-    headerWinnerX: headerWinnerX ?? this.headerWinnerX,
-    headerWinnerO: headerWinnerO ?? this.headerWinnerO,
-    cellX: cellX ?? this.cellX,
-    cellO: cellO ?? this.cellO,
-    cellXWinning: cellXWinning ?? this.cellXWinning,
-    cellOWinning: cellOWinning ?? this.cellOWinning,
+    mark: mark ?? this.mark,
+    bannerMark: bannerMark ?? this.bannerMark,
   );
 }
 
 class TicTacToeDimens {
   final double cellRadius;
   final double cellSpacing;
-  final double winningBorderWidth;
 
   const TicTacToeDimens({
     required this.cellRadius,
     required this.cellSpacing,
-    required this.winningBorderWidth,
   });
 
   TicTacToeDimens copyWith({
     double? cellRadius,
     double? cellSpacing,
-    double? winningBorderWidth,
   }) => TicTacToeDimens(
     cellRadius: cellRadius ?? this.cellRadius,
     cellSpacing: cellSpacing ?? this.cellSpacing,
-    winningBorderWidth: winningBorderWidth ?? this.winningBorderWidth,
   );
 }

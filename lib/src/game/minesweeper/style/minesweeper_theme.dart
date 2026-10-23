@@ -18,7 +18,7 @@ class MinesweeperTheme extends GameTheme {
     final c = core.colors;
     return MinesweeperTheme(
       colors: MinesweeperColors(
-        cellHidden: c.primary.withValues(alpha: 0.2),
+        cellHidden: Color.lerp(c.background, c.primary, 0.2)!,
         cellRevealed: c.surface,
         cellExploded: c.primary,
         mine: c.secondary,

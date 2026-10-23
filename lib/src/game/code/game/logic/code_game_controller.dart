@@ -86,7 +86,7 @@ class CodeGameController extends GameController {
   /// Submits the current guess when all slots are filled
   void submit() {
     if (!canSubmit) return;
-    final pegs = List<CodePeg>.unmodifiable(_current.cast<CodePeg>());
+    final pegs = List<CodePeg>.unmodifiable(_current.nonNulls);
     final feedback = CodeFeedback.evaluate(_secret, pegs);
     _guesses.add(CodeGuess(pegs: pegs, feedback: feedback));
     _current.fillRange(0, codeLength, null);

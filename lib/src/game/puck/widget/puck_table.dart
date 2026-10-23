@@ -32,7 +32,7 @@ class _PuckTableState extends State<PuckTable> {
     final position = event.localPosition / scale;
     final player = PuckGameController.halfAt(position);
     _pointers[event.pointer] = player;
-    widget.controller.moveMallet(player, position);
+    widget.controller.touchMallet(player, position);
   }
 
   void _onMove(PointerMoveEvent event, double scale) {

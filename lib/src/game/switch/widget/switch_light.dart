@@ -9,13 +9,11 @@ class SwitchLight extends StatelessWidget {
   final bool isLit;
   final bool isHint;
   final double size;
-  final VoidCallback? onTap;
 
   const SwitchLight({
     required this.isLit,
     required this.isHint,
     required this.size,
-    this.onTap,
     super.key,
   });
 
@@ -23,28 +21,24 @@ class SwitchLight extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = SwitchGameTheme.of(context);
     final colors = theme.colors;
+    // Input is handled by the grid
     return Semantics(
-      button: true,
       label: isLit ? 'Light on' : 'Light off',
-      child: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onTap: onTap,
-        // Only the decoration animates, the size follows the board right away
-        child: SizedBox.square(
-          dimension: size,
-          child: AnimatedContainer(
-            duration: _switchDuration,
-            decoration: BoxDecoration(
-              color: isLit ? colors.lightOn : colors.lightOff,
-              borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
-              border: isHint ? Border.all(color: colors.hint, width: theme.dimens.hintBorderWidth) : null,
-            ),
-            alignment: Alignment.center,
-            child: Icon(
-              isLit ? Icons.lightbulb : Icons.lightbulb_outline,
-              size: size * theme.dimens.iconScale,
-              color: isLit ? colors.iconOn : colors.iconOff,
-            ),
+      // Only the decoration animates, the size follows the board right away
+      child: SizedBox.square(
+        dimension: size,
+        child: AnimatedContainer(
+          duration: _switchDuration,
+          decoration: BoxDecoration(
+            color: isLit ? colors.lightOn : colors.lightOff,
+            borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
+            border: isHint ? Border.all(color: colors.hint, width: theme.dimens.hintBorderWidth) : null,
+          ),
+          alignment: Alignment.center,
+          child: Icon(
+            isLit ? Icons.lightbulb : Icons.lightbulb_outline,
+            size: size * theme.dimens.iconScale,
+            color: isLit ? colors.iconOn : colors.iconOff,
           ),
         ),
       ),

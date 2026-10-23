@@ -95,11 +95,16 @@ class TrailHeader extends StatelessWidget {
 
     return Row(
       mainAxisSize: MainAxisSize.min,
-      spacing: 4,
+      spacing: 8,
       children: [
-        Icon(icon, size: 18, color: theme.colors.progress),
-        Text(label, style: theme.textStyles.progress),
-        const SizedBox(width: 4),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          spacing: 4,
+          children: [
+            Icon(icon, size: 18, color: theme.colors.progress),
+            Text(label, style: theme.textStyles.progress),
+          ],
+        ),
         SizedBox(
           width: 60,
           child: LinearProgressIndicator(

@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/game/snatch/game/logic/snatch_game_controller.dart';
 import 'package:flutter_mini_games/src/game/snatch/style/snatch_theme.dart';
 import 'package:flutter_mini_games/src/game/snatch/widget/snatch_symbols.dart';
@@ -18,10 +16,9 @@ class SnatchTarget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SnatchTheme.of(context);
-    final core = CoreGameTheme.of(context);
     final scorer = controller.lastScorer;
-    final background = scorer == null ? theme.colors.center : core.playerColor(scorer);
-    final foreground = scorer == null ? theme.colors.target : core.onPlayerColor(scorer);
+    final background = scorer == null ? theme.colors.center : theme.colors.playerColor(scorer);
+    final foreground = scorer == null ? theme.colors.target : theme.colors.onPlayerColor(scorer);
     final Widget symbol = controller.isTargetVisible
         ? Icon(SnatchSymbols.of(controller.target), size: theme.dimens.targetSize, color: foreground)
         : Text('?', style: theme.textStyles.hiddenTarget.copyWith(color: theme.colors.hiddenTarget));

@@ -3,7 +3,6 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/game/slap/game/logic/slap_game_controller.dart';
 import 'package:flutter_mini_games/src/game/slap/style/slap_theme.dart';
 import 'package:flutter_mini_games/src/game/slap/widget/slap_hand.dart';
@@ -24,7 +23,6 @@ class SlapAttackPad extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SlapTheme.of(context);
-    final coreTheme = CoreGameTheme.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(theme.dimens.arenaRadius),
       child: ColoredBox(
@@ -60,7 +58,7 @@ class SlapAttackPad extends StatelessWidget {
                       child: FractionallySizedBox(
                         widthFactor: controller.attackTimeLeft,
                         heightFactor: 1,
-                        child: ColoredBox(color: coreTheme.playerColor(player)),
+                        child: ColoredBox(color: theme.colors.playerColor(player)),
                       ),
                     ),
                   ),
@@ -88,12 +86,11 @@ class _SlapButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SlapTheme.of(context);
-    final coreTheme = CoreGameTheme.of(context);
     final isEnabled = controller.canAttack;
     // The button shows the attacker's own hand, also while it moves
     final isAttacking = !isEnabled && controller.handLift > 0;
-    final color = isEnabled || isAttacking ? coreTheme.playerColor(player) : theme.colors.buttonDisabled;
-    final onColor = isEnabled || isAttacking ? coreTheme.onPlayerColor(player) : theme.colors.onButtonDisabled;
+    final color = isEnabled || isAttacking ? theme.colors.playerColor(player) : theme.colors.buttonDisabled;
+    final onColor = isEnabled || isAttacking ? theme.colors.onPlayerColor(player) : theme.colors.onButtonDisabled;
     return DuelTapArea(
       key: const ValueKey('slap_button'),
       onTap: isEnabled ? () => controller.slap(player) : null,

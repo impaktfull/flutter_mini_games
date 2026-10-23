@@ -48,6 +48,28 @@ void main() {
       expect(controller.isRunning, isTrue);
     });
 
+    test('every touch on the table while playing is a move, drags are not', () {
+      final controller = PuckGameController()..touchMallet(DuelPlayer.bottom, const Offset(0.5, 1.4));
+      expect(controller.moves, equals(0));
+
+      controller
+        ..setReady(DuelPlayer.bottom)
+        ..setReady(DuelPlayer.top)
+        ..touchMallet(DuelPlayer.top, const Offset(0.5, 0.4))
+        ..tick(DuelGameController.countdownDuration);
+      expect(controller.moves, equals(0));
+
+      controller
+        ..touchMallet(DuelPlayer.bottom, const Offset(0.3, 1.4))
+        ..moveMallet(DuelPlayer.bottom, const Offset(0.4, 1.4))
+        ..moveMallet(DuelPlayer.bottom, const Offset(0.5, 1.4))
+        ..touchMallet(DuelPlayer.top, const Offset(0.5, 0.4));
+      expect(controller.moves, equals(2));
+
+      _run(controller, const Duration(milliseconds: 500));
+      expect(controller.mallet(DuelPlayer.bottom).dx, closeTo(0.5, 1e-6));
+    });
+
     test('ignores mallet moves before the round plays', () {
       final controller = PuckGameController()..moveMallet(DuelPlayer.bottom, const Offset(0.2, 1.2));
       controller
@@ -243,7 +265,7 @@ void main() {
       expect(result.score, isNull);
       expect(result.data['winner'], equals('top'));
       expect(result.data['rounds'], equals({'bottom': 1, 'top': 5}));
-      expect(result.data['goals'], equals({'bottom': 1, 'top': 5}));
+      expect(result.data.containsKey('goals'), isFalse);
 
       // Nothing moves after the match
       final puck = controller.puck;

@@ -25,7 +25,7 @@ class MinesweeperGameController extends GameController {
   bool _isFlagMode = false;
 
   MinesweeperGameController({
-    MinesweeperDifficulty difficulty = MinesweeperDifficulty.medium,
+    MinesweeperDifficulty difficulty = MinesweeperDifficulty.easy,
     Random? random,
   }) : _difficulty = difficulty,
        _random = random ?? Random(),

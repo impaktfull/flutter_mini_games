@@ -71,11 +71,6 @@ class PuckGameController extends GameController with RealtimeGameController, Due
   int goals(DuelPlayer player) => roundWins(player);
 
   @override
-  Map<String, Object?> get duelResultData => {
-    'goals': {for (final player in DuelPlayer.values) player.name: goals(player)},
-  };
-
-  @override
   bool get isRunning => duelIsRunning;
 
   /// Start position of a mallet, in the middle in front of its own goal
@@ -90,6 +85,14 @@ class PuckGameController extends GameController with RealtimeGameController, Due
 
   /// Half of the table that contains [position]
   static DuelPlayer halfAt(Offset position) => position.dy < height / 2 ? DuelPlayer.top : DuelPlayer.bottom;
+
+  /// A finger of [player] touches the table at [target] (world units): one move, and the
+  /// mallet follows it. Only while a round is playing.
+  void touchMallet(DuelPlayer player, Offset target) {
+    if (phase != DuelPhase.playing) return;
+    registerMove();
+    moveMallet(player, target);
+  }
 
   /// Moves the mallet of [player] towards [target] (world units), only while a round is playing
   void moveMallet(DuelPlayer player, Offset target) {

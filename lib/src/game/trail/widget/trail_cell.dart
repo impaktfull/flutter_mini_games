@@ -9,7 +9,6 @@ class TrailCell extends StatelessWidget {
   final bool isCurrentTarget;
   final bool isCompleted;
   final Set<TrailDirection> pathDirections;
-  final VoidCallback? onTap;
 
   const TrailCell({
     required this.isFilled,
@@ -17,30 +16,26 @@ class TrailCell extends StatelessWidget {
     this.checkpointNumber,
     this.isCurrentTarget = false,
     this.isCompleted = false,
-    this.onTap,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return GameThemeBuilder<TrailTheme>(
-      builder: (context, theme) => GestureDetector(
-        onTap: onTap,
-        child: Container(
-          margin: const EdgeInsets.all(1),
-          decoration: BoxDecoration(
-            color: theme.colors.cellEmpty,
-            borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
+      builder: (context, theme) => Container(
+        margin: const EdgeInsets.all(1),
+        decoration: BoxDecoration(
+          color: theme.colors.cellEmpty,
+          borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
+        ),
+        child: CustomPaint(
+          painter: _TrailCellPainter(
+            pathDirections: pathDirections,
+            lineColor: theme.colors.pathLine,
+            lineThickness: theme.dimens.lineThickness,
+            isFilled: isFilled,
           ),
-          child: CustomPaint(
-            painter: _TrailCellPainter(
-              pathDirections: pathDirections,
-              lineColor: theme.colors.pathLine,
-              lineThickness: theme.dimens.lineThickness,
-              isFilled: isFilled,
-            ),
-            child: checkpointNumber == null ? null : _buildCheckpoint(theme),
-          ),
+          child: checkpointNumber == null ? null : _buildCheckpoint(theme),
         ),
       ),
     );

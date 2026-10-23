@@ -6,7 +6,6 @@ import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/game/tug/game/logic/tug_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tug/style/tug_theme.dart';
@@ -35,7 +34,6 @@ class TugSide extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = TugTheme.of(context);
-    final core = CoreGameTheme.of(context);
     final isPlaying = controller.phase == DuelPhase.playing;
     return Stack(
       fit: StackFit.expand,
@@ -58,7 +56,7 @@ class TugSide extends StatelessWidget {
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.touch_app, size: theme.dimens.hintIconSize, color: core.playerColor(player)),
+                            Icon(Icons.touch_app, size: theme.dimens.hintIconSize, color: theme.colors.playerColor(player)),
                             Text('Tap!', style: theme.textStyles.hint),
                           ],
                         ),

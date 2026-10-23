@@ -52,6 +52,7 @@ class SudokuTheme extends GameTheme {
         keyHeight: 48,
         keySpacing: 4,
         keyRadius: core.dimens.radiusSmall,
+        disabledKeyOpacity: 0.4,
       ),
     );
   }
@@ -214,6 +215,9 @@ class SudokuDimens {
   final double keySpacing;
   final double keyRadius;
 
+  /// Opacity of a key that can't be used (e.g. erase on an empty cell)
+  final double disabledKeyOpacity;
+
   const SudokuDimens({
     required this.boardPadding,
     required this.gridLineWidth,
@@ -221,6 +225,7 @@ class SudokuDimens {
     required this.keyHeight,
     required this.keySpacing,
     required this.keyRadius,
+    required this.disabledKeyOpacity,
   });
 
   SudokuDimens copyWith({
@@ -230,6 +235,7 @@ class SudokuDimens {
     double? keyHeight,
     double? keySpacing,
     double? keyRadius,
+    double? disabledKeyOpacity,
   }) => SudokuDimens(
     boardPadding: boardPadding ?? this.boardPadding,
     gridLineWidth: gridLineWidth ?? this.gridLineWidth,
@@ -237,5 +243,6 @@ class SudokuDimens {
     keyHeight: keyHeight ?? this.keyHeight,
     keySpacing: keySpacing ?? this.keySpacing,
     keyRadius: keyRadius ?? this.keyRadius,
+    disabledKeyOpacity: disabledKeyOpacity ?? this.disabledKeyOpacity,
   );
 }

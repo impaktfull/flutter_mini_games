@@ -1,48 +1,40 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mini_games/src/core/widget/theme/theme_builder.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
+import 'package:flutter_mini_games/src/game/tic_tac_toe/game/logic/tic_tac_toe_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/style/tic_tac_toe_theme.dart';
 
+/// One cell of the board. The mark (X or O) shows the owner, so it never depends on color only
 class TicTacToeCell extends StatelessWidget {
-  final String? value;
+  final DuelPlayer? player;
   final bool isWinningCell;
-  final VoidCallback onTap;
 
   const TicTacToeCell({
     required this.isWinningCell,
-    required this.onTap,
-    this.value,
+    this.player,
     super.key,
   });
 
-  bool get _isX => value == 'X';
-
   @override
   Widget build(BuildContext context) {
-    return GameThemeBuilder<TicTacToeTheme>(
-      builder: (context, theme) {
-        final playerColor = _isX ? theme.colors.playerX : theme.colors.playerO;
-        return GestureDetector(
-          onTap: onTap,
-          child: Container(
-            decoration: BoxDecoration(
-              color: isWinningCell ? playerColor : theme.colors.cellBackground,
-              borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
-              border: isWinningCell ? Border.all(color: playerColor, width: theme.dimens.winningBorderWidth) : null,
+    final theme = TicTacToeTheme.of(context);
+    final player = this.player;
+    final isWinning = isWinningCell && player != null;
+    return Container(
+      decoration: BoxDecoration(
+        color: isWinning ? theme.colors.playerColor(player) : theme.colors.cellBackground,
+        borderRadius: BorderRadius.circular(theme.dimens.cellRadius),
+      ),
+      alignment: Alignment.center,
+      child: player == null
+          ? null
+          : FittedBox(
+              child: Text(
+                TicTacToeGameController.markOf(player),
+                style: theme.textStyles.mark.copyWith(
+                  color: isWinning ? theme.colors.onPlayerColor(player) : theme.colors.playerColor(player),
+                ),
+              ),
             ),
-            margin: const EdgeInsets.all(2),
-            child: Center(
-              child: value != null ? Text(value!, style: _getTextStyle(theme)) : null,
-            ),
-          ),
-        );
-      },
     );
-  }
-
-  TextStyle _getTextStyle(TicTacToeTheme theme) {
-    if (isWinningCell) {
-      return _isX ? theme.textStyles.cellXWinning : theme.textStyles.cellOWinning;
-    }
-    return _isX ? theme.textStyles.cellX : theme.textStyles.cellO;
   }
 }

@@ -1,5 +1,8 @@
+import 'dart:math';
+
 import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 import 'package:flutter_mini_games/src/game/trail/game/logic/trail_game_controller.dart';
+import 'package:flutter_mini_games/src/game/trail/game/model/trail_difficulty.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_direction.dart';
 import 'package:flutter_mini_games/src/game/trail/game/model/trail_puzzle.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -124,6 +127,28 @@ void main() {
       expect(controller.getPathDirections(0, 1), equals({TrailDirection.left, TrailDirection.down}));
       expect(controller.getPathDirections(1, 1), equals({TrailDirection.up}));
       expect(controller.getPathDirections(2, 2), isEmpty);
+    });
+
+    test('defaults to the hard difficulty (5x5)', () {
+      final controller = TrailGameController(random: Random(1));
+
+      expect(controller.difficulty, equals(TrailDifficulty.hard));
+      expect(controller.puzzle.rows, equals(5));
+      expect(controller.puzzle.cols, equals(5));
+    });
+
+    test('an injected random makes the generated puzzles reproducible', () {
+      final a = TrailGameController(difficulty: TrailDifficulty.medium, random: Random(42));
+      final b = TrailGameController(difficulty: TrailDifficulty.medium, random: Random(42));
+
+      expect(a.isGeneratedMode, isTrue);
+      expect(a.puzzle.checkpoints, equals(b.puzzle.checkpoints));
+
+      // The same generator is used for the next puzzles
+      a.nextPuzzle();
+      b.nextPuzzle();
+      expect(a.puzzle.checkpoints, equals(b.puzzle.checkpoints));
+      expect(a.puzzle.isValid(), isTrue);
     });
   });
 }

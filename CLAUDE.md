@@ -690,6 +690,14 @@ tool/check_tree_shaking.sh
 4. Test edge cases (min/max sizes, boundary conditions)
 5. Verify win conditions (e.g., path starts AND ends at correct positions)
 
+## Releases
+
+- Commit messages and PR titles follow Conventional Commits (`feat:`, `fix:`, `perf:`, `refactor:`, `chore:`, ...): release-please turns them into the version bump and `CHANGELOG.md`
+- Never change `version` in `pubspec.yaml`, the changelog or `.release-please-manifest.json` by hand: release-please keeps a release PR open, merging it tags `v{version}`
+- The release workflow then starts `publish.yml` on the tag: it runs CI and publishes to pub.dev through GitHub OIDC (no tokens), in the `pub.dev` environment
+- CI, the release and GitHub Pages run on GitHub-hosted runners (`ubuntu-latest`); `.github/actions/setup-flutter` installs the Flutter version of `.fvmrc`
+- `.pubignore` keeps repo-only files (CLAUDE.md, tool/, .github/, ...) out of the package; `flutter pub publish --dry-run` runs on CI
+
 ## Code Style
 
 - Use `super.key` in widget constructors

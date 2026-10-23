@@ -1,7 +1,15 @@
 name: flutter_mini_games
-description: "A Flutter package for adding mini games to your app"
-version: 0.0.1
-homepage:
+description: "27 ready-to-play mini games for your Flutter app: puzzles, arcade and two-player games with shared scores and theming. Unused games are tree-shaken."
+version: 0.1.0
+homepage: https://impaktfull.github.io/flutter_mini_games/
+repository: https://github.com/impaktfull/flutter_mini_games
+issue_tracker: https://github.com/impaktfull/flutter_mini_games/issues
+topics:
+  - game
+  - games
+  - puzzle
+  - minigames
+  - widget
 
 environment:
   sdk: ^3.8.1

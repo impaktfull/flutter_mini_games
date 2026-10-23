@@ -1,0 +1,46 @@
+name: Publish to pub.dev
+
+# Runs on a version tag: started by the release workflow, or by pushing a tag by hand.
+# pub.dev only accepts it from this repository, on a tag matching v{{version}}, in the pub.dev environment.
+on:
+  push:
+    tags:
+      - "v[0-9]+.[0-9]+.[0-9]+*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  check:
+    uses: ./.github/workflows/ci.yml
+
+  publish:
+    needs: check
+    runs-on: ubuntu-latest
+    environment: pub.dev
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Check the tag and version
+        id: version
+        run: |
+          set -euo pipefail
+          version=$(sed -n 's/^version: //p' pubspec.yaml)
+          if [ "$GITHUB_REF" != "refs/tags/v$version" ]; then
+            echo "::error::$GITHUB_REF does not match version $version in pubspec.yaml"
+            exit 1
+          fi
+          if curl -sfo /dev/null "https://pub.dev/api/packages/flutter_mini_games/versions/$version"; then
+            echo "::notice::$version is already on pub.dev, nothing to publish"
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          fi
+      # Sets up the OIDC token that pub.dev accepts instead of credentials
+      - uses: dart-lang/setup-dart@v1
+        if: steps.version.outputs.published != 'true'
+      - uses: ./.github/actions/setup-flutter
+        if: steps.version.outputs.published != 'true'
+      - name: Publish
+        if: steps.version.outputs.published != 'true'
+        run: flutter pub publish --force

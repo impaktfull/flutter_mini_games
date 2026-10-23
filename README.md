@@ -44,7 +44,7 @@ Play every game in the browser: [live demo](https://impaktfull.github.io/flutter
 
 ```yaml
 dependencies:
-  flutter_mini_games: ^0.1.0 # x-release-please-version
+  flutter_mini_games: ^0.2.0 # x-release-please-version
 ```
 
 Requires Flutter 3.32 or newer.

@@ -1,0 +1,68 @@
+{
+  "$schema": "https://docs.page/schema.json",
+  "name": "Flutter Mini Games",
+  "description": "27 ready-to-play mini games for your Flutter app: puzzles, arcade and two-player games with shared scores and theming.",
+  "theme": {
+    "primaryLight": "#7D64F2",
+    "primaryDark": "#7D64F2"
+  },
+  "social": {
+    "github": "impaktfull",
+    "website": "https://impaktfull.com",
+    "linkedin": "company/impaktfull/",
+    "instagram": "impaktfull"
+  },
+  "anchors": [
+    {
+      "title": "Live Demo",
+      "icon": "play",
+      "href": "https://impaktfull.github.io/flutter_mini_games/"
+    },
+    {
+      "title": "pub.dev",
+      "icon": "box",
+      "href": "https://pub.dev/packages/flutter_mini_games"
+    },
+    {
+      "title": "GitHub",
+      "icon": "github",
+      "href": "https://github.com/impaktfull/flutter_mini_games"
+    }
+  ],
+  "sidebar": [
+    {
+      "group": "Getting Started",
+      "pages": [
+        { "title": "📖 Overview", "href": "/" },
+        { "title": "🚀 Installation", "href": "/installation" },
+        { "title": "⚡ Quick Start", "href": "/quick-start" }
+      ]
+    },
+    {
+      "group": "Guides",
+      "pages": [
+        { "title": "🎮 Launching games", "href": "/guides/launching-games" },
+        { "title": "⚙️ Configuration", "href": "/guides/configuration" },
+        { "title": "🏆 Scores", "href": "/guides/scores" },
+        { "title": "🎨 Theming", "href": "/guides/theming" },
+        { "title": "📦 App size", "href": "/guides/app-size" }
+      ]
+    },
+    {
+      "group": "Games",
+      "pages": [
+        { "title": "🗂️ All games", "href": "/games" },
+        { "title": "🧩 Puzzles", "href": "/games/puzzles" },
+        { "title": "🕹️ Arcade", "href": "/games/arcade" },
+        { "title": "👥 Two players", "href": "/games/two-players" }
+      ]
+    },
+    {
+      "group": "Concepts",
+      "pages": [
+        { "title": "🏗️ Architecture", "href": "/concepts/architecture" },
+        { "title": "🤝 Contributing", "href": "/concepts/contributing" }
+      ]
+    }
+  ]
+}

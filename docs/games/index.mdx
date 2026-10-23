@@ -1,0 +1,58 @@
+---
+title: All games
+description: Every game in flutter_mini_games with its builder, id and number of players.
+---
+
+Play them all in the [live demo](https://impaktfull.github.io/flutter_mini_games/).
+
+## Puzzles
+
+Single player, turn based. See [Puzzles](/games/puzzles).
+
+| Game | Builder | Id | |
+|---|---|---|---|
+| Trail | `TrailGameBuilder` | `trail` | Draw one trail through every cell, passing the numbered checkpoints in order |
+| Sudoku | `SudokuGameBuilder` | `sudoku` | Fill the 9x9 grid so every row, column and box contains 1 to 9 |
+| Minesweeper | `MinesweeperGameBuilder` | `minesweeper` | Reveal every safe cell without hitting a mine |
+| 2048 | `TwentyFortyEightGameBuilder` | `twenty_forty_eight` | Slide the tiles and merge equal numbers until you reach 2048 |
+| Switch | `SwitchGameBuilder` | `switch_lights` | Turn off all the lights, a tap toggles a light and its neighbours |
+| Code | `CodeGameBuilder` | `code` | Crack the hidden code of 4 symbols in 8 tries |
+| Pairs | `PairsGameBuilder` | `pairs` | Flip two cards at a time and find all matching pairs |
+
+## Arcade
+
+Single player, real time. See [Arcade](/games/arcade).
+
+| Game | Builder | Id | |
+|---|---|---|---|
+| Stack | `StackGameBuilder` | `stack` | Drop the sliding blocks to build the highest tower |
+| Dash | `DashGameBuilder` | `dash` | Endless runner: jump over blocks and duck under flyers |
+| Flit | `FlitGameBuilder` | `flit` | Tap to flap and fly through the gaps between the columns |
+| Hop | `HopGameBuilder` | `hop` | Bounce from platform to platform and climb as high as you can |
+| Snake | `SnakeGameBuilder` | `snake` | Eat the food to grow, without hitting the walls or yourself |
+| Whack | `WhackGameBuilder` | `whack` | Tap the critters before they hide, skip the spiky decoys |
+| Reflex | `ReflexGameBuilder` | `reflex` | Tap as soon as the color changes and measure your reaction time |
+| Breaker | `BreakerGameBuilder` | `breaker` | Bounce the ball off the paddle and break all the bricks |
+| Tiles | `TilesGameBuilder` | `tiles` | Tap the dark tile in every row before it scrolls away |
+| Echo | `EchoGameBuilder` | `echo` | Repeat the growing sequence of flashing pads |
+
+## Two players
+
+Two players on one phone, sitting opposite each other. See [Two players](/games/two-players).
+
+| Game | Builder | Id | |
+|---|---|---|---|
+| Tic Tac Toe | `TicTacToeGameBuilder` | `tic_tac_toe` | Take turns as X and O and get three in a row |
+| Boxes | `BoxesGameBuilder` | `boxes` | Dots and boxes: close a box to claim it |
+| Four Up | `FourUpGameBuilder` | `four_up` | Drop your discs and get four in a row |
+| Flip | `FlipGameBuilder` | `flip` | Reversi: outflank the discs of your opponent to flip them |
+| Puck | `PuckGameBuilder` | `puck` | Air hockey: shoot the puck into the other goal |
+| Quickdraw | `QuickdrawGameBuilder` | `quickdraw` | Wait for the signal, then tap your half first |
+| Push | `PushGameBuilder` | `push` | Sumo ring: push the other disc out of the shrinking ring |
+| Slap | `SlapGameBuilder` | `slap` | One player slaps, the other pulls away in time |
+| Snatch | `SnatchGameBuilder` | `snatch` | Be the first to tap the symbol shown in the middle |
+| Tug | `TugGameBuilder` | `tug` | Tug of war: mash your half to pull the rope to your side |
+
+## Keyboard
+
+Games work with touch first. Where it makes sense they also take a keyboard: arrows or WASD to swipe or steer, space or enter to tap, jump or drop.

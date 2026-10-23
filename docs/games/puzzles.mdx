@@ -1,0 +1,97 @@
+---
+title: Puzzles
+description: Rules, options and results of the single-player puzzle games.
+---
+
+Puzzles are turn based. The timer starts with the first move. See [Scores](/guides/scores) for the shared result fields.
+
+## Trail
+
+Draw one trail through every cell of the grid. It starts at checkpoint 1, passes the numbered checkpoints in order and ends at the last one.
+
+- **Controls**: drag to draw, or tap the next cell. Undo steps back.
+- **Puzzles**: generated (always solvable), or your own list.
+- **Score**: `cells × 20 − seconds − undos × 5`, at least the number of cells. `data`: `puzzle`, `rows`, `cols`.
+
+```dart
+TrailGameBuilder(
+  difficulty: TrailDifficulty.expert, // easy 3x3, medium 4x4, hard 5x5 (default), expert 6x6, master 7x7
+  puzzles: [
+    TrailPuzzle(rows: 3, cols: 3, checkpoints: {1: (0, 0), 2: (2, 2)}, name: 'Warm-up'),
+  ],
+)
+```
+
+## Sudoku
+
+Fill the 9x9 grid so every row, column and 3x3 box contains the digits 1 to 9.
+
+- **Controls**: tap a cell, then a digit. Erase, and a notes toggle for pencil marks. Wrong entries are marked and counted as mistakes.
+- **Puzzles**: generated with a unique solution, or your own.
+- **Score**: `base − seconds − mistakes × 50`, at least a tenth of the base (base 1000 / 1500 / 2000 / 2500 per difficulty). `data`: `puzzle`, `difficulty`, `mistakes`.
+
+```dart
+SudokuGameBuilder(
+  difficulty: SudokuDifficulty.hard, // easy, medium (default), hard, expert
+  puzzles: [
+    // 81 characters, row by row, 1-9 or . for an empty cell. Must have exactly one solution.
+    SudokuPuzzle.fromString('53..7....6..195....98....6.8...6...34..8.3..17...2...6.6....28....419..5....8..79'),
+  ],
+)
+```
+
+## Minesweeper
+
+Reveal every safe cell without hitting a mine. The first tap never hits a mine and always opens an area.
+
+- **Controls**: tap to reveal, long press (or flag mode) to flag. Tap a number whose flags match to reveal its neighbours.
+- **Difficulty**: easy 8x8 with 10 mines (default), medium 10x12 with 20, hard 12x16 with 40. Players can switch in the game.
+- **Score**: `mines × 100 − seconds × 5`, at least `mines × 10`, only when won. `data`: `difficulty`, `rows`, `cols`, `mines`, `revealed`.
+
+```dart
+MinesweeperGameBuilder(difficulty: MinesweeperDifficulty.medium)
+```
+
+## 2048
+
+Slide all tiles in one direction. Equal tiles merge, and a new tile appears after every move. Reach 2048 to win.
+
+- **Controls**: swipe, or arrow keys / WASD.
+- **Score**: the sum of all merged tiles. Reaching 2048 is `won`, no moves left is `lost`.
+
+## Switch
+
+Lights Out on a 5x5 board: a tap toggles a light and its four neighbours. Turn every light off.
+
+- **Controls**: tap a light. A hint shows one tap of the shortest solution.
+- **Puzzles**: generated (always solvable), or your own list.
+- **Score**: `1000 − (moves − par) × 50 − seconds`, at least 100. `par` is the shortest solution. `data`: `difficulty`, `par`, `hints`.
+
+```dart
+SwitchGameBuilder(
+  difficulty: SwitchDifficulty.hard, // easy, medium (default), hard, expert
+  puzzles: [
+    // 5 rows of 5, # = on. Unsolvable boards throw.
+    SwitchPuzzle.fromString('.#... ###.. .#... ..... .....'),
+  ],
+)
+```
+
+## Code
+
+Guess the hidden code of 4 symbols (out of 6, repeats allowed) in 8 tries. After every guess you see how many symbols are right and in the right place (filled marker) and how many are right but in the wrong place (ring).
+
+- **Controls**: tap symbols to fill the guess, tap a slot to clear it, then Submit.
+- **Score**: `(9 − tries) × 100` when cracked. `data`: `tries`.
+- **Options**: `random` for a reproducible code.
+
+## Pairs
+
+Flip two cards at a time. Matching pairs stay open, others turn back.
+
+- **Difficulty**: easy 4x4 (default), medium 4x5, hard 5x6. Players can switch in the game.
+- **Score**: `1000 − moves × 10 − seconds`, at least 100. `data`: `difficulty`, `rows`, `cols`, `pairs`.
+
+```dart
+PairsGameBuilder(difficulty: PairsDifficulty.hard)
+```

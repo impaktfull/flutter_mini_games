@@ -1,0 +1,80 @@
+---
+title: Arcade
+description: Rules, controls and results of the single-player real-time games.
+---
+
+Arcade games run in real time and pause while the app is in the background. Endless games end with `GameOutcome.lost` and the score reached, so the best score counts every game. See [Scores](/guides/scores).
+
+## Stack
+
+A block slides back and forth above the tower. Drop it: the overhang is cut off and the next block is as wide as what is left. Miss the tower and the game is over.
+
+- **Controls**: tap, space or enter to drop.
+- **Score**: 1 per block, plus a bonus (up to 5) for a streak of perfect drops. `data`: `blocks`, `perfects`.
+
+## Dash
+
+An endless runner. Jump over the blocks and duck under the flyers. The speed keeps growing.
+
+- **Controls**: tap, space, arrow up or swipe up to jump. Swipe down or arrow down to duck (or fall fast).
+- **Score**: 10 points per unit of distance. `data`: `distance`.
+
+## Flit
+
+Tap to flap and fly through the gaps between the columns. The gaps slowly get smaller.
+
+- **Controls**: tap, space or arrow up.
+- **Score**: columns passed.
+
+## Hop
+
+The character bounces automatically when it lands on a platform. Steer to climb as high as you can. Some platforms move or break. The screen wraps around at the sides.
+
+- **Controls**: hold the left or right half of the board, or arrow keys / A-D.
+- **Score**: height × 100.
+
+## Snake
+
+Steer the snake to the food. It grows with every bite and gets faster. Don't hit the walls or yourself.
+
+- **Controls**: swipe, or arrow keys / WASD. The first swipe starts the game.
+- **Score**: 10 per food. Filling the board is `won`.
+
+```dart
+SnakeGameBuilder(gridSize: 20) // 15x15 by default
+```
+
+## Whack
+
+Critters pop up out of 9 holes for 30 seconds. Tap them before they hide, but skip the spiky decoys. They come faster as the round goes on.
+
+- **Controls**: tap the holes, with as many fingers as you like.
+- **Score**: hits minus decoys tapped. `data`: `hits`, `decoys`, `misses`, `escaped`.
+
+## Reflex
+
+A reaction test of 5 tries. Wait until the board changes color, then tap as fast as you can. Tapping too early retries that try.
+
+- **Controls**: tap, space or enter.
+- **Score**: `1000 − average reaction in ms`. `data`: `averageMs`, `bestMs`, `timesMs`, `earlyTaps`.
+
+## Breaker
+
+Bounce the ball off the paddle and break all the bricks. 5 levels, 3 lives. Where the ball hits the paddle sets its angle.
+
+- **Controls**: drag the paddle, or hold the left/right half of the board, or arrow keys / A-D. Tap, space or enter to launch.
+- **Score**: 10 per brick. Clearing level 5 is `won`, losing the last life `lost`. `data`: `level`, `bricks`, `lives`.
+
+## Tiles
+
+Rows of 4 tiles scroll down. Tap the dark tile of every row before it leaves the board, and never a light tile. The speed keeps growing.
+
+- **Controls**: tap, with as many fingers as you like.
+- **Score**: tiles tapped. `data`: `reason` (`wrongTile` / `missedTile`), `speed`.
+
+## Echo
+
+Four pads light up in a sequence that grows by one every round. Repeat it in the same order. Every pad has its own shape and color.
+
+- **Controls**: tap the pads. Space or enter starts.
+- **Score**: rounds completed. `data`: `rounds`, `sequenceLength`.

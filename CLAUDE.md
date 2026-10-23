@@ -368,7 +368,9 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
     ];
     ```
 
-11. **Run `tool/check_tree_shaking.sh <game folder>`** - builds only your game's app and checks with the compiler report (`--dump-info`) that no other game is in it (CI runs it for every game)
+11. **Run `tool/check_tree_shaking.sh <game folder>`** - builds only your game's app and checks with the compiler report (`--dump-info`) that no other game is in it (CI runs it for every game); it also prints the size the game adds to an app
+
+12. **Document the game** on docs.page (`docs/`): add it to `docs/games/index.mdx` and its category page (rules, controls, builder options, score and `data`), and its size to `docs/guides/app-size.mdx`
 
 ## Available Core Components
 
@@ -689,6 +691,12 @@ tool/check_tree_shaking.sh
 3. For procedural content: test that it is valid and solvable, with seeded random (`Random(42)`)
 4. Test edge cases (min/max sizes, boundary conditions)
 5. Verify win conditions (e.g., path starts AND ends at correct positions)
+
+## Documentation
+
+- docs.page (`docs.json` + `docs/*.mdx`) at https://docs.page/impaktfull/flutter_mini_games, built from `main`; `.pubignore` keeps it out of the package
+- Update the docs in the same PR as the change: new or changed games, builder options, result `data`, theming and scores APIs
+- The README stays short and links to the docs
 
 ## Releases
 

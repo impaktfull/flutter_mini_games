@@ -1,0 +1,54 @@
+---
+title: Launching games
+description: Open a game with FlutterMiniGames.launch or show it with your own router.
+---
+
+## With `FlutterMiniGames.launch`
+
+```dart
+final GameResult? result = await FlutterMiniGames.launch(context, const SnakeGameBuilder());
+```
+
+- Pushes the game on the root navigator as a full-screen `MaterialPageRoute`.
+- Completes when the player leaves the game.
+- Returns the result of the **last** game played on that screen (players can restart or play the next puzzle without leaving), or `null` when no game was finished or started.
+- Every result, also of the earlier games on that screen, goes to the score store and `onGameFinished`. See [Scores](/guides/scores).
+
+## With your own router
+
+`build(context)` returns the game screen as a widget, so you can show it anywhere:
+
+```dart
+// go_router
+GoRoute(
+  path: '/play/sudoku',
+  builder: (context, state) => const SudokuGameBuilder().build(context),
+)
+
+// Navigator
+Navigator.of(context).push(MaterialPageRoute<void>(builder: const TwentyFortyEightGameBuilder().build));
+```
+
+Results still go to the score store and `onGameFinished` of the `FlutterMiniGames` widget above it. Only the return value of `launch` is not available.
+
+## Builders
+
+Every game has a `const` builder, e.g. `TrailGameBuilder`. All builders share these members:
+
+| Member | Description |
+|---|---|
+| `id` | Stable id of the game (e.g. `trail`), used for stored results. Never shown to the player. |
+| `name` | Display name, override with `name: 'My name'` |
+| `description` | One-line description, override with `description: '...'` |
+| `isMultiPlayer` | `true` for two-player games played on one device |
+| `coreTheme` | A different `CoreGameTheme` for this game only |
+| `theme` | Tweak this game's theme: `theme: (theme) => theme.copyWith(...)` |
+| `build(context)` | The game screen |
+
+Some games have extra options, such as a difficulty or your own puzzles. See [All games](/games).
+
+## Leaving a game
+
+When a player leaves a game that is in progress, it is reported as `GameOutcome.abandoned`. A game that was never started reports nothing.
+
+Real-time games (Snake, Dash, ...) pause while the app is in the background.

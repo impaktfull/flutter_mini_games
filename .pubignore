@@ -26,6 +26,10 @@ migrate_working_dir/
 /pubspec.lock
 **/doc/api/
 .dart_tool/
+
+# docs.page source, published from the repository (pub expects a `doc` folder and warns about `docs`)
+docs/
+docs.json
 .flutter-plugins
 .flutter-plugins-dependencies
 build/
@@ -47,3 +51,7 @@ devtools_options.yaml
 release-please-config.json
 .release-please-manifest.json
 tool/
+
+# docs.page source, published from the repository (pub expects a `doc` folder and warns about `docs`)
+docs/
+docs.json

@@ -1,0 +1,38 @@
+---
+title: Architecture
+description: The principles behind flutter_mini_games and how a game is put together.
+---
+
+## Principles
+
+Every change to the package keeps these four goals:
+
+1. **Minimal game code in your app.** You create builders and launch them. The optional `FlutterMiniGames` widget configures all games at once.
+2. **Unused games are never shipped.** The library has no list or registry of all games, the shared core never imports a game, and the package has no assets. CI builds one app per game and fails when another game is compiled in. See [App size](/guides/app-size).
+3. **One scores system for all games.** Every game reports the same `GameResult` to the same store.
+4. **Theming is easy and identical between games.** Every game theme has the same shape and is derived from one `CoreGameTheme`.
+
+## How a game is built
+
+```
+lib/src/game/{game}/
+├── game/
+│   ├── logic/{game}_game_controller.dart   # state and rules, reports the result
+│   ├── model/                               # puzzles, generators, solvers
+│   └── {game}_game_builder.dart            # the public entry point
+├── screen/                                  # screen and header
+├── style/{game}_theme.dart                 # colors, textStyles, dimens
+└── widget/                                  # board and pieces
+```
+
+- The **controller** holds all state and rules, with no Flutter widgets. It counts moves, runs the timer and calls `finish(outcome, score: ..., data: ...)` when the game ends.
+- The **screen** uses the shared layout: a header with the stats bar, the largest board that fits, the controls and a "How to play" sheet. The page never scrolls, so swipes and drags always reach the board.
+- Real-time games share one **game loop**: frame-rate independent `tick`s that stop in the background, and repaint only the board every frame.
+- All input goes through one **input detector**: taps, swipes, holds and keyboard keys.
+- Two-player games share the **duel core**: the split layout, ready buttons, countdown, rounds and rematch.
+
+## Quality
+
+- Strict analysis (`strict-casts`, `strict-inference`, `strict-raw-types` and type-safety lints), no `dynamic` and no casts.
+- Every game has controller tests (rules, win and lose, the reported result) and screen tests. Generators are tested for validity with seeded randomness.
+- Colors only come from the theme, and nothing depends on color alone.

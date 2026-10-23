@@ -1,0 +1,29 @@
+---
+title: Contributing
+description: Report issues, suggest games and send pull requests.
+---
+
+Issues and ideas are welcome on [GitHub](https://github.com/impaktfull/flutter_mini_games/issues).
+
+## Development
+
+```bash
+fvm install                      # the Flutter version in .fvmrc
+fvm flutter pub get
+fvm flutter test
+fvm dart analyze --fatal-infos
+tool/format.sh
+FLUTTER="fvm flutter" tool/check_tree_shaking.sh snake   # tree shaking and size of one game
+```
+
+Run the example app (`example/`) to play every game.
+
+## Adding a game
+
+The full checklist (directory structure, controller, theme, builder, screen, tests, exports and the example app) is in [`CLAUDE.md`](https://github.com/impaktfull/flutter_mini_games/blob/main/CLAUDE.md). Also add the game to these docs.
+
+## Pull requests
+
+- PR titles follow [Conventional Commits](https://www.conventionalcommits.org) (`feat:`, `fix:`, `perf:`, ...): they decide the next version and the changelog.
+- CI checks formatting, analysis, tests, the publish dry run and tree shaking.
+- Releases are automated with release-please and published to pub.dev from GitHub Actions.

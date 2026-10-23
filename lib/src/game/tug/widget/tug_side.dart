@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
@@ -72,7 +74,7 @@ class TugSide extends StatelessWidget {
   }
 
   void _pull() {
-    HapticFeedback.selectionClick();
+    unawaited(HapticFeedback.selectionClick());
     controller.pull(player);
   }
 }

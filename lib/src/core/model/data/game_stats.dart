@@ -28,7 +28,10 @@ class GameStats {
   });
 
   factory GameStats.fromResults(String gameId, Iterable<GameResult> results) {
-    var won = 0, lost = 0, draw = 0, abandoned = 0;
+    var won = 0;
+    var lost = 0;
+    var draw = 0;
+    var abandoned = 0;
     int? bestScore;
     Duration? fastestWin;
     for (final result in results.where((result) => result.gameId == gameId)) {

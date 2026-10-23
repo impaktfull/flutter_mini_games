@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -78,7 +79,7 @@ class _FlipDiscState extends State<FlipDisc> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    if (widget.animateIn) _place.forward();
+    if (widget.animateIn) unawaited(_place.forward());
   }
 
   @override
@@ -86,7 +87,7 @@ class _FlipDiscState extends State<FlipDisc> with TickerProviderStateMixin {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.owner != widget.owner) {
       _previous = oldWidget.owner;
-      _flip.forward(from: 0);
+      unawaited(_flip.forward(from: 0));
     }
   }
 

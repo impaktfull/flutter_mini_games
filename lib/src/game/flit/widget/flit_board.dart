@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -40,7 +41,7 @@ class _FlitBoardState extends State<FlitBoard> with SingleTickerProviderStateMix
 
   void _syncHover() {
     if (widget.controller.isReady) {
-      if (!_hover.isAnimating) _hover.repeat();
+      if (!_hover.isAnimating) unawaited(_hover.repeat());
     } else if (_hover.isAnimating) {
       _hover
         ..stop()

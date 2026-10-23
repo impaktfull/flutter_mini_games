@@ -660,5 +660,6 @@ tool/check_tree_shaking.sh
 - Use `spacing` parameter in `Column`/`Row` instead of `SizedBox` between children
 - Prefer `const` constructors where possible
 - Run `tool/format.sh` and `dart analyze --fatal-infos` before committing (CI checks both)
+- Strict mode (`analysis_options.yaml`): `strict-casts`, `strict-inference`, `strict-raw-types` and type-safety lints (`avoid_dynamic_calls`, `strict_top_level_inference`, `cast_nullable_to_non_nullable`, `discarded_futures`, ...). Never use `dynamic` or `as` casts: use type patterns (`if (box is! RenderBox) return;`, `if (json case {'id': final String id})`), and wrap fire-and-forget futures in `unawaited(...)`
 - **No hardcoded colors** - always use CoreGameTheme
 - **No alpha on overlapping paint** - use solid colors to avoid artifacts

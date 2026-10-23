@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_board.dart';
@@ -56,7 +58,7 @@ class EchoBoard extends StatelessWidget {
       isLit: controller.litPad == pad || controller.expectedPad == pad,
       isWrong: controller.wrongPad == pad,
       onTap: () {
-        if (controller.isAwaitingInput) HapticFeedback.selectionClick();
+        if (controller.isAwaitingInput) unawaited(HapticFeedback.selectionClick());
         controller.tapPad(pad);
       },
     );

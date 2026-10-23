@@ -54,7 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final twoPlayers = HomeScreen.games.where((game) => game.isMultiPlayer);
     return ImpaktfullUiScreen(
       title: 'Flutter Mini Games',
-      child: ImpaktfullUiListView(
+      child: ImpaktfullUiListView<Never>(
         padding: const EdgeInsets.all(16),
         spacing: 8,
         children: [

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/model/data/flutter_mini_game_builder.dart';
 import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
@@ -77,7 +79,7 @@ class FlutterMiniGames extends InheritedWidget {
     final store = config?.scoreStore ?? defaultScoreStore;
     final listener = context.getInheritedWidgetOfExactType<GameResultListener>();
     return (result) {
-      store.save(result);
+      unawaited(store.save(result));
       config?.onGameFinished?.call(result);
       listener?.onResult(result);
     };

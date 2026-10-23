@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -89,17 +90,19 @@ class _FooterButton extends StatelessWidget {
   const _FooterButton({required this.footer});
 
   void _open(BuildContext context, CoreGameTheme theme) {
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: theme.colors.background,
-      showDragHandle: true,
-      builder: (context) => GameThemeProvider<CoreGameTheme>(
-        // The sheet is a new route: provide the core theme again
-        theme: theme,
-        builder: (context, theme) => SafeArea(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(theme.dimens.padding, 0, theme.dimens.padding, theme.dimens.padding),
-            child: footer,
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        backgroundColor: theme.colors.background,
+        showDragHandle: true,
+        builder: (context) => GameThemeProvider<CoreGameTheme>(
+          // The sheet is a new route: provide the core theme again
+          theme: theme,
+          builder: (context, theme) => SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(theme.dimens.padding, 0, theme.dimens.padding, theme.dimens.padding),
+              child: footer,
+            ),
           ),
         ),
       ),

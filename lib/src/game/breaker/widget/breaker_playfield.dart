@@ -94,8 +94,8 @@ class _BreakerInputState extends State<_BreakerInput> {
   BreakerGameController get _controller => widget.controller;
 
   double get _worldPerPixel {
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || !box.hasSize || box.size.width == 0) return 0;
+    final box = context.findRenderObject();
+    if (box is! RenderBox || !box.hasSize || box.size.width == 0) return 0;
     return BreakerGameController.worldWidth / box.size.width;
   }
 

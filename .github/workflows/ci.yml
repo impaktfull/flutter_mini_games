@@ -35,7 +35,8 @@ jobs:
       - name: Publish dry run
         run: flutter pub publish --dry-run
 
-  # Unused games must never end up in a host app (builds one web app per game, runs beside the checks)
+  # Unused games must never end up in a host app (builds one web app per game, runs beside the checks).
+  # The size each game adds to an app is printed and added to the job summary.
   tree-shaking:
     runs-on: ubuntu-latest
     steps:
@@ -43,4 +44,4 @@ jobs:
         uses: actions/checkout@v4
       - uses: ./.github/actions/setup-flutter
       - name: Tree shaking
-        run: ./tool/check_tree_shaking.sh
+        run: SIZE_REPORT="$GITHUB_STEP_SUMMARY" ./tool/check_tree_shaking.sh

@@ -40,8 +40,6 @@ class SlapTargetArena extends StatelessWidget {
             final targetCenter = Offset(width / 2, height - padding - radius);
             const restTop = padding;
             final landTop = targetCenter.dy - handHeight / 2;
-            final handTop = lerpDouble(restTop, landTop, controller.handPosition)!;
-            final lift = controller.handLift;
             return Stack(
               children: [
                 Positioned(
@@ -51,17 +49,29 @@ class SlapTargetArena extends StatelessWidget {
                   height: radius * 2,
                   child: _Target(controller: controller, player: player, radius: radius),
                 ),
-                Positioned(
-                  left: (width - handWidth) / 2,
-                  top: handTop,
+                // The hand moves every frame during an attack: only this layer rebuilds and repaints
+                Positioned.fill(
                   child: IgnorePointer(
-                    // Raised: bigger and tilted, growing away from the target (anchored at the fingertips)
-                    child: Transform.rotate(
-                      angle: -0.2 * lift,
-                      alignment: Alignment.bottomCenter,
-                      child: Transform.scale(
-                        scale: 1 + 0.35 * lift,
-                        alignment: Alignment.bottomCenter,
+                    child: RepaintBoundary(
+                      child: ListenableBuilder(
+                        listenable: controller.frame,
+                        builder: (context, child) {
+                          final lift = controller.handLift;
+                          return Stack(
+                            children: [
+                              Positioned(
+                                left: (width - handWidth) / 2,
+                                top: lerpDouble(restTop, landTop, controller.handPosition),
+                                // Raised: bigger and tilted, growing away from the target (anchored at the fingertips)
+                                child: Transform.rotate(
+                                  angle: -0.2 * lift,
+                                  alignment: Alignment.bottomCenter,
+                                  child: Transform.scale(scale: 1 + 0.35 * lift, alignment: Alignment.bottomCenter, child: child),
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                         child: SlapHand(
                           width: handWidth,
                           color: theme.colors.playerColor(player.opponent),

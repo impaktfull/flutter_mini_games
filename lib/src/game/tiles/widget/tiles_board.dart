@@ -37,20 +37,7 @@ class TilesBoard extends StatelessWidget {
                 fit: StackFit.expand,
                 children: [
                   CustomPaint(
-                    painter: _TilesPainter(
-                      tiles: [
-                        for (final row in controller.rows)
-                          _PaintedRow(
-                            top: controller.topOf(row.index),
-                            darkColumn: row.darkColumn,
-                            flash: controller.flashOf(row),
-                            isStart: controller.isReady && row.index == 0,
-                          ),
-                      ],
-                      mistake: controller.mistake,
-                      mistakeTop: _mistakeTop,
-                      theme: theme,
-                    ),
+                    painter: _TilesPainter(controller: controller, theme: theme),
                   ),
                   if (controller.isReady)
                     const _HalfBoard(
@@ -106,43 +93,15 @@ class _HalfBoard extends StatelessWidget {
   }
 }
 
-class _PaintedRow {
-  /// Top of the row in rows from the top of the board
-  final double top;
-  final int darkColumn;
-
-  /// Flash progress of a tapped tile (0..1), null when not tapped
-  final double? flash;
-
-  /// The first dark tile before the game starts
-  final bool isStart;
-
-  const _PaintedRow({
-    required this.top,
-    required this.darkColumn,
-    required this.flash,
-    required this.isStart,
-  });
-
-  @override
-  bool operator ==(Object other) => other is _PaintedRow && other.top == top && other.darkColumn == darkColumn && other.flash == flash && other.isStart == isStart;
-
-  @override
-  int get hashCode => Object.hash(top, darkColumn, flash, isStart);
-}
-
+/// Reads the controller while painting, repaints every frame of the controller
 class _TilesPainter extends CustomPainter {
-  final List<_PaintedRow> tiles;
-  final TilesMistake? mistake;
-  final double? mistakeTop;
+  final TilesGameController controller;
   final TilesTheme theme;
 
-  const _TilesPainter({
-    required this.tiles,
-    required this.mistake,
-    required this.mistakeTop,
+  _TilesPainter({
+    required this.controller,
     required this.theme,
-  });
+  }) : super(repaint: controller.frame);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -159,26 +118,26 @@ class _TilesPainter extends CustomPainter {
     for (var column = 1; column < TilesGameController.columns; column++) {
       canvas.drawLine(Offset(column * cellWidth, 0), Offset(column * cellWidth, size.height), linePaint);
     }
-    for (final row in tiles) {
-      final y = (row.top + 1) * cellHeight;
+    final rows = controller.rows;
+    for (final row in rows) {
+      final y = (controller.topOf(row.index) + 1) * cellHeight;
       canvas.drawLine(Offset(0, y), Offset(size.width, y), linePaint);
     }
 
     Rect cell(int column, double top) => Rect.fromLTWH(column * cellWidth, top * cellHeight, cellWidth, cellHeight).deflate(dimens.tileInset + dimens.gridLineWidth / 2);
     final radius = Radius.circular(dimens.tileRadius);
 
-    for (final row in tiles) {
-      final flash = row.flash;
+    for (final row in rows) {
+      final flash = controller.flashOf(row);
       final color = flash == null ? colors.darkTile : Color.lerp(colors.flash, colors.tappedTile, Curves.easeOut.transform(flash))!;
-      final rect = cell(row.darkColumn, row.top);
+      final rect = cell(row.darkColumn, controller.topOf(row.index));
       canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), Paint()..color = color);
-      if (row.isStart) _paintStartLabel(canvas, rect);
+      if (controller.isReady && row.index == 0) _paintStartLabel(canvas, rect);
     }
 
-    final mistake = this.mistake;
-    final mistakeTop = this.mistakeTop;
-    if (mistake != null && mistakeTop != null) {
-      final rect = cell(mistake.column, mistakeTop);
+    final mistake = controller.mistake;
+    if (mistake != null) {
+      final rect = cell(mistake.column, controller.topOf(mistake.row));
       canvas.drawRRect(RRect.fromRectAndRadius(rect, radius), Paint()..color = colors.mistake);
       final markPaint = Paint()
         ..color = colors.mistakeMark
@@ -215,14 +174,5 @@ class _TilesPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _TilesPainter oldDelegate) =>
-      oldDelegate.mistake != mistake || oldDelegate.mistakeTop != mistakeTop || oldDelegate.theme != theme || !_sameTiles(oldDelegate.tiles, tiles);
-
-  static bool _sameTiles(List<_PaintedRow> a, List<_PaintedRow> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i] != b[i]) return false;
-    }
-    return true;
-  }
+  bool shouldRepaint(covariant _TilesPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.theme != theme;
 }

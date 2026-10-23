@@ -1,6 +1,5 @@
 import 'dart:ui' show lerpDouble;
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/game/snake/game/logic/snake_game_controller.dart';
 import 'package:flutter_mini_games/src/game/snake/game/model/snake_cell.dart';
@@ -20,40 +19,28 @@ class SnakeBoard extends StatelessWidget {
     final theme = SnakeTheme.of(context);
     return CustomPaint(
       size: Size.infinite,
-      painter: _SnakePainter(
-        gridSize: controller.gridSize,
-        snake: controller.snake,
-        removedTail: controller.removedTail,
-        food: controller.food,
-        progress: controller.stepProgress,
-        colors: theme.colors,
-        dimens: theme.dimens,
-      ),
+      painter: _SnakePainter(controller: controller, colors: theme.colors, dimens: theme.dimens),
     );
   }
 }
 
+/// Reads the controller while painting, repaints every frame of the controller
 class _SnakePainter extends CustomPainter {
-  final int gridSize;
-  final List<SnakeCell> snake;
-  final SnakeCell? removedTail;
-  final SnakeCell? food;
-  final double progress;
+  final SnakeGameController controller;
   final SnakeColors colors;
   final SnakeDimens dimens;
 
   _SnakePainter({
-    required this.gridSize,
-    required this.snake,
-    required this.removedTail,
-    required this.food,
-    required this.progress,
+    required this.controller,
     required this.colors,
     required this.dimens,
-  });
+  }) : super(repaint: controller.frame);
 
   @override
   void paint(Canvas canvas, Size size) {
+    final gridSize = controller.gridSize;
+    final snake = controller.snake;
+    final progress = controller.stepProgress;
     final cellSize = size.width / gridSize;
     Offset center(double x, double y) => Offset((x + 0.5) * cellSize, (y + 0.5) * cellSize);
     Offset lerpCell(SnakeCell from, SnakeCell to) => center(lerpDouble(from.x, to.x, progress)!, lerpDouble(from.y, to.y, progress)!);
@@ -68,7 +55,7 @@ class _SnakePainter extends CustomPainter {
     }
 
     // Food
-    final food = this.food;
+    final food = controller.food;
     if (food != null) {
       canvas.drawCircle(center(food.x.toDouble(), food.y.toDouble()), cellSize * dimens.foodSize / 2, Paint()..color = colors.food);
     }
@@ -80,7 +67,7 @@ class _SnakePainter extends CustomPainter {
       final point = center(cell.x.toDouble(), cell.y.toDouble());
       path.lineTo(point.dx, point.dy);
     }
-    final removedTail = this.removedTail;
+    final removedTail = controller.removedTail;
     if (removedTail != null) {
       final tail = lerpCell(removedTail, snake.last);
       path.lineTo(tail.dx, tail.dy);
@@ -107,12 +94,5 @@ class _SnakePainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _SnakePainter oldDelegate) =>
-      oldDelegate.progress != progress ||
-      oldDelegate.food != food ||
-      oldDelegate.removedTail != removedTail ||
-      oldDelegate.gridSize != gridSize ||
-      oldDelegate.colors != colors ||
-      oldDelegate.dimens != dimens ||
-      !listEquals(oldDelegate.snake, snake);
+  bool shouldRepaint(covariant _SnakePainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.colors != colors || oldDelegate.dimens != dimens;
 }

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
+import 'package:flutter_mini_games/src/core/widget/components/cached_text_painter.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_board.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
@@ -27,6 +28,17 @@ class PuckTable extends StatefulWidget {
 class _PuckTableState extends State<PuckTable> {
   /// Every finger stays with the half it went down in
   final Map<int, DuelPlayer> _pointers = {};
+
+  /// Goals of each player, only laid out when they change
+  final Map<DuelPlayer, CachedTextPainter> _scores = {for (final player in DuelPlayer.values) player: CachedTextPainter()};
+
+  @override
+  void dispose() {
+    for (final score in _scores.values) {
+      score.dispose();
+    }
+    super.dispose();
+  }
 
   void _onDown(PointerDownEvent event, double scale) {
     final position = event.localPosition / scale;
@@ -71,14 +83,7 @@ class _PuckTableState extends State<PuckTable> {
                   onPointerUp: _onEnd,
                   onPointerCancel: _onEnd,
                   child: CustomPaint(
-                    painter: _PuckPainter(
-                      puck: controller.puck,
-                      bottomMallet: controller.mallet(DuelPlayer.bottom),
-                      topMallet: controller.mallet(DuelPlayer.top),
-                      bottomGoals: controller.goals(DuelPlayer.bottom),
-                      topGoals: controller.goals(DuelPlayer.top),
-                      theme: theme,
-                    ),
+                    painter: _PuckPainter(controller: controller, scores: _scores, theme: theme),
                   ),
                 ),
                 // Lets touches through to the table while a round is playing
@@ -101,22 +106,17 @@ class _PuckTableState extends State<PuckTable> {
   }
 }
 
+/// Reads the controller while painting, repaints every frame of the controller
 class _PuckPainter extends CustomPainter {
-  final Offset puck;
-  final Offset bottomMallet;
-  final Offset topMallet;
-  final int bottomGoals;
-  final int topGoals;
+  final PuckGameController controller;
+  final Map<DuelPlayer, CachedTextPainter> scores;
   final PuckTheme theme;
 
-  const _PuckPainter({
-    required this.puck,
-    required this.bottomMallet,
-    required this.topMallet,
-    required this.bottomGoals,
-    required this.topGoals,
+  _PuckPainter({
+    required this.controller,
+    required this.scores,
     required this.theme,
-  });
+  }) : super(repaint: controller.frame);
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -146,9 +146,10 @@ class _PuckPainter extends CustomPainter {
 
     _paintScores(canvas, size);
 
-    _paintMallet(canvas, bottomMallet * scale, PuckGameController.malletRadius * scale, DuelPlayer.bottom);
-    _paintMallet(canvas, topMallet * scale, PuckGameController.malletRadius * scale, DuelPlayer.top);
+    _paintMallet(canvas, controller.mallet(DuelPlayer.bottom) * scale, PuckGameController.malletRadius * scale, DuelPlayer.bottom);
+    _paintMallet(canvas, controller.mallet(DuelPlayer.top) * scale, PuckGameController.malletRadius * scale, DuelPlayer.top);
 
+    final puck = controller.puck;
     final puckRadius = PuckGameController.puckRadius * scale;
     canvas
       ..drawCircle(puck * scale, puckRadius, Paint()..color = colors.puck)
@@ -168,24 +169,17 @@ class _PuckPainter extends CustomPainter {
     final centerY = size.height / 2;
     final gap = dimens.lineWidth * 2;
 
-    final bottom = _layout('$bottomGoals', theme.textStyles.bottomScore);
+    final bottom = scores[DuelPlayer.bottom]!.layout('${controller.goals(DuelPlayer.bottom)}', theme.textStyles.bottomScore);
     bottom.paint(canvas, Offset(size.width - dimens.scoreMargin - bottom.width, centerY + gap));
 
-    final top = _layout('$topGoals', theme.textStyles.topScore);
+    final top = scores[DuelPlayer.top]!.layout('${controller.goals(DuelPlayer.top)}', theme.textStyles.topScore);
     canvas
       ..save()
       ..translate(size.width - dimens.scoreMargin - top.width / 2, centerY - gap - top.height / 2)
       ..rotate(pi);
     top.paint(canvas, Offset(-top.width / 2, -top.height / 2));
     canvas.restore();
-    bottom.dispose();
-    top.dispose();
   }
-
-  TextPainter _layout(String text, TextStyle style) => TextPainter(
-    text: TextSpan(text: text, style: style),
-    textDirection: TextDirection.ltr,
-  )..layout();
 
   void _paintMallet(Canvas canvas, Offset center, double radius, DuelPlayer player) {
     canvas
@@ -202,11 +196,5 @@ class _PuckPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _PuckPainter oldDelegate) =>
-      oldDelegate.puck != puck ||
-      oldDelegate.bottomMallet != bottomMallet ||
-      oldDelegate.topMallet != topMallet ||
-      oldDelegate.bottomGoals != bottomGoals ||
-      oldDelegate.topGoals != topGoals ||
-      oldDelegate.theme != theme;
+  bool shouldRepaint(covariant _PuckPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.scores != scores || oldDelegate.theme != theme;
 }

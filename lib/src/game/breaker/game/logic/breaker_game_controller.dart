@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -116,7 +117,7 @@ class BreakerGameController extends GameController with RealtimeGameController {
 
   int get score => _bricksBroken * pointsPerBrick;
 
-  List<BreakerBrick> get bricks => List.unmodifiable(_bricks);
+  List<BreakerBrick> get bricks => UnmodifiableListView(_bricks);
 
   /// Number of brick rows of the current level
   int get rows => rowsForLevel(_level);
@@ -212,7 +213,8 @@ class BreakerGameController extends GameController with RealtimeGameController {
   void dragPaddleBy(double dx) {
     if (isFinished) return;
     _movePaddleTo(_paddleX + dx);
-    notifyListeners();
+    // Only the board changes
+    notifyFrame();
   }
 
   void endDrag() {
@@ -235,8 +237,15 @@ class BreakerGameController extends GameController with RealtimeGameController {
       _movePaddleTo(_paddleX + _steer.sign * paddleSpeed * seconds);
     }
 
+    final phase = _phase;
+    final bricksBroken = _bricksBroken;
     if (_phase == BreakerPhase.playing) _moveBall(seconds);
-    notifyListeners();
+    // Score, lives, level and overlays only change with the phase or a broken brick
+    if (_phase != phase || _bricksBroken != bricksBroken) {
+      notifyListeners();
+    } else {
+      notifyFrame();
+    }
   }
 
   void _moveBall(double seconds) {

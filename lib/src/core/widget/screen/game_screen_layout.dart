@@ -67,7 +67,12 @@ class GameScreenLayout extends StatelessWidget {
                         width = height * boardAspectRatio;
                       }
                       return Center(
-                        child: SizedBox(width: width, height: height, child: board),
+                        child: SizedBox(
+                          width: width,
+                          height: height,
+                          // Board repaints (e.g. every frame) don't repaint the rest of the page
+                          child: RepaintBoundary(child: board),
+                        ),
                       );
                     },
                   ),

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
@@ -86,7 +87,7 @@ class HopGameController extends GameController with RealtimeGameController {
   /// Bottom of the visible part of the world, only moves up
   double get cameraY => _cameraY;
 
-  List<HopPlatform> get platforms => List.unmodifiable(_platforms);
+  List<HopPlatform> get platforms => UnmodifiableListView(_platforms);
 
   HopSteer get steer => _steer;
 
@@ -161,8 +162,11 @@ class HopGameController extends GameController with RealtimeGameController {
       _isGameOver = true;
       _steer = HopSteer.none;
       finish(GameOutcome.lost, score: score);
+      notifyListeners();
+    } else {
+      // Only the board and the live score change
+      notifyFrame();
     }
-    notifyListeners();
   }
 
   void _movePlatforms(double seconds) {

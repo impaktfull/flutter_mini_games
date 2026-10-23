@@ -103,7 +103,8 @@ class PushGameController extends GameController with RealtimeGameController, Due
     registerMove();
     final current = disc(player);
     _discs[player] = current.copyWith(velocity: _limit(current.velocity + aimDirection(player, aim) * pushImpulse));
-    notifyListeners();
+    // Only the board changes
+    notifyFrame();
   }
 
   /// Starts, updates ([aim]) or stops (null) the weak push while a finger is held down
@@ -113,7 +114,8 @@ class PushGameController extends GameController with RealtimeGameController, Due
     } else {
       _holdAim[player] = aim.clamp(-1.0, 1.0);
     }
-    if (isPlaying) notifyListeners();
+    // Only the aim line on the board changes
+    if (isPlaying) notifyFrame();
   }
 
   @override
@@ -134,7 +136,8 @@ class PushGameController extends GameController with RealtimeGameController, Due
       _step(step);
       seconds -= step;
     }
-    notifyListeners();
+    // Only the ring moves, the end of a round notifies the listeners
+    notifyFrame();
   }
 
   void _step(double seconds) {

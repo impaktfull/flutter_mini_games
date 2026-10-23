@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
+import 'package:flutter_mini_games/src/core/widget/components/cached_text_painter.dart';
 import 'package:flutter_mini_games/src/game/push/game/logic/push_game_controller.dart';
 import 'package:flutter_mini_games/src/game/push/style/push_theme.dart';
 
@@ -13,10 +14,14 @@ class PushPainter extends CustomPainter {
   final PushGameController controller;
   final PushTheme theme;
 
+  /// Player numbers on the discs, owned by the widget
+  final Map<DuelPlayer, CachedTextPainter> labels;
+
   PushPainter({
     required this.controller,
     required this.theme,
-  }) : super(repaint: controller);
+    required this.labels,
+  }) : super(repaint: controller.frame);
 
   /// Pixels per world unit
   static double scaleFor(Size size) => min(size.width, size.height) / 2 / (PushGameController.initialRingRadius + margin);
@@ -86,22 +91,15 @@ class PushPainter extends CustomPainter {
 
   /// Player number, upright for the player it belongs to
   void _paintLabel(Canvas canvas, Offset position, DuelPlayer player) {
-    final painter = TextPainter(
-      text: TextSpan(
-        text: player == DuelPlayer.bottom ? '1' : '2',
-        style: theme.textStyles.discLabel.copyWith(color: theme.colors.onDisc(player)),
-      ),
-      textDirection: TextDirection.ltr,
-    )..layout();
+    final painter = labels[player]!.layout(player == DuelPlayer.bottom ? '1' : '2', theme.textStyles.discLabel.copyWith(color: theme.colors.onDisc(player)));
     canvas
       ..save()
       ..translate(position.dx, position.dy);
     if (player == DuelPlayer.top) canvas.rotate(pi);
     painter.paint(canvas, Offset(-painter.width / 2, -painter.height / 2));
     canvas.restore();
-    painter.dispose();
   }
 
   @override
-  bool shouldRepaint(covariant PushPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.theme != theme;
+  bool shouldRepaint(covariant PushPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.theme != theme || oldDelegate.labels != labels;
 }

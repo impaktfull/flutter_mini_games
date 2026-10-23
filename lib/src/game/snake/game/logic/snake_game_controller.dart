@@ -116,11 +116,17 @@ class SnakeGameController extends GameController with RealtimeGameController {
   void tick(Duration delta) {
     if (!isRunning) return;
     _accumulated += delta;
+    final score = _score;
     while (isRunning && _accumulated >= stepInterval) {
       _accumulated -= stepInterval;
       _step();
     }
-    notifyListeners();
+    // The score and the length only change when the snake eats
+    if (isFinished || _score != score) {
+      notifyListeners();
+    } else {
+      notifyFrame();
+    }
   }
 
   void _step() {

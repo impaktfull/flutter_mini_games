@@ -38,7 +38,10 @@ class GameBoard extends StatelessWidget {
           ),
           child: ClipRRect(
             borderRadius: radius,
-            child: Padding(padding: padding, child: child),
+            // The board repaints every frame in real-time games, the frame and the screen don't
+            child: RepaintBoundary(
+              child: Padding(padding: padding, child: child),
+            ),
           ),
         ),
       ),

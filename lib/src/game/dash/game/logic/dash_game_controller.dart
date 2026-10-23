@@ -166,8 +166,11 @@ class DashGameController extends GameController with RealtimeGameController {
 
     if (_obstacles.any((obstacle) => runnerHitbox.overlaps(obstacleHitbox(obstacle)))) {
       finish(GameOutcome.lost, score: score, data: {'distance': _distance.round()});
+      notifyListeners();
+    } else {
+      // Only the board and the live score change
+      notifyFrame();
     }
-    notifyListeners();
   }
 
   void _updateRunner(double seconds) {

@@ -7,7 +7,6 @@ import 'package:flutter_mini_games/src/core/widget/components/game_overlay.dart'
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
 import 'package:flutter_mini_games/src/core/widget/input/game_input_detector.dart';
 import 'package:flutter_mini_games/src/game/flit/game/logic/flit_game_controller.dart';
-import 'package:flutter_mini_games/src/game/flit/game/model/flit_column.dart';
 import 'package:flutter_mini_games/src/game/flit/style/flit_theme.dart';
 
 /// Playing field of Flit: runs the game loop, handles taps and draws the world.
@@ -24,7 +23,8 @@ class FlitBoard extends StatefulWidget {
 }
 
 class _FlitBoardState extends State<FlitBoard> with SingleTickerProviderStateMixin {
-  /// Lets the flyer hover up and down while waiting for the first tap
+  /// Lets the flyer hover up and down while waiting for the first tap. The only cosmetic
+  /// animation outside the game loop: it only repaints the board (repaint boundary in `GameBoard`).
   late final AnimationController _hover = AnimationController(vsync: this, duration: const Duration(milliseconds: 1200));
 
   @override
@@ -68,17 +68,8 @@ class _FlitBoardState extends State<FlitBoard> with SingleTickerProviderStateMix
           child: Stack(
             fit: StackFit.expand,
             children: [
-              AnimatedBuilder(
-                animation: _hover,
-                builder: (context, child) => CustomPaint(
-                  painter: _FlitPainter(
-                    columns: controller.columns,
-                    flyerY: controller.flyerY + (controller.isReady ? sin(_hover.value * 2 * pi) * 0.015 : 0),
-                    flyerRotation: controller.isReady ? 0 : controller.flyerRotation,
-                    isWingUp: controller.velocity < 0,
-                    theme: theme,
-                  ),
-                ),
+              CustomPaint(
+                painter: _FlitPainter(controller: controller, hover: _hover, theme: theme),
               ),
               if (!controller.isReady)
                 Positioned(
@@ -110,23 +101,22 @@ class _FlitBoardState extends State<FlitBoard> with SingleTickerProviderStateMix
   }
 }
 
+/// Reads the controller while painting, repaints every frame of the controller and of [hover]
 class _FlitPainter extends CustomPainter {
-  final List<FlitColumn> columns;
-  final double flyerY;
-  final double flyerRotation;
-  final bool isWingUp;
+  final FlitGameController controller;
+  final Animation<double> hover;
   final FlitTheme theme;
 
-  const _FlitPainter({
-    required this.columns,
-    required this.flyerY,
-    required this.flyerRotation,
-    required this.isWingUp,
+  _FlitPainter({
+    required this.controller,
+    required this.hover,
     required this.theme,
-  });
+  }) : super(repaint: Listenable.merge([controller.frame, hover]));
 
   @override
   void paint(Canvas canvas, Size size) {
+    final isReady = controller.isReady;
+    final flyerY = controller.flyerY + (isReady ? sin(hover.value * 2 * pi) * 0.015 : 0);
     final colors = theme.colors;
     final dimens = theme.dimens;
     // World units to pixels: the world is 1.0 high
@@ -138,7 +128,7 @@ class _FlitPainter extends CustomPainter {
     final columnPaint = Paint()..color = colors.column;
     final capPaint = Paint()..color = colors.columnCap;
     final radius = Radius.circular(dimens.columnRadius);
-    for (final column in columns) {
+    for (final column in controller.columns) {
       final left = column.x * scale;
       final right = (column.x + FlitGameController.columnWidth) * scale;
       final gapTop = column.gapTop * scale;
@@ -157,15 +147,21 @@ class _FlitPainter extends CustomPainter {
       ..drawRect(Rect.fromLTRB(0, groundTop, size.width, size.height), Paint()..color = colors.ground)
       ..drawRect(Rect.fromLTRB(0, groundTop, size.width, groundTop + dimens.groundLineThickness), Paint()..color = colors.groundLine);
 
-    _paintFlyer(canvas, Offset(FlitGameController.flyerX * scale, flyerY * scale), FlitGameController.flyerRadius * scale);
+    _paintFlyer(
+      canvas,
+      Offset(FlitGameController.flyerX * scale, flyerY * scale),
+      FlitGameController.flyerRadius * scale,
+      rotation: isReady ? 0 : controller.flyerRotation,
+      isWingUp: controller.velocity < 0,
+    );
   }
 
-  void _paintFlyer(Canvas canvas, Offset center, double radius) {
+  void _paintFlyer(Canvas canvas, Offset center, double radius, {required double rotation, required bool isWingUp}) {
     final colors = theme.colors;
     canvas
       ..save()
       ..translate(center.dx, center.dy)
-      ..rotate(flyerRotation)
+      ..rotate(rotation)
       ..drawCircle(Offset.zero, radius, Paint()..color = colors.flyer)
       // Wing: points up while rising, down while falling
       ..drawOval(
@@ -182,18 +178,5 @@ class _FlitPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant _FlitPainter oldDelegate) =>
-      oldDelegate.flyerY != flyerY ||
-      oldDelegate.flyerRotation != flyerRotation ||
-      oldDelegate.isWingUp != isWingUp ||
-      oldDelegate.theme != theme ||
-      !_sameColumns(oldDelegate.columns, columns);
-
-  static bool _sameColumns(List<FlitColumn> a, List<FlitColumn> b) {
-    if (a.length != b.length) return false;
-    for (var i = 0; i < a.length; i++) {
-      if (a[i].x != b[i].x || a[i].gapCenter != b[i].gapCenter) return false;
-    }
-    return true;
-  }
+  bool shouldRepaint(covariant _FlitPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.hover != hover || oldDelegate.theme != theme;
 }

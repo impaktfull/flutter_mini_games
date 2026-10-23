@@ -6,36 +6,41 @@ on:
     branches:
       - main
   workflow_dispatch:
+  # The publish workflow runs the same checks on the release tag
+  workflow_call:
 
 concurrency:
-  group: ci-${{ github.ref }}
+  group: ci-${{ github.workflow_ref }}-${{ github.ref }}
   cancel-in-progress: true
+
+permissions:
+  contents: read
 
 jobs:
   check:
-    # Self-hosted runners of the impaktfull organisation (macOS, no Docker)
-    runs-on: impaktfull-ci
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Configure PATH
-        run: |
-          source ~/.impaktfull/impaktfull_cli/.zshrc-ci
-          echo "PATH=$PATH" >> "$GITHUB_ENV"
-      - run: fvm install
-      - run: fvm flutter pub get
-      - name: Get example dependencies
-        working-directory: example
-        run: fvm flutter pub get
+      - uses: ./.github/actions/setup-flutter
       - name: Format
-        run: fvm dart format --line-length=180 --output=none --set-exit-if-changed .
+        run: dart format --line-length=180 --output=none --set-exit-if-changed .
       - name: Analyze
-        run: fvm dart analyze --fatal-infos
+        run: dart analyze --fatal-infos
       - name: Test
-        run: fvm flutter test
+        run: flutter test
       - name: Test example
         working-directory: example
-        run: fvm flutter test
-      # Unused games must never end up in a host app
+        run: flutter test
+      - name: Publish dry run
+        run: flutter pub publish --dry-run
+
+  # Unused games must never end up in a host app (builds one web app per game, runs beside the checks)
+  tree-shaking:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-flutter
       - name: Tree shaking
-        run: FLUTTER="fvm flutter" ./tool/check_tree_shaking.sh
+        run: ./tool/check_tree_shaking.sh

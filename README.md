@@ -1,5 +1,7 @@
 # flutter_mini_games
 
+[![pub package](https://img.shields.io/pub/v/flutter_mini_games.svg)](https://pub.dev/packages/flutter_mini_games)
+
 A Flutter package that makes it easy to embed casual mini games into your app, with a shared scores system and theming that matches your app.
 
 ## Games
@@ -36,11 +38,13 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 
 Only the games you reference are compiled into your app.
 
+Play every game in the browser: [live demo](https://impaktfull.github.io/flutter_mini_games/).
+
 ## Getting started
 
 ```yaml
 dependencies:
-  flutter_mini_games: ^0.0.1
+  flutter_mini_games: ^0.1.0 # x-release-please-version
 ```
 
 Requires Flutter 3.32 or newer.

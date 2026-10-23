@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/model/data/game_result.dart';
 
@@ -31,7 +32,7 @@ mixin DuelGameController on GameController {
 
   DuelPhase _phase = DuelPhase.ready;
   final Set<DuelPlayer> _ready = {};
-  final Map<DuelPlayer, int> _roundWins = {DuelPlayer.bottom: 0, DuelPlayer.top: 0};
+  final DuelPair<int> _roundWins = DuelPair.generate((player) => 0);
   Duration _phaseRemaining = Duration.zero;
   DuelPlayer? _roundWinner;
 
@@ -52,7 +53,7 @@ mixin DuelGameController on GameController {
 
   DuelPhase get phase => _phase;
   bool isReady(DuelPlayer player) => _ready.contains(player);
-  int roundWins(DuelPlayer player) => _roundWins[player]!;
+  int roundWins(DuelPlayer player) => _roundWins[player];
 
   /// Winner of the last round, null for a drawn round
   DuelPlayer? get roundWinner => _roundWinner;
@@ -117,14 +118,14 @@ mixin DuelGameController on GameController {
   void endRound(DuelPlayer? winner) {
     if (_phase != DuelPhase.playing) return;
     _roundWinner = winner;
-    if (winner != null) _roundWins[winner] = _roundWins[winner]! + 1;
-    if (winner != null && _roundWins[winner]! >= roundsToWin) {
+    if (winner != null) _roundWins[winner] = _roundWins[winner] + 1;
+    if (winner != null && _roundWins[winner] >= roundsToWin) {
       _phase = DuelPhase.finished;
       finish(
         GameOutcome.won,
         data: {
           'winner': winner.name,
-          'rounds': {for (final player in DuelPlayer.values) player.name: _roundWins[player]},
+          'rounds': _roundWins.toJson(),
           ...duelResultData,
         },
       );

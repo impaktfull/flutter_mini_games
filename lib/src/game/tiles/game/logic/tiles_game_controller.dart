@@ -139,7 +139,8 @@ class TilesGameController extends GameController with RealtimeGameController {
     _scroll = scrollAt(time);
 
     if (topOf(_nextRow) >= visibleRows) {
-      final missed = rowAt(_nextRow)!;
+      // Rows are created above the board before they can scroll in, so the next row always exists
+      final missed = rowAt(_nextRow) ?? (throw StateError('Row $_nextRow was never created'));
       // Scroll back so the missed tile is visible at the bottom of the board
       _scroll = visibleRows - 1 - firstRowTop + _nextRow;
       _gameOver(TilesMistake(kind: TilesMistakeKind.missedTile, row: missed.index, column: missed.darkColumn));

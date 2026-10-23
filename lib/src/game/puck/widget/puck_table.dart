@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
@@ -30,7 +31,7 @@ class _PuckTableState extends State<PuckTable> {
   final Map<int, DuelPlayer> _pointers = {};
 
   /// Goals of each player, only laid out when they change
-  final Map<DuelPlayer, CachedTextPainter> _scores = {for (final player in DuelPlayer.values) player: CachedTextPainter()};
+  final DuelPair<CachedTextPainter> _scores = DuelPair.generate((player) => CachedTextPainter());
 
   @override
   void dispose() {
@@ -109,7 +110,7 @@ class _PuckTableState extends State<PuckTable> {
 /// Reads the controller while painting, repaints every frame of the controller
 class _PuckPainter extends CustomPainter {
   final PuckGameController controller;
-  final Map<DuelPlayer, CachedTextPainter> scores;
+  final DuelPair<CachedTextPainter> scores;
   final PuckTheme theme;
 
   _PuckPainter({
@@ -169,10 +170,10 @@ class _PuckPainter extends CustomPainter {
     final centerY = size.height / 2;
     final gap = dimens.lineWidth * 2;
 
-    final bottom = scores[DuelPlayer.bottom]!.layout('${controller.goals(DuelPlayer.bottom)}', theme.textStyles.bottomScore);
+    final bottom = scores[DuelPlayer.bottom].layout('${controller.goals(DuelPlayer.bottom)}', theme.textStyles.bottomScore);
     bottom.paint(canvas, Offset(size.width - dimens.scoreMargin - bottom.width, centerY + gap));
 
-    final top = scores[DuelPlayer.top]!.layout('${controller.goals(DuelPlayer.top)}', theme.textStyles.topScore);
+    final top = scores[DuelPlayer.top].layout('${controller.goals(DuelPlayer.top)}', theme.textStyles.topScore);
     canvas
       ..save()
       ..translate(size.width - dimens.scoreMargin - top.width / 2, centerY - gap - top.height / 2)

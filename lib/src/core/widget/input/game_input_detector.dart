@@ -118,8 +118,8 @@ class _GameInputDetectorState extends State<GameInputDetector> {
     };
 
     final isHorizontal = direction == GameDirection.left || direction == GameDirection.right;
-    if (isHorizontal && widget.onHorizontalHold != null) {
-      isDown ? _startHold(key, direction!) : _endHold(key);
+    if (direction != null && isHorizontal && widget.onHorizontalHold != null) {
+      isDown ? _startHold(key, direction) : _endHold(key);
       return KeyEventResult.handled;
     }
 

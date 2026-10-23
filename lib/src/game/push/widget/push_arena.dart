@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_phase_overlay.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/widget/components/cached_text_painter.dart';
 import 'package:flutter_mini_games/src/core/widget/components/how_to_play.dart';
 import 'package:flutter_mini_games/src/core/widget/game_loop.dart';
@@ -33,7 +33,7 @@ class PushArena extends StatefulWidget {
 
 class _PushArenaState extends State<PushArena> {
   /// Player numbers on the discs, only laid out when they change
-  final Map<DuelPlayer, CachedTextPainter> _labels = {for (final player in DuelPlayer.values) player: CachedTextPainter()};
+  final DuelPair<CachedTextPainter> _labels = DuelPair.generate((player) => CachedTextPainter());
 
   @override
   void dispose() {

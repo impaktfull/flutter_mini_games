@@ -161,14 +161,15 @@ class FlipGameController extends GameController {
     _isGameOver = true;
     final bottom = countOf(DuelPlayer.bottom);
     final top = countOf(DuelPlayer.top);
-    _winner = bottom == top ? null : (bottom > top ? DuelPlayer.bottom : DuelPlayer.top);
+    final winner = bottom == top ? null : (bottom > top ? DuelPlayer.bottom : DuelPlayer.top);
+    _winner = winner;
     final discs = {DuelPlayer.bottom.name: bottom, DuelPlayer.top.name: top};
     // Only a played game is a result: a set up position without moves is not reported
     if (moves == 0) return;
     finish(
-      _winner == null ? GameOutcome.draw : GameOutcome.won,
+      winner == null ? GameOutcome.draw : GameOutcome.won,
       data: {
-        if (_winner != null) 'winner': _winner!.name,
+        if (winner != null) 'winner': winner.name,
         'discs': discs,
       },
     );

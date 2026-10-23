@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
 import 'package:flutter_mini_games/src/core/controller/realtime_game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_pair.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/quickdraw/game/model/quickdraw_signal.dart';
@@ -31,7 +32,7 @@ class QuickdrawGameController extends GameController with RealtimeGameController
   Duration _reaction = Duration.zero;
   DuelPlayer? _earlyPlayer;
   int? _roundReactionMs;
-  final Map<DuelPlayer, int?> _bestReactionMs = {DuelPlayer.bottom: null, DuelPlayer.top: null};
+  final DuelPair<int?> _bestReactionMs = DuelPair.generate((player) => null);
 
   QuickdrawGameController({Random? random}) : _random = random ?? Random(), super(gameId: id);
 
@@ -113,7 +114,7 @@ class QuickdrawGameController extends GameController with RealtimeGameController
   /// Each player's best reaction time
   @override
   Map<String, Object?> get duelResultData => {
-    'bestReactionMs': {for (final player in DuelPlayer.values) player.name: _bestReactionMs[player]},
+    'bestReactionMs': _bestReactionMs.toJson(),
   };
 
   @override

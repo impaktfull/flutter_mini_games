@@ -1,12 +1,16 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "4cc4742f9e63dac6e52dbbaac0643a82507b1939",
   "release-type": "dart",
   "include-component-in-tag": false,
   "packages": {
     ".": {
       "package-name": "flutter_mini_games",
       "changelog-path": "CHANGELOG.md",
-      "extra-files": ["README.md"]
+      "extra-files": [
+        "README.md",
+        "docs/installation.mdx"
+      ]
     }
   }
 }

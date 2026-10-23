@@ -12,6 +12,7 @@ class TrailGameController extends GameController {
 
   final List<TrailPuzzle> _puzzles;
   final TrailDifficulty _difficulty;
+  final TrailPuzzleGenerator _generator;
   int _currentPuzzleIndex = 0;
 
   TrailPuzzle _puzzle;
@@ -21,17 +22,22 @@ class TrailGameController extends GameController {
   bool _isStuck = false;
   int _undos = 0;
 
+  /// [random] makes the generated puzzles reproducible (tests)
   TrailGameController({
     List<TrailPuzzle>? puzzles,
     TrailDifficulty difficulty = TrailDifficulty.hard,
-  }) : _puzzles = puzzles ?? [],
-       _difficulty = difficulty,
-       _puzzle = (puzzles != null && puzzles.isNotEmpty) ? puzzles.first : _generatePuzzle(difficulty),
-       super(gameId: id) {
+    Random? random,
+  }) : this._(
+         puzzles ?? const [],
+         difficulty,
+         TrailPuzzleGenerator(random: random),
+       );
+
+  TrailGameController._(this._puzzles, this._difficulty, this._generator)
+    : _puzzle = _puzzles.isNotEmpty ? _puzzles.first : _generator.generateWithDifficulty(_difficulty),
+      super(gameId: id) {
     _startPuzzle();
   }
-
-  static TrailPuzzle _generatePuzzle(TrailDifficulty difficulty) => TrailPuzzleGenerator().generateWithDifficulty(difficulty);
 
   TrailPuzzle get puzzle => _puzzle;
   List<List<int?>> get grid => _grid;
@@ -140,8 +146,16 @@ class TrailGameController extends GameController {
     if (allCellsFilled && allCheckpointsVisited && endsAtLastCheckpoint) {
       finish(
         GameOutcome.won,
-        score: calculateScore(totalCells: totalCells, elapsed: elapsed, undos: _undos),
-        data: {'puzzle': _puzzle.name, 'rows': _puzzle.rows, 'cols': _puzzle.cols},
+        score: calculateScore(
+          totalCells: totalCells,
+          elapsed: elapsed,
+          undos: _undos,
+        ),
+        data: {
+          'puzzle': _puzzle.name,
+          'rows': _puzzle.rows,
+          'cols': _puzzle.cols,
+        },
       );
     } else if (allCellsFilled || !_hasValidMoves()) {
       // Filled every cell without meeting the other conditions, or no move left
@@ -183,7 +197,7 @@ class TrailGameController extends GameController {
       _currentPuzzleIndex++;
       _puzzle = _puzzles[_currentPuzzleIndex];
     } else {
-      _puzzle = _generatePuzzle(_difficulty);
+      _puzzle = _generator.generateWithDifficulty(_difficulty);
     }
     resetGame();
   }

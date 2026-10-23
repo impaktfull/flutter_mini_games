@@ -85,7 +85,7 @@ class MyGameController extends GameController {
 
 - Score: higher is better, `null` when the game has no score (e.g. multiplayer)
 - Endless games (Snake, Flit, ...) finish with `GameOutcome.lost` and their score; the best score counts every non-abandoned result
-- Multiplayer games put the winner in `data` (e.g. `{'winner': 'X'}`)
+- Multiplayer games put the winner in `data` (e.g. `{'winner': 'bottom'}`, the `DuelPlayer` name)
 
 #### 2. Game Theme
 
@@ -253,11 +253,12 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
   - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
   - `onTapAt(localPosition)` for grids and pads: one detector for the whole board, map the position to a cell
   - `autofocus: false` when a screen has more than one detector (only one may take the keyboard focus)
-  - `onPointerDownAt(localPosition)` when several fingers can tap at once (every finger counts, e.g. Tiles, Whack)
+  - `onPointerDownAt(localPosition)` when several fingers can tap at once (every finger counts, e.g. Tiles)
   - `onKeyConfirm` for space/enter only (e.g. drop the selected column), touches never trigger it
   - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
   - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
+- Intended exceptions: Whack listens with a raw `Listener` per hole (every finger counts, each hole animates its own target); Flit's idle hover in the ready state is a widget `AnimationController` (decoration only, the game loop does not run before the first flap)
 - Draw with `CustomPaint` using theme colors, use world coordinates (e.g. 0..1 or cells) and scale to the canvas size
 - Inject `Random` in the controller so tests are reproducible; test the controller by calling `tick` directly
 
@@ -280,7 +281,7 @@ class MyRealtimeController extends GameController with RealtimeGameController {
 
 Two players on one phone use the shared duel core (`lib/src/core/duel/`), never their own split screen or match flow:
 
-- `DuelPlayer.bottom` (Player 1, `primary`) and `DuelPlayer.top` (Player 2, `secondary`); colors via `coreTheme.playerColor(player)` / `onPlayerColor(player)`
+- `DuelPlayer.bottom` (Player 1, `primary`) and `DuelPlayer.top` (Player 2, `secondary`); the game theme gets player color tokens (`bottomPlayer`, `onBottomPlayer`, `topPlayer`, `onTopPlayer`, or e.g. `bottomDisc`) from `coreTheme.playerColor(player)` / `onPlayerColor(player)` in `fromCore`, and widgets read them from the game theme (e.g. `theme.colors.playerColor(player)`), so `theme.copyWith` can change them
 - `DuelLayout(side: (context, player) => ..., center: ...)`: the top half is rotated 180° for the opposite player (touch positions inside are rotated too)
 - `DuelTapArea(onTap: ...)`: every finger counts, also when both players tap at once (raw pointers); use a `Listener` for drags (e.g. mallets), pointers stay with the half they started in
 - Matches with rounds mix in `DuelGameController` (`roundsToWin`, `resetRound()`, `onRoundStarted()`, `endRound(winner)`, `rematch()`; optional `duelScore(player)` for points instead of rounds, `duelResultData` for extra result data, `duelCountdownDuration` / `duelRoundOverDuration`). Never override `finish` or `roundWins`:
@@ -367,9 +368,12 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 
 ### Tic Tac Toe (`lib/src/game/tic_tac_toe/`)
 
-- Two-player classic game, id `tic_tac_toe`
-- Simple state: board, current turn, winner
-- Reports `won` (winner in `data['winner']`) or `draw`, no score
+- Two-player classic game on one device, id `tic_tac_toe`, turn based (no game loop, no rounds)
+- Cells hold `DuelPlayer?` (`cellAt(row, col)`, read-only `board`); `DuelPlayer.bottom` (Player 1, X) always starts, `DuelPlayer.top` (Player 2, O); `markOf(player)` gives the mark, so ownership never depends on color only
+- Colors are the player tokens of `TicTacToeColors` (`bottomPlayer` / `topPlayer` + on-colors, from `coreTheme.playerColor`); winning cells are filled with the winner's color
+- `GameScreenLayout` with a `DuelTurnBanner` per player (`TicTacToeHeader`): Player 2's banner rotated in the header, Player 1's banner above the Reset / Play Again button
+- The board is built from `Column` / `Row` / `Expanded` with one `GameInputDetector(onTapAt:)` that maps a tap to a cell
+- `registerMove()` per mark; finishes with `won` + `data['winner']` (`'bottom'` / `'top'`) or `draw`, no score
 
 ### Trail (`lib/src/game/trail/`)
 
@@ -378,10 +382,11 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Features:
   - `TrailPuzzleGenerator` for random solvable puzzle generation
   - Random Hamiltonian path with backbite moves (zigzag start, a few milliseconds for any size; random backtracking froze the app on 7x7)
-  - 5 difficulty levels (3x3 to 7x7 grids)
-  - Support for custom puzzle lists OR auto-generation
+  - 5 difficulty levels (3x3 to 7x7 grids); controller and builder default to `TrailDifficulty.hard` (5x5)
+  - Support for custom puzzle lists OR auto-generation; `random` on the controller makes generated puzzles reproducible (one generator per controller)
   - `nextPuzzle()` method for progression, `undo()` to step back (also when stuck)
   - Score: `cells * 20 - seconds - undos * 5`, never lower than the number of cells
+- Input: one `GestureDetector` on the grid (drag to draw, tap the next cell), the position maps to a cell via the `LayoutBuilder` size; the grid is `Column` / `Row` / `Expanded` (no `GridView`)
 - Visual style: Snake-pattern path lines on light background (not filled cells)
 
 ### Sudoku (`lib/src/game/sudoku/`)
@@ -392,7 +397,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
   - `SudokuPuzzleGenerator`: random full grid, then removes givens in random order while the solution stays unique (injectable `Random`)
   - `SudokuDifficulty`: easy / medium / hard / expert (40 / 32 / 28 / 24 target givens)
   - Custom puzzle lists (`SudokuPuzzle.fromString('53..7....')`) OR auto-generation, `nextPuzzle()` for progression
-  - Tap a cell, then a digit on the number pad; erase and a notes (pencil marks) toggle
+  - Tap a cell, then a digit on the number pad; erase and a notes (pencil marks) toggle; unusable keys fade to `SudokuDimens.disabledKeyOpacity`
   - Highlights the row/column/box and the same digits as the selected cell; wrong entries are marked and counted as mistakes; correct entries are locked
   - Score: `basePoints - seconds - mistakes * 50`, never lower than `basePoints / 10` (base points 1000 / 1500 / 2000 / 2500 per difficulty)
 - Visual style: cells on the board background, thin cell lines and thick 3x3 box lines painted on top with solid colors
@@ -435,7 +440,8 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 ### Minesweeper (`lib/src/game/minesweeper/`)
 
 - Single-player puzzle, id `minesweeper`: reveal every safe cell without hitting a mine
-- `MinesweeperDifficulty` (cols x rows, mines), sized for a portrait phone: easy 8x8/10, medium 10x12/20, hard 12x16/40; switchable in the game
+- `MinesweeperDifficulty` (cols x rows, mines), sized for a portrait phone: easy 8x8/10, medium 10x12/20, hard 12x16/40; switchable in the game; controller and builder default to easy
+- Hidden cells are a solid blend (`Color.lerp(background, primary, 0.2)`), no alpha
 - Mines are placed on the first reveal (injectable `Random`), never on the tapped cell or its neighbours, so the first tap always opens an area
 - Tap = reveal (flood fill for cells without adjacent mines), long press = flag, a flag-mode button toggles what a tap does; tapping a revealed number whose flags match reveals its neighbours (chord)
 - Header shows the remaining mines counter (mines - flags); number colours come from `MinesweeperColors.numbers` (core tokens only)
@@ -469,6 +475,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `SwitchSolver`: Gaussian elimination over GF(2), returns every solution (4 on a 5x5 board), the minimal one gives par and the hint
 - `SwitchPuzzleGenerator` (injectable `Random`): taps `SwitchDifficulty.taps` distinct random cells of a dark board (3 / 6 / 9 / 13), so every puzzle is solvable; retries when the taps cancel out
 - Custom puzzle lists (`SwitchPuzzle.fromString('.#... ###.. .#... ..... .....')`, unsolvable boards throw) OR generation; `nextPuzzle()`, difficulty chips in the header
+- Input: one `GameInputDetector(onTapAt:)` on the grid; `SwitchGrid.cellAt` maps a tap to a light, taps in the gaps do nothing
 - Hint: highlights one tap of the minimal solution from the current board (counted in `data['hints']`, no score penalty)
 - Score: `max(100, 1000 - (moves - par) * 50 - seconds)`; all lights off finishes with `won`, `data` holds `difficulty`, `par` and `hints`
 - Visual style: lit = `primary` cell + filled bulb + blurred solid glow (own layer below the lights), off = `surface` cell + outlined bulb
@@ -487,6 +494,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Phases (`EchoPhase`): ready → playback (input ignored) → input → playback of the next round ... → game over on the first wrong pad
 - Playback runs in `tick` (`RealtimeGameController` + `GameLoop`, so it pauses in the background): `leadIn` 700 ms, then per pad `onDurationFor(length)` lit (600 ms down to 250 ms) and `offDurationFor(length)` dark (250 ms down to 100 ms)
 - Pads in a 2x2 grid, colors `primary`, `secondary`, `error`, `textMuted` (`EchoColors.pads`), each with its own shape icon (circle, triangle, square, star) so they never differ by color alone; unlit pads blend towards `background` and scale down, a tapped pad flashes for `pressFlash`
+- Input: one `GameInputDetector(onTapAt:)` on the board, `EchoBoard.padAt` maps a tap to a pad (taps in the gaps do nothing); space / enter start the game (`onKeyConfirm`)
 - The sequence uses an injectable `Random`; every pad tap is a move (`registerMove()`), tapping a pad or Start in the ready state starts the session; haptic `selectionClick` per tap
 - Score: rounds completed. A wrong pad finishes with `GameOutcome.lost` and the score (`data`: `rounds`, `sequenceLength`); the wrong pad shows a cross and the expected pad lights up
 ### Pairs (`lib/src/game/pairs/`)
@@ -532,11 +540,11 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Two-player air hockey on one device, id `puck`: drag your mallet in your own half and shoot the puck into the other goal
 - `PuckGameController` = `GameController` + `RealtimeGameController` + `DuelGameController`; every goal is a round, first to `goalsToWin` (5, configurable on the builder)
 - World: one shared portrait table, 1.0 wide and 1.8 high, y down; `DuelPlayer.top` defends the goal at y = 0, `bottom` the goal at y = 1.8 (goal mouth 0.36 wide in the middle)
-- Input: one raw `Listener` on the table; every pointer belongs to the half it went down in (`halfAt`) and sets the target of that player's mallet (`moveMallet`, only while playing); targets are clamped to the player's half (`clampToHalf`)
+- Input: one raw `Listener` on the table; every pointer belongs to the half it went down in (`halfAt`); a touch down calls `touchMallet` (one move), moves call `moveMallet`; both only while playing and set the target of that player's mallet, clamped to the player's half (`clampToHalf`)
 - Physics in `tick` (after `tickDuel`, only while `DuelPhase.playing`): mallets follow their target at most `maxMalletSpeed`, spread evenly over sub steps; sub steps keep every move below `maxStep` (half the puck radius) so nothing tunnels; exponential friction; wall and goal post bounces with `wallRestitution`; puck–mallet circle collision reflects the relative velocity (`malletRestitution`), so the mallet's velocity transfers to the puck; speed capped at `maxPuckSpeed`; a puck pinned against a wall pushes the mallet back
 - Goal when the puck's center crosses a goal line inside the mouth; the next round serves the puck `serveOffset` from the center line in the half of the player who conceded (center for the first round), mallets back at their start
 - Screen: `FlutterMiniGamesScreen` with a `GameBoard` table that fills the space; `DuelLayout` with `DuelPhaseOverlay` per player stacked over the table (lets touches through while playing); goals painted next to the center line, the top one upside down
-- Result: `GameOutcome.won` with `data['winner']` and the goals in `data['rounds']`, no score
+- Result: `GameOutcome.won` with `data['winner']` and the goals in `data['rounds']` (no extra `goals` key), no score; `moves` counts the touches on the table
 ### Breaker (`lib/src/game/breaker/`)
 
 - Single-player brick breaker, id `breaker`, real-time (`RealtimeGameController` + `GameLoop`): bounce the ball off the paddle to break all the bricks, 3 lives
@@ -564,8 +572,8 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `QuickdrawSignal` (waiting / go) inside the playing phase; taps go through `DuelTapArea` to `onTap(player)` and only count while playing (every tap is a move), the first tap ends the round so near-simultaneous taps are decided by event order
 - The reaction time is game time from `tick`: it starts with the frame that shows GO and stops at the tap
 - GO is never color-only: a big bolt icon and "GO!" text; waiting, GO and too early each have their own color, switched instantly
-- Each half: `Stack[DuelTapArea(QuickdrawHalf), DuelPhaseOverlay, QuickdrawResultBanner]`; the banner (reaction time / too early / best time) sits on top of the overlay so it stays readable and ignores touches
-- Result: `GameOutcome.won` with the duel data plus `data['bestReactionMs']` (`{'bottom': ms?, 'top': ms?}`, added by overriding `finish`), no score
+- Each half: `Stack[DuelTapArea(QuickdrawHalf), DuelPhaseOverlay]`; the overlay shows the reaction time / too early as `roundMessage` and the best time as `finishMessage`
+- Result: `GameOutcome.won` with the duel data plus `data['bestReactionMs']` (`{'bottom': ms?, 'top': ms?}`, from `duelResultData`), no score
 ### Push (`lib/src/game/push/`)
 
 - Two-player sumo ring on one device, id `push`, best of 3: push the other disc out of the ring
@@ -584,7 +592,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Attacker: Slap and Fake buttons (`DuelTapArea`). Both raise the hand for a random wind-up of 250-700 ms (injectable `Random`), so they look the same; then a slap comes down in `strikeDuration` (350 ms), a fake goes back in `retractDuration` (250 ms). `maxFakes` (3) fakes per round
 - Lifting during a slap (wind-up or strike) = dodged, point for the defender; still holding when it lands = slapped, point for the attacker; lifting during a fake = flinched, point for the attacker; no slap within `attackTimeLimit` (6 s of holding, fakes excluded) = too slow, point for the defender (`SlapRoundEnd`)
 - Stages in `tick` are event based (the rest of a frame goes to the next stage), so results don't depend on how `tick` is split; `handPosition` / `handLift` drive the drawing
-- The attacker's hand is drawn with `CustomPaint` (solid outline pass, then fill pass) in the attacker's player color on the defender's half, coming from the divider; the target fills with the defender's color and shows "Holding"
+- The attacker's hand is drawn with `CustomPaint` (solid outline pass, then fill pass) in the attacker's player color on the defender's half, coming from the divider; the target fills with the defender's color and shows "Holding"; player colors are `SlapColors` tokens (`bottomPlayer`, `topPlayer` + on-colors)
 - Result: `GameOutcome.won`, `data['winner']` and `data['rounds']`, no score
 ### Tiles (`lib/src/game/tiles/`)
 
@@ -593,7 +601,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Tap the dark tile of the lowest unplayed row; dark tiles that are already tapped or not next yet are ignored. A light tile or a dark tile leaving the bottom ends the game (`TilesMistake`: `wrongTile` / `missedTile`); on a miss the board scrolls back so the missed tile is visible
 - Before the start only the "Start" tile (dark tile of row 0) reacts; that tap starts the game (it is a move and scores)
 - Speed starts at 2 rows/s and grows by 0.05 rows/s per second up to 7; the scroll is the closed-form integral of the speed over game time (`scrollAt`), so it does not depend on the frame rate
-- Input: one raw `Listener` on the board (every finger counts, fast players tap with two fingers), mapped to column and row; every tap on a tile is a move
+- Input: one `GameInputDetector(onPointerDownAt:)` on the board (every finger counts, fast players tap with two fingers), mapped to column and row; every tap on a tile is a move
 - Feedback: a tapped tile flashes `primary` and fades to `tappedTile`; the mistake tile is drawn in `error` with a cross (wrong tile) or a ring (missed tile), the overlay moves to the other half of the board
 - Score: tiles tapped; game over finishes with `GameOutcome.lost`, the score and `data` with `reason` and `speed`
 ### Flip (`lib/src/game/flip/`)
@@ -611,11 +619,12 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Two-player real-time game on one device, id `snatch`: a target symbol is shown in the middle, the first player to tap the matching tile in their half scores a point
 - Built on the duel core: `GameController with RealtimeGameController, DuelGameController`, `DuelLayout` with `SnatchTarget` as `center` (the target twice, once rotated for the top player), each half a `Stack` of `SnatchHalf` and `DuelPhaseOverlay`
 - Each half shows the same 6 symbols (Material `Icons`, `SnatchSymbols`) in its own shuffled order (injectable `Random`, the halves never in the same order); the target never repeats twice in a row and is only shown while playing
-- Point mapping: the whole match is one duel round (`roundsToWin = 1`), points live in the controller; `roundWins` is overridden to return the points, so the shared overlay shows them as the score and no countdown runs between points
+- Point mapping: the whole match is one duel round (`roundsToWin = 1`), points live in the controller; `duelScore` returns the points, so the shared overlay shows them as the score and no countdown runs between points
 - A correct tap: +1, a short pause (`revealDuration`, the tile and the center in the scorer's color, the other half's matching tile ringed), then a new target and new orders; taps during the pause are ignored, so with simultaneous taps the first one wins
 - A wrong tap: -1 (never below 0) and the half is locked for `wrongLockDuration`, so tapping every tile does not pay off
-- Every tile is its own raw `Listener` (both players can tap at once); every tap during play is a move
-- First to 7 points wins: `GameOutcome.won` with `data['winner']`, `data['points']`, `data['penalties']` (and the core's `rounds`), no score
+- Every tile is its own `DuelTapArea` (both players can tap at once); every tap during play is a move
+- Player colors are `SnatchColors` tokens (`bottomPlayer`, `topPlayer` + on-colors)
+- First to 7 points wins: `GameOutcome.won` with `data['winner']`, `data['points']`, `data['penalties']` (from `duelResultData`, and the core's `rounds`), no score
 
 ### Tug (`lib/src/game/tug/`)
 
@@ -624,6 +633,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - The marker position is kept in whole steps (`position`, -`stepsToWin`..`stepsToWin`, `progress` -1..1); the first to reach `stepsToWin` (15) steps from the middle wins the round
 - Screen: `DuelLayout` with a vertical rope as `center` (`TugRope`, `CustomPaint`, `ropeLengthFraction` of the height) between the halves; each half is a `TugSide` (`DuelTapArea` + `DuelPhaseOverlay`)
 - Every pull slides the marker (`TweenAnimationBuilder`), pulses the "Tap!" hint and gives a selection haptic; the marker takes the color of the leading player
+- Player colors are `TugColors` tokens (`bottomPlayer`, `topPlayer` + on-colors), the half backgrounds blend them with `background`
 - The result is `GameOutcome.won` with `data['winner']` and `data['rounds']`, no score
 
 ## Testing

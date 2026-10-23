@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/game/tug/game/logic/tug_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tug/style/tug_theme.dart';
 
@@ -19,7 +17,6 @@ class TugRope extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = TugTheme.of(context);
-    final core = CoreGameTheme.of(context);
     final leader = controller.leader;
     return TweenAnimationBuilder<double>(
       tween: Tween(end: controller.progress),
@@ -30,9 +27,9 @@ class TugRope extends StatelessWidget {
           progress: progress,
           colors: theme.colors,
           dimens: theme.dimens,
-          bottomColor: core.playerColor(DuelPlayer.bottom),
-          topColor: core.playerColor(DuelPlayer.top),
-          markerColor: leader == null ? theme.colors.marker : core.playerColor(leader),
+          bottomColor: theme.colors.bottomPlayer,
+          topColor: theme.colors.topPlayer,
+          markerColor: leader == null ? theme.colors.marker : theme.colors.playerColor(leader),
         ),
       ),
     );

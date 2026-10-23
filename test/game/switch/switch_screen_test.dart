@@ -78,4 +78,35 @@ void main() {
     expect(custom.dimens.cellSpacing, 2);
     expect(custom.dimens.glowRadius, theme.dimens.glowRadius);
   });
+
+  test('cellAt maps a position to a light and ignores the gaps', () {
+    (int, int)? cellAt(double x, double y) => SwitchGrid.cellAt(Offset(x, y), size: 5, cellSize: 50, spacing: 10);
+
+    expect(cellAt(25, 25), (0, 0));
+    expect(cellAt(85, 25), (0, 1));
+    expect(cellAt(25, 265), (4, 0));
+    expect(cellAt(290, 290), (4, 4));
+    expect(cellAt(55, 25), isNull); // gap between two lights
+    expect(cellAt(25, 55), isNull);
+    expect(cellAt(301, 25), isNull); // outside the grid
+    expect(cellAt(-1, 25), isNull);
+  });
+
+  testWidgets('a tap maps to the light below the finger, taps in a gap do nothing', (tester) async {
+    final controller = await pump(tester, builder: SwitchGameBuilder(puzzles: [twoCrosses]));
+    final lightsBefore = controller.lights;
+
+    final a = tester.getRect(find.byKey(const ValueKey('switch_cell_0_0')));
+    final b = tester.getRect(find.byKey(const ValueKey('switch_cell_0_1')));
+    await tester.tapAt(Offset((a.right + b.left) / 2, a.center.dy));
+    await tester.pumpAndSettle();
+    expect(controller.moves, 0);
+    expect(controller.lights, lightsBefore);
+
+    await tester.tapAt(tester.getCenter(find.byKey(const ValueKey('switch_cell_4_4'))));
+    await tester.pumpAndSettle();
+    expect(controller.moves, 1);
+    expect(controller.lights, isNot(lightsBefore));
+    expect(tester.takeException(), isNull);
+  });
 }

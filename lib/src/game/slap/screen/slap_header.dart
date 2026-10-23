@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/game/slap/game/logic/slap_game_controller.dart';
 import 'package:flutter_mini_games/src/game/slap/game/model/slap_attack.dart';
 import 'package:flutter_mini_games/src/game/slap/style/slap_theme.dart';
@@ -22,15 +21,14 @@ class SlapHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SlapTheme.of(context);
-    final coreTheme = CoreGameTheme.of(context);
-    final onColor = coreTheme.onPlayerColor(player);
+    final onColor = theme.colors.onPlayerColor(player);
     return Row(
       spacing: 8,
       children: [
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
           decoration: BoxDecoration(
-            color: coreTheme.playerColor(player),
+            color: theme.colors.playerColor(player),
             borderRadius: BorderRadius.circular(theme.dimens.roleRadius),
           ),
           child: Row(

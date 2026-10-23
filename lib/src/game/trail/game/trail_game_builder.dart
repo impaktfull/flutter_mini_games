@@ -34,7 +34,7 @@ class TrailGameBuilder extends FlutterMiniGameBuilder {
     this.coreTheme,
     this.theme,
     this.puzzles,
-    this.difficulty = TrailDifficulty.master,
+    this.difficulty = TrailDifficulty.hard,
   });
 
   @override

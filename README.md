@@ -6,7 +6,7 @@ A Flutter package that makes it easy to embed casual mini games into your app, w
 
 | Game | Builder | Players |
 |---|---|---|
-| Tic Tac Toe | `TicTacToeGameBuilder` | 2 |
+| Tic Tac Toe: take turns as X and O and get three in a row | `TicTacToeGameBuilder` | 2 |
 | Trail: draw one trail through every cell, passing the numbered checkpoints in order | `TrailGameBuilder` | 1 |
 | Sudoku: fill the 9x9 grid so every row, column and box contains 1 to 9 | `SudokuGameBuilder` | 1 |
 | Stack: drop the sliding blocks to build the highest tower | `StackGameBuilder` | 1 |

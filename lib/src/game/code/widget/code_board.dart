@@ -111,7 +111,7 @@ class CodeBoard extends StatelessWidget {
     );
   }
 
-  /// Submit right next to a complete guess, also reachable when the controls are scrolled away on short screens
+  /// Submit right next to a complete guess, in reach of the slots that were just filled
   Widget _buildSubmit(CodeTheme theme, double slot) {
     return Semantics(
       button: true,

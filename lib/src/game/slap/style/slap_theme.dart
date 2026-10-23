@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 
-/// Theme of Slap. The hands, the held target and the slap button use the player colors of
-/// the core theme (`CoreGameTheme.playerColor`), like every two-player game.
+/// Theme of Slap. The hands, the held target and the slap button use the player color tokens
+/// (`SlapColors.bottomPlayer` / `topPlayer`), derived from `CoreGameTheme.playerColor`.
 class SlapTheme extends GameTheme {
   final SlapColors colors;
   final SlapTextStyles textStyles;
@@ -21,6 +22,10 @@ class SlapTheme extends GameTheme {
     return SlapTheme(
       colors: SlapColors(
         arena: colors.surface,
+        bottomPlayer: core.playerColor(DuelPlayer.bottom),
+        onBottomPlayer: core.onPlayerColor(DuelPlayer.bottom),
+        topPlayer: core.playerColor(DuelPlayer.top),
+        onTopPlayer: core.onPlayerColor(DuelPlayer.top),
         target: colors.background,
         onTarget: colors.textMuted,
         slapped: colors.error,
@@ -66,6 +71,12 @@ class SlapColors {
   /// Background of the defender's arena and the attacker's pad
   final Color arena;
 
+  /// Player 1 (bottom) and Player 2 (top), [onBottomPlayer] / [onTopPlayer] for text and icons on them
+  final Color bottomPlayer;
+  final Color onBottomPlayer;
+  final Color topPlayer;
+  final Color onTopPlayer;
+
   /// Target that is not held; [onTarget] for its icon, text and ring
   final Color target;
   final Color onTarget;
@@ -93,6 +104,10 @@ class SlapColors {
 
   const SlapColors({
     required this.arena,
+    required this.bottomPlayer,
+    required this.onBottomPlayer,
+    required this.topPlayer,
+    required this.onTopPlayer,
     required this.target,
     required this.onTarget,
     required this.slapped,
@@ -106,8 +121,18 @@ class SlapColors {
     required this.divider,
   });
 
+  /// Color of [player]
+  Color playerColor(DuelPlayer player) => player == DuelPlayer.bottom ? bottomPlayer : topPlayer;
+
+  /// Text and icons on [playerColor]
+  Color onPlayerColor(DuelPlayer player) => player == DuelPlayer.bottom ? onBottomPlayer : onTopPlayer;
+
   SlapColors copyWith({
     Color? arena,
+    Color? bottomPlayer,
+    Color? onBottomPlayer,
+    Color? topPlayer,
+    Color? onTopPlayer,
     Color? target,
     Color? onTarget,
     Color? slapped,
@@ -121,6 +146,10 @@ class SlapColors {
     Color? divider,
   }) => SlapColors(
     arena: arena ?? this.arena,
+    bottomPlayer: bottomPlayer ?? this.bottomPlayer,
+    onBottomPlayer: onBottomPlayer ?? this.onBottomPlayer,
+    topPlayer: topPlayer ?? this.topPlayer,
+    onTopPlayer: onTopPlayer ?? this.onTopPlayer,
     target: target ?? this.target,
     onTarget: onTarget ?? this.onTarget,
     slapped: slapped ?? this.slapped,

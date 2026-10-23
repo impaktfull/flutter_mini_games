@@ -3,7 +3,6 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/game/slap/game/logic/slap_game_controller.dart';
 import 'package:flutter_mini_games/src/game/slap/game/model/slap_attack.dart';
 import 'package:flutter_mini_games/src/game/slap/style/slap_theme.dart';
@@ -25,7 +24,6 @@ class SlapTargetArena extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SlapTheme.of(context);
-    final coreTheme = CoreGameTheme.of(context);
     return ClipRRect(
       borderRadius: BorderRadius.circular(theme.dimens.arenaRadius),
       child: ColoredBox(
@@ -66,7 +64,7 @@ class SlapTargetArena extends StatelessWidget {
                         alignment: Alignment.bottomCenter,
                         child: SlapHand(
                           width: handWidth,
-                          color: coreTheme.playerColor(player.opponent),
+                          color: theme.colors.playerColor(player.opponent),
                           outlineColor: theme.colors.handOutline,
                           outlineWidth: theme.dimens.handOutlineWidth,
                         ),
@@ -97,7 +95,6 @@ class _Target extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SlapTheme.of(context);
-    final coreTheme = CoreGameTheme.of(context);
     final isHolding = controller.isHolding(player);
     final isSlapped = controller.roundEnd == SlapRoundEnd.slapped;
     final Color color;
@@ -110,8 +107,8 @@ class _Target extends StatelessWidget {
       label = 'Ouch!';
       icon = Icons.close;
     } else if (isHolding) {
-      color = coreTheme.playerColor(player);
-      onColor = coreTheme.onPlayerColor(player);
+      color = theme.colors.playerColor(player);
+      onColor = theme.colors.onPlayerColor(player);
       label = 'Holding';
       icon = Icons.touch_app;
     } else {
@@ -130,7 +127,7 @@ class _Target extends StatelessWidget {
         decoration: BoxDecoration(
           color: color,
           shape: BoxShape.circle,
-          border: Border.all(color: isSlapped ? onColor : coreTheme.playerColor(player), width: theme.dimens.targetBorderWidth),
+          border: Border.all(color: isSlapped ? onColor : theme.colors.playerColor(player), width: theme.dimens.targetBorderWidth),
         ),
         child: Padding(
           padding: EdgeInsets.all(radius * 0.3),

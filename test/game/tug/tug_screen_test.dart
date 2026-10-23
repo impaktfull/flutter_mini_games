@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_mini_games/flutter_mini_games.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_game_controller.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/game/tug/game/logic/tug_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tug/widget/tug_rope.dart';
 import 'package:flutter_mini_games/src/game/tug/widget/tug_side.dart';
@@ -111,5 +112,19 @@ void main() {
       expect(tester.takeException(), isNull);
     }
     addTearDown(tester.view.reset);
+  });
+
+  test('player colors are theme tokens that copyWith can override', () {
+    final core = CoreGameTheme.light();
+    final theme = TugTheme.fromCore(core);
+    expect(theme.colors.playerColor(DuelPlayer.bottom), core.playerColor(DuelPlayer.bottom));
+    expect(theme.colors.onPlayerColor(DuelPlayer.top), core.onPlayerColor(DuelPlayer.top));
+
+    final custom = theme.copyWith(
+      colors: theme.colors.copyWith(bottomPlayer: core.colors.error, onTopPlayer: core.colors.text),
+    );
+    expect(custom.colors.playerColor(DuelPlayer.bottom), core.colors.error);
+    expect(custom.colors.onPlayerColor(DuelPlayer.top), core.colors.text);
+    expect(custom.colors.topPlayer, theme.colors.topPlayer);
   });
 }

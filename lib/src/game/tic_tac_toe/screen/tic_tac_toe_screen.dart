@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/core/widget/components/button.dart';
 import 'package:flutter_mini_games/src/core/widget/components/game_stats_bar.dart';
@@ -9,8 +10,10 @@ import 'package:flutter_mini_games/src/core/widget/screen/screen.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/game/logic/tic_tac_toe_game_controller.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/screen/tic_tac_toe_header.dart';
 import 'package:flutter_mini_games/src/game/tic_tac_toe/style/tic_tac_toe_theme.dart';
-import 'package:flutter_mini_games/src/game/tic_tac_toe/widget/tic_tac_toe_cell.dart';
+import 'package:flutter_mini_games/src/game/tic_tac_toe/widget/tic_tac_toe_board.dart';
 
+/// One shared board between the players: the turn banner of [DuelPlayer.top] sits above the
+/// board (rotated, that player sits opposite), the banner of [DuelPlayer.bottom] below it.
 class TicTacToeScreen extends StatelessWidget {
   final CoreGameTheme? coreTheme;
   final GameThemeOverride<TicTacToeTheme>? theme;
@@ -36,36 +39,26 @@ class TicTacToeScreen extends StatelessWidget {
           header: Column(
             spacing: 8,
             children: [
-              TicTacToeHeader(controller: controller),
+              TicTacToeHeader(controller: controller, player: DuelPlayer.top),
               GameStatsBar(controller: controller),
             ],
           ),
-          board: GridView.builder(
-            physics: const NeverScrollableScrollPhysics(),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              mainAxisSpacing: theme.dimens.cellSpacing,
-              crossAxisSpacing: theme.dimens.cellSpacing,
-            ),
-            itemCount: 9,
-            itemBuilder: (context, index) {
-              final row = index ~/ 3;
-              final col = index % 3;
-              return TicTacToeCell(
-                onTap: () => controller.makeMove(row, col),
-                value: controller.board[row][col],
-                isWinningCell: controller.isWinningCell(row, col),
-              );
-            },
-          ),
-          controls: GameButton(
-            onTap: controller.resetGame,
-            icon: Icons.refresh,
-            label: controller.isGameOver ? 'Play Again' : 'Reset Game',
+          board: TicTacToeBoard(controller: controller),
+          controls: Column(
+            spacing: 8,
+            children: [
+              TicTacToeHeader(controller: controller, player: DuelPlayer.bottom),
+              GameButton(
+                onTap: controller.resetGame,
+                icon: Icons.refresh,
+                label: controller.isGameOver ? 'Play Again' : 'Reset Game',
+              ),
+            ],
           ),
           footer: const GameHowToPlay(
             items: [
-              GameHowToPlayItem(icon: Icons.people_outline, text: 'Take turns\nas X and O'),
+              GameHowToPlayItem(icon: Icons.people_outline, text: 'Player 1 is X and starts,\nPlayer 2 is O'),
+              GameHowToPlayItem(icon: Icons.touch_app, text: 'Take turns, tap an\nempty cell'),
               GameHowToPlayItem(icon: Icons.linear_scale, text: 'Get three\nin a row'),
             ],
           ),

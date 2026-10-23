@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_layout.dart';
 import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
-import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 import 'package:flutter_mini_games/src/game/snatch/game/logic/snatch_game_controller.dart';
 import 'package:flutter_mini_games/src/game/snatch/style/snatch_theme.dart';
 import 'package:flutter_mini_games/src/game/snatch/widget/snatch_symbols.dart';
 
 /// One tile of a player's half.
 ///
-/// Uses raw pointer events so every finger counts, also when both players tap at the same time.
+/// A [DuelTapArea], so every finger counts, also when both players tap at the same time.
 class SnatchTile extends StatelessWidget {
   final DuelPlayer player;
   final int index;
@@ -29,10 +29,9 @@ class SnatchTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = SnatchTheme.of(context);
-    final core = CoreGameTheme.of(context);
     final colors = theme.colors;
     final (background, foreground) = switch (state) {
-      SnatchTileState.hit => (core.playerColor(player), core.onPlayerColor(player)),
+      SnatchTileState.hit => (theme.colors.playerColor(player), theme.colors.onPlayerColor(player)),
       SnatchTileState.wrong => (colors.wrongTile, colors.onWrongTile),
       SnatchTileState.missed || SnatchTileState.idle => (colors.tile, isLocked ? colors.lockedSymbol : colors.symbol),
     };
@@ -41,9 +40,8 @@ class SnatchTile extends StatelessWidget {
       SnatchTileState.wrong => '-1',
       _ => null,
     };
-    return Listener(
-      behavior: HitTestBehavior.opaque,
-      onPointerDown: (_) => onTap(),
+    return DuelTapArea(
+      onTap: onTap,
       child: LayoutBuilder(
         builder: (context, constraints) => DecoratedBox(
           decoration: BoxDecoration(

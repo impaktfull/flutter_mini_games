@@ -126,6 +126,6 @@ void main() {
     );
 
     final theme = Provider.of<TicTacToeTheme>(tester.element(find.byType(TicTacToeCell).first), listen: false);
-    expect(theme.colors.playerX, equals(Colors.red));
+    expect(theme.colors.topPlayer, equals(Colors.red));
   });
 }

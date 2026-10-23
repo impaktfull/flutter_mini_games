@@ -30,8 +30,8 @@ class TrailPuzzle {
   bool isValid() {
     // Check that checkpoints are numbered sequentially starting from 1
     for (int i = 1; i <= checkpoints.length; i++) {
-      if (!checkpoints.containsKey(i)) return false;
-      final pos = checkpoints[i]!;
+      final pos = checkpoints[i];
+      if (pos == null) return false;
       if (pos.$1 < 0 || pos.$1 >= rows || pos.$2 < 0 || pos.$2 >= cols) {
         return false;
       }

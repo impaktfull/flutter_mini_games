@@ -84,7 +84,7 @@ class _SudokuKey extends StatelessWidget {
     final icon = this.icon;
     final label = this.label;
     return Opacity(
-      opacity: onTap == null ? 0.4 : 1,
+      opacity: onTap == null ? theme.dimens.disabledKeyOpacity : 1,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
         onTap: onTap,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_mini_games/src/core/duel/duel_player.dart';
 import 'package:flutter_mini_games/src/core/theme/game_theme.dart';
 
 class TugTheme extends GameTheme {
@@ -19,13 +20,17 @@ class TugTheme extends GameTheme {
     return TugTheme(
       colors: TugColors(
         track: c.surface,
+        bottomPlayer: core.playerColor(DuelPlayer.bottom),
+        onBottomPlayer: core.onPlayerColor(DuelPlayer.bottom),
+        topPlayer: core.playerColor(DuelPlayer.top),
+        onTopPlayer: core.onPlayerColor(DuelPlayer.top),
         rope: Color.lerp(c.surface, c.text, 0.35)!,
         ropeStrand: Color.lerp(c.surface, c.text, 0.6)!,
         middle: c.textMuted,
         marker: c.text,
         markerBorder: c.background,
-        bottomSide: Color.lerp(c.background, c.primary, 0.08)!,
-        topSide: Color.lerp(c.background, c.secondary, 0.08)!,
+        bottomSide: Color.lerp(c.background, core.playerColor(DuelPlayer.bottom), 0.08)!,
+        topSide: Color.lerp(c.background, core.playerColor(DuelPlayer.top), 0.08)!,
         hint: c.textMuted,
       ),
       textStyles: TugTextStyles(
@@ -60,6 +65,12 @@ class TugColors {
   /// Rounded lane behind the rope
   final Color track;
 
+  /// Player 1 (bottom) and Player 2 (top), [onBottomPlayer] / [onTopPlayer] for text and icons on them
+  final Color bottomPlayer;
+  final Color onBottomPlayer;
+  final Color topPlayer;
+  final Color onTopPlayer;
+
   /// The rope and its twisted strands
   final Color rope;
   final Color ropeStrand;
@@ -80,6 +91,10 @@ class TugColors {
 
   const TugColors({
     required this.track,
+    required this.bottomPlayer,
+    required this.onBottomPlayer,
+    required this.topPlayer,
+    required this.onTopPlayer,
     required this.rope,
     required this.ropeStrand,
     required this.middle,
@@ -90,8 +105,18 @@ class TugColors {
     required this.hint,
   });
 
+  /// Color of [player]
+  Color playerColor(DuelPlayer player) => player == DuelPlayer.bottom ? bottomPlayer : topPlayer;
+
+  /// Text and icons on [playerColor]
+  Color onPlayerColor(DuelPlayer player) => player == DuelPlayer.bottom ? onBottomPlayer : onTopPlayer;
+
   TugColors copyWith({
     Color? track,
+    Color? bottomPlayer,
+    Color? onBottomPlayer,
+    Color? topPlayer,
+    Color? onTopPlayer,
     Color? rope,
     Color? ropeStrand,
     Color? middle,
@@ -102,6 +127,10 @@ class TugColors {
     Color? hint,
   }) => TugColors(
     track: track ?? this.track,
+    bottomPlayer: bottomPlayer ?? this.bottomPlayer,
+    onBottomPlayer: onBottomPlayer ?? this.onBottomPlayer,
+    topPlayer: topPlayer ?? this.topPlayer,
+    onTopPlayer: onTopPlayer ?? this.onTopPlayer,
     rope: rope ?? this.rope,
     ropeStrand: ropeStrand ?? this.ropeStrand,
     middle: middle ?? this.middle,

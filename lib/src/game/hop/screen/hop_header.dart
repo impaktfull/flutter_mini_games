@@ -16,7 +16,13 @@ class HopHeader extends StatelessWidget {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Text('${controller.score}', style: theme.textStyles.score),
+        // The score changes every frame: only this text rebuilds and repaints
+        RepaintBoundary(
+          child: ListenableBuilder(
+            listenable: controller.frame,
+            builder: (context, child) => Text('${controller.score}', style: theme.textStyles.score),
+          ),
+        ),
         Text(controller.isGameOver ? 'Final height' : 'Height', style: theme.textStyles.scoreLabel),
       ],
     );

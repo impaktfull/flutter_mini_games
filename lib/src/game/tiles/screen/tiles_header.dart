@@ -14,7 +14,6 @@ class TilesHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = TilesTheme.of(context);
-    final multiplier = controller.speed / TilesGameController.startSpeed;
     return Wrap(
       alignment: WrapAlignment.center,
       crossAxisAlignment: WrapCrossAlignment.center,
@@ -34,7 +33,16 @@ class TilesHeader extends StatelessWidget {
           spacing: 8,
           children: [
             Icon(Icons.speed, size: 20, color: theme.colors.darkTile),
-            Text('×${multiplier.toStringAsFixed(1)}', style: theme.textStyles.speed),
+            // The speed changes every frame: only this text rebuilds and repaints
+            RepaintBoundary(
+              child: ListenableBuilder(
+                listenable: controller.frame,
+                builder: (context, child) {
+                  final multiplier = controller.speed / TilesGameController.startSpeed;
+                  return Text('×${multiplier.toStringAsFixed(1)}', style: theme.textStyles.speed);
+                },
+              ),
+            ),
           ],
         ),
       ],

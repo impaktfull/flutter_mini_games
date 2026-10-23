@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
@@ -68,13 +69,13 @@ class StackGameController extends GameController with RealtimeGameController {
   }
 
   /// Placed blocks, the base first
-  List<StackBlock> get tower => List.unmodifiable(_tower);
+  List<StackBlock> get tower => UnmodifiableListView(_tower);
 
   /// The block that slides above the tower
   StackBlock get current => _current;
 
   /// Pieces that were cut off and are falling down
-  List<StackFallingPiece> get fallingPieces => List.unmodifiable(_fallingPieces);
+  List<StackFallingPiece> get fallingPieces => UnmodifiableListView(_fallingPieces);
 
   /// 1 when the block moves right, -1 when it moves left
   double get direction => _direction;
@@ -199,7 +200,8 @@ class StackGameController extends GameController with RealtimeGameController {
     _moveCurrent(seconds);
     _moveFallingPieces(seconds);
     _cameraY += (targetCameraY - _cameraY) * (1 - exp(-cameraFollowRate * seconds));
-    notifyListeners();
+    // Only the board moves, the score changes on a drop
+    notifyFrame();
   }
 
   /// Slides the block and bounces it off the edges of the world

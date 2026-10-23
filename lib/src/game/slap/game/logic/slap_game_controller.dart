@@ -191,6 +191,7 @@ class SlapGameController extends GameController with RealtimeGameController, Due
   @override
   void tick(Duration delta) {
     if (!tickDuel(delta)) return;
+    final attack = _attack;
     switch (_attack) {
       case SlapAttackState.waitingForHold:
         return;
@@ -206,7 +207,12 @@ class SlapGameController extends GameController with RealtimeGameController, Due
         _advanceAttack(delta);
         if (!isPlaying) return;
     }
-    notifyListeners();
+    // A new stage changes the buttons and the header, otherwise only the hand and the timer move
+    if (_attack != attack) {
+      notifyListeners();
+    } else {
+      notifyFrame();
+    }
   }
 
   /// Moves the attack through its stages; a stage that ends within [delta] hands the rest

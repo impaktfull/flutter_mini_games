@@ -14,9 +14,6 @@ class WhackHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = WhackTheme.of(context);
-    final remaining = controller.remaining;
-    final isLow = remaining <= theme.dimens.lowTimeSeconds && controller.isRunning;
-    final barColor = isLow ? theme.colors.timeBarLow : theme.colors.timeBar;
     return Column(
       mainAxisSize: MainAxisSize.min,
       spacing: 8,
@@ -35,13 +32,15 @@ class WhackHeader extends StatelessWidget {
                 Text('${controller.score}', style: theme.textStyles.score),
               ],
             ),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              spacing: 8,
-              children: [
-                Icon(Icons.timer_outlined, size: 20, color: barColor),
-                Text('${remaining.ceil()} s', style: theme.textStyles.time),
-              ],
+            _frame(
+              (barColor, remaining) => Row(
+                mainAxisSize: MainAxisSize.min,
+                spacing: 8,
+                children: [
+                  Icon(Icons.timer_outlined, size: 20, color: barColor),
+                  Text('${remaining.ceil()} s', style: theme.textStyles.time),
+                ],
+              ),
             ),
           ],
         ),
@@ -54,16 +53,33 @@ class WhackHeader extends StatelessWidget {
               width: double.infinity,
               child: ColoredBox(
                 color: theme.colors.timeBarTrack,
-                child: FractionallySizedBox(
-                  alignment: Alignment.centerLeft,
-                  widthFactor: remaining / WhackGameController.roundDuration,
-                  child: ColoredBox(color: barColor),
+                child: _frame(
+                  (barColor, remaining) => FractionallySizedBox(
+                    alignment: Alignment.centerLeft,
+                    widthFactor: remaining / WhackGameController.roundDuration,
+                    child: ColoredBox(color: barColor),
+                  ),
                 ),
               ),
             ),
           ),
         ),
       ],
+    );
+  }
+
+  /// The time changes every frame: only the parts that show it rebuild and repaint
+  Widget _frame(Widget Function(Color barColor, double remaining) builder) {
+    return RepaintBoundary(
+      child: ListenableBuilder(
+        listenable: controller.frame,
+        builder: (context, child) {
+          final theme = WhackTheme.of(context);
+          final remaining = controller.remaining;
+          final isLow = remaining <= theme.dimens.lowTimeSeconds && controller.isRunning;
+          return builder(isLow ? theme.colors.timeBarLow : theme.colors.timeBar, remaining);
+        },
+      ),
     );
   }
 }

@@ -62,21 +62,24 @@ class _GameStatsBarState extends State<GameStatsBar> {
   @override
   Widget build(BuildContext context) {
     final theme = CoreGameTheme.of(context);
-    return FutureBuilder<GameStats>(
-      future: _stats,
-      builder: (context, snapshot) {
-        final bestScore = snapshot.data?.bestScore;
-        return Wrap(
-          alignment: WrapAlignment.center,
-          spacing: 24,
-          runSpacing: 8,
-          children: [
-            _buildItem(theme, Icons.timer_outlined, _formatDuration(widget.controller.elapsed)),
-            _buildItem(theme, Icons.touch_app_outlined, '${widget.controller.moves}'),
-            if (bestScore != null) _buildItem(theme, Icons.emoji_events_outlined, '$bestScore'),
-          ],
-        );
-      },
+    // The timer repaints the bar every second, not the screen
+    return RepaintBoundary(
+      child: FutureBuilder<GameStats>(
+        future: _stats,
+        builder: (context, snapshot) {
+          final bestScore = snapshot.data?.bestScore;
+          return Wrap(
+            alignment: WrapAlignment.center,
+            spacing: 24,
+            runSpacing: 8,
+            children: [
+              _buildItem(theme, Icons.timer_outlined, _formatDuration(widget.controller.elapsed)),
+              _buildItem(theme, Icons.touch_app_outlined, '${widget.controller.moves}'),
+              if (bestScore != null) _buildItem(theme, Icons.emoji_events_outlined, '$bestScore'),
+            ],
+          );
+        },
+      ),
     );
   }
 

@@ -16,36 +16,26 @@ class StackTower extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = StackTheme.of(context);
     return CustomPaint(
-      painter: _StackPainter(
-        theme: theme,
-        tower: controller.tower,
-        current: controller.isGameOver ? null : controller.current,
-        fallingPieces: controller.fallingPieces,
-        cameraY: controller.cameraY,
-      ),
+      painter: _StackPainter(controller: controller, theme: theme),
       child: const SizedBox.expand(),
     );
   }
 }
 
+/// Reads the controller while painting, repaints every frame of the controller
 class _StackPainter extends CustomPainter {
+  final StackGameController controller;
   final StackTheme theme;
-  final List<StackBlock> tower;
-  final StackBlock? current;
-  final List<StackFallingPiece> fallingPieces;
-  final double cameraY;
 
   _StackPainter({
+    required this.controller,
     required this.theme,
-    required this.tower,
-    required this.current,
-    required this.fallingPieces,
-    required this.cameraY,
-  });
+  }) : super(repaint: controller.frame);
 
   @override
   void paint(Canvas canvas, Size size) {
     final scale = size.width;
+    final cameraY = controller.cameraY;
     canvas.drawRect(Offset.zero & size, Paint()..color = theme.colors.background);
 
     // World y (up) to canvas y (down)
@@ -75,17 +65,15 @@ class _StackPainter extends CustomPainter {
       );
     }
 
-    for (final piece in fallingPieces) {
+    for (final piece in controller.fallingPieces) {
       drawBlock(piece.block, drop: piece.drop);
     }
-    for (final block in tower) {
+    for (final block in controller.tower) {
       drawBlock(block);
     }
-    final current = this.current;
-    if (current != null) drawBlock(current);
+    if (!controller.isGameOver) drawBlock(controller.current);
   }
 
-  // The controller creates new lists on every frame, repaint whenever the widget rebuilds
   @override
-  bool shouldRepaint(covariant _StackPainter oldDelegate) => true;
+  bool shouldRepaint(covariant _StackPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.theme != theme;
 }

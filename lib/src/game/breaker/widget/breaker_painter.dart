@@ -14,7 +14,7 @@ class BreakerPainter extends CustomPainter {
     required this.controller,
     required this.colors,
     required this.dimens,
-  }) : super(repaint: controller);
+  }) : super(repaint: controller.frame);
 
   @override
   void paint(Canvas canvas, Size size) {

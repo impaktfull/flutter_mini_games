@@ -55,10 +55,13 @@ class SlapAttackPad extends StatelessWidget {
                     color: theme.colors.timerTrack,
                     child: Align(
                       alignment: Alignment.centerLeft,
-                      child: FractionallySizedBox(
-                        widthFactor: controller.attackTimeLeft,
-                        heightFactor: 1,
-                        child: ColoredBox(color: theme.colors.playerColor(player)),
+                      // The time runs every frame: only the bar rebuilds and repaints
+                      child: RepaintBoundary(
+                        child: ListenableBuilder(
+                          listenable: controller.frame,
+                          builder: (context, child) => FractionallySizedBox(widthFactor: controller.attackTimeLeft, heightFactor: 1, child: child),
+                          child: ColoredBox(color: theme.colors.playerColor(player)),
+                        ),
                       ),
                     ),
                   ),
@@ -85,6 +88,13 @@ class _SlapButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The hand on the button moves every frame during an attack: only the button rebuilds and repaints
+    return RepaintBoundary(
+      child: ListenableBuilder(listenable: controller.frame, builder: (context, child) => _buildButton(context)),
+    );
+  }
+
+  Widget _buildButton(BuildContext context) {
     final theme = SlapTheme.of(context);
     final isEnabled = controller.canAttack;
     // The button shows the attacker's own hand, also while it moves

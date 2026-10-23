@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
@@ -55,7 +56,7 @@ class WhackGameController extends GameController with RealtimeGameController {
   WhackGameController({Random? random}) : _random = random ?? Random(), super(gameId: id);
 
   /// Targets that are visible (popping up, up, hiding or just hit)
-  List<WhackTarget> get targets => List.unmodifiable(_targets);
+  List<WhackTarget> get targets => UnmodifiableListView(_targets);
 
   /// Seconds since the start of the round
   double get time => _timeMicros / Duration.microsecondsPerSecond;
@@ -156,8 +157,11 @@ class WhackGameController extends GameController with RealtimeGameController {
         score: score,
         data: {'hits': _hits, 'decoys': _decoysHit, 'misses': _misses, 'escaped': _escaped},
       );
+      notifyListeners();
+    } else {
+      // Only the holes and the time change, the score changes on a tap
+      notifyFrame();
     }
-    notifyListeners();
   }
 
   /// Removes the targets that are gone at [at], counting critters that were not tapped

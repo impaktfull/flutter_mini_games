@@ -57,12 +57,15 @@ class PairsCardTile extends StatelessWidget {
             // First half: the back turns away, second half: the face turns in
             final showFace = progress >= 0.5;
             final angle = showFace ? (1 - progress) * pi : progress * pi;
+            final side = showFace ? _buildFace(theme) : _buildBack(theme);
+            // Only cards that are turning need a transform layer
+            if (angle == 0) return side;
             return Transform(
               alignment: Alignment.center,
               transform: Matrix4.identity()
                 ..setEntry(3, 2, 0.002)
                 ..rotateY(angle),
-              child: showFace ? _buildFace(theme) : _buildBack(theme),
+              child: side,
             );
           },
         ),
@@ -91,9 +94,11 @@ class PairsCardTile extends StatelessWidget {
     } else {
       borderColor = null;
     }
-    final face = Container(
+    // Found pairs fade towards the board with solid colors, an opacity layer per card is expensive
+    Color fade(Color color) => card.isMatched ? Color.lerp(colors.board, color, theme.dimens.matchedOpacity)! : color;
+    return Container(
       decoration: BoxDecoration(
-        color: colors.cardFace,
+        color: fade(colors.cardFace),
         borderRadius: BorderRadius.circular(theme.dimens.cardRadius),
         border: borderColor == null ? null : Border.all(color: borderColor, width: theme.dimens.cardBorderWidth),
       ),
@@ -101,10 +106,8 @@ class PairsCardTile extends StatelessWidget {
       child: Icon(
         faceIcons[card.value % faceIcons.length],
         size: size * 0.55,
-        color: colors.face(card.value),
+        color: fade(colors.face(card.value)),
       ),
     );
-    if (!card.isMatched) return face;
-    return Opacity(opacity: theme.dimens.matchedOpacity, child: face);
   }
 }

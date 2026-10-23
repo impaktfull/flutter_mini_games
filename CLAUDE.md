@@ -249,6 +249,12 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
 - The controller mixes in `RealtimeGameController`: `isRunning` and `tick(Duration delta)`
 - The simulation lives in `tick` and is frame-rate independent: move by `speed * seconds`, never per frame
 - Wrap the playing field in `GameLoop(controller: ...)`: it only ticks while `isRunning` and the app is in the foreground, and clamps long frames to `GameLoop.maxDelta`
+- A frame never rebuilds the screen. Split frame updates from state updates:
+  - `notifyFrame()` in `tick` when only things on the board moved: it notifies `controller.frame`, not the screen
+  - `notifyListeners()` only when state shown outside the board changes (start, game over, score, lives, level, phase, round, overlays); it notifies `frame` too, and `GameLoop` listens to it to start and stop. Compare before/after in `tick` (e.g. `if (_score != score) notifyListeners(); else notifyFrame();`)
+  - Board painters use `CustomPainter(repaint: controller.frame)`, read the controller in `paint` and compare only `controller` and theme in `shouldRepaint` (no copied lists or values in the painter)
+  - A value outside the board that changes every frame (e.g. a live score, a time bar) gets its own `RepaintBoundary(child: ListenableBuilder(listenable: controller.frame, ...))` around just that widget; widgets on the board that move (e.g. Whack holes, Slap hand) do the same
+  - `GameBoard` and the `board` slot of `GameScreenLayout` are repaint boundaries; cache `TextPainter`s drawn every frame (`CachedTextPainter`, owned and disposed by a `State`)
 - Use `GameInputDetector` for all input, never your own gesture or key handling:
   - `onTap` / `onRelease` (touch, space/enter; arrow up when there is no `onSwipe`), e.g. hold to jump higher
   - `onTapAt(localPosition)` for grids and pads: one detector for the whole board, map the position to a cell
@@ -258,7 +264,7 @@ Games that move every frame (Snake, Flit, Dash, Hop, Stack) use the shared loop 
   - `onSwipe` (swipes, arrows/WASD); `repeatSwipes: false` for one move per drag (2048)
   - `onHorizontalHold` (hold left/right half, arrow left/right, A/D) for steering
 - Use `GameBoard` for the playing field frame and `GameOverlay` for "Tap to start" / "Game over" messages
-- Intended exceptions: Whack listens with a raw `Listener` per hole (every finger counts, each hole animates its own target); Flit's idle hover in the ready state is a widget `AnimationController` (decoration only, the game loop does not run before the first flap)
+- Intended exceptions: Whack listens with a raw `Listener` per hole (every finger counts, each hole animates its own target); Flit's idle hover in the ready state is a widget `AnimationController` merged into the painter's `repaint` (decoration only, the game loop does not run before the first flap; it only repaints the board)
 - Draw with `CustomPaint` using theme colors, use world coordinates (e.g. 0..1 or cells) and scale to the canvas size
 - Inject `Random` in the controller so tests are reproducible; test the controller by calling `tick` directly
 
@@ -271,9 +277,28 @@ class MyRealtimeController extends GameController with RealtimeGameController {
   void tick(Duration delta) {
     final seconds = delta.inMicroseconds / Duration.microsecondsPerSecond;
     _position += _speed * seconds;
-    if (_hitObstacle()) finish(GameOutcome.lost, score: _score);
-    notifyListeners();
+    if (_hitObstacle()) {
+      finish(GameOutcome.lost, score: _score);
+      notifyListeners(); // game over: header, overlay and buttons change
+    } else {
+      notifyFrame(); // only the board moved
+    }
   }
+}
+
+class MyBoardPainter extends CustomPainter {
+  final MyRealtimeController controller;
+  final MyGameTheme theme;
+
+  MyBoardPainter({required this.controller, required this.theme}) : super(repaint: controller.frame);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Read the controller here, e.g. controller.position
+  }
+
+  @override
+  bool shouldRepaint(covariant MyBoardPainter oldDelegate) => oldDelegate.controller != controller || oldDelegate.theme != theme;
 }
 ```
 
@@ -360,7 +385,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - `GameHowToPlay` - Rules panel
 - `GameBoard` - Rounded, elevated frame for the playing field
 - `GameOverlay` - Message on top of the playing field ("Tap to start", "Game over")
-- `RealtimeGameController` / `GameLoop` - Per-frame updates for real-time games
+- `RealtimeGameController` / `GameLoop` - Per-frame updates for real-time games (`frame` / `notifyFrame()` for board-only updates)
 - `GameInputDetector` / `GameDirection` - Taps, swipes and keyboard input
 - `DuelPlayer`, `DuelLayout`, `DuelTapArea`, `DuelGameController`, `DuelPhaseOverlay`, `DuelTurnBanner` - Two players on one device
 
@@ -504,7 +529,7 @@ Two players on one phone use the shared duel core (`lib/src/core/duel/`), never 
 - Cards are shuffled with an injectable `Random`; faces are Material `Icons` (`PairsCardTile.faceIcons`) colored by `PairsColors.faces`, backs in `cardBack`
 - The first card of an attempt starts the timer (`startSession()`), the second counts as a move (`registerMove()`)
 - Two cards that don't match get an error border and turn back after `mismatchDelay` (800 ms, a `Timer`); flips are ignored meanwhile. `hideMismatch()` turns them back right away (tests)
-- Cards flip with a rotation (`TweenAnimationBuilder`), found pairs fade to `matchedOpacity`
+- Cards flip with a rotation (`TweenAnimationBuilder`, the transform only while turning), found pairs fade to `matchedOpacity` by blending their colors towards `PairsColors.board` (solid colors, no `Opacity` layer)
 - Score: `1000 - moves * 10 - seconds`, never below 100; all pairs found finishes with `won` and the score (`data`: difficulty, rows, cols, pairs)
 ### Whack (`lib/src/game/whack/`)
 

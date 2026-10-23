@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
@@ -47,7 +48,7 @@ class TilesGameController extends GameController with RealtimeGameController {
   }
 
   /// Rows on (or just above) the board, lowest first
-  List<TilesRow> get rows => List.unmodifiable(_rows);
+  List<TilesRow> get rows => UnmodifiableListView(_rows);
 
   /// Index of the lowest row that is not tapped yet
   int get nextRow => _nextRow;
@@ -142,12 +143,14 @@ class TilesGameController extends GameController with RealtimeGameController {
       // Scroll back so the missed tile is visible at the bottom of the board
       _scroll = visibleRows - 1 - firstRowTop + _nextRow;
       _gameOver(TilesMistake(kind: TilesMistakeKind.missedTile, row: missed.index, column: missed.darkColumn));
+      notifyListeners();
     } else {
       // Only tapped rows can be below the board here
       _rows.removeWhere((row) => topOf(row.index) >= visibleRows);
       _fillRows();
+      // Only the board and the speed change, the score changes on a tap
+      notifyFrame();
     }
-    notifyListeners();
   }
 
   void _gameOver(TilesMistake mistake) {

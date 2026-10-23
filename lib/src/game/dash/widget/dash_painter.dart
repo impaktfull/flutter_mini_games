@@ -5,7 +5,7 @@ import 'package:flutter_mini_games/src/game/dash/game/logic/dash_game_controller
 import 'package:flutter_mini_games/src/game/dash/game/model/dash_obstacle.dart';
 import 'package:flutter_mini_games/src/game/dash/style/dash_theme.dart';
 
-/// Draws the world of [DashGameController] scaled to the canvas. Repaints when the controller changes.
+/// Draws the world of [DashGameController] scaled to the canvas. Repaints every frame of the controller.
 class DashPainter extends CustomPainter {
   static const _pebbleSpacing = 0.9;
   static const _cloudParallax = 0.15;
@@ -16,7 +16,7 @@ class DashPainter extends CustomPainter {
   DashPainter({
     required this.controller,
     required this.theme,
-  }) : super(repaint: controller);
+  }) : super(repaint: controller.frame);
 
   @override
   void paint(Canvas canvas, Size size) {

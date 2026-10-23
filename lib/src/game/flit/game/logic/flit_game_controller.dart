@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:math';
 
 import 'package:flutter_mini_games/src/core/controller/game_controller.dart';
@@ -78,7 +79,7 @@ class FlitGameController extends GameController with RealtimeGameController {
   /// Tilt of the flyer in radians: nose up while rising, down while falling
   double get flyerRotation => (_velocity * 0.7).clamp(-0.45, 1.2);
 
-  List<FlitColumn> get columns => List.unmodifiable(_columns);
+  List<FlitColumn> get columns => UnmodifiableListView(_columns);
 
   /// Number of columns passed
   int get score => _score;
@@ -107,13 +108,19 @@ class FlitGameController extends GameController with RealtimeGameController {
     _velocity = min(_velocity + gravity * seconds, maxFallSpeed);
     _flyerY += _velocity * seconds;
 
+    final score = _score;
     _moveColumns(scrollSpeed * seconds);
 
     if (_isColliding()) {
       _flyerY = _flyerY.clamp(hitboxRadius, groundY - hitboxRadius);
       finish(GameOutcome.lost, score: _score);
+      notifyListeners();
+    } else if (_score != score) {
+      notifyListeners();
+    } else {
+      // Only the board moves
+      notifyFrame();
     }
-    notifyListeners();
   }
 
   void resetGame() {

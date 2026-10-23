@@ -131,9 +131,11 @@ class PuckGameController extends GameController with RealtimeGameController, Due
       }
       _collideWithWalls();
       _limitSpeed();
+      // A goal ends the round, which notifies the listeners
       if (_checkGoal()) return;
     }
-    notifyListeners();
+    // Only the table moves
+    notifyFrame();
   }
 
   void _collideWithMallet(DuelPlayer player) {

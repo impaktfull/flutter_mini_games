@@ -29,6 +29,7 @@ class PairsTheme extends GameTheme {
         onDifficultySelected: c.onPrimary,
         difficulty: c.surface,
         onDifficulty: c.text,
+        board: c.background,
       ),
       textStyles: PairsTextStyles(
         header: core.textStyles.title,
@@ -83,6 +84,9 @@ class PairsColors {
   final Color difficulty;
   final Color onDifficulty;
 
+  /// Behind the cards (the board), matched cards fade towards it
+  final Color board;
+
   const PairsColors({
     required this.cardBack,
     required this.onCardBack,
@@ -95,6 +99,7 @@ class PairsColors {
     required this.onDifficultySelected,
     required this.difficulty,
     required this.onDifficulty,
+    required this.board,
   });
 
   /// Icon color of the pair with the given value
@@ -112,6 +117,7 @@ class PairsColors {
     Color? onDifficultySelected,
     Color? difficulty,
     Color? onDifficulty,
+    Color? board,
   }) => PairsColors(
     cardBack: cardBack ?? this.cardBack,
     onCardBack: onCardBack ?? this.onCardBack,
@@ -124,6 +130,7 @@ class PairsColors {
     onDifficultySelected: onDifficultySelected ?? this.onDifficultySelected,
     difficulty: difficulty ?? this.difficulty,
     onDifficulty: onDifficulty ?? this.onDifficulty,
+    board: board ?? this.board,
   );
 }
 
@@ -162,7 +169,8 @@ class PairsDimens {
   /// Border of flipped and mismatched cards
   final double cardBorderWidth;
 
-  /// Found pairs fade to this opacity so the remaining cards stand out
+  /// Found pairs fade to this opacity so the remaining cards stand out: their colors are
+  /// blended towards [PairsColors.board] (solid colors, no transparent layer)
   final double matchedOpacity;
   final double difficultyRadius;
 

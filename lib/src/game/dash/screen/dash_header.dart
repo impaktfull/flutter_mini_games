@@ -13,17 +13,25 @@ class DashHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = DashTheme.of(context);
-    final status = switch (controller) {
-      DashGameController(isReady: true) => 'Run as far as you can',
-      DashGameController(isGameOver: true) => 'Game over',
-      _ => 'Speed ${(controller.speed / DashGameController.initialSpeed).toStringAsFixed(1)}x',
-    };
-    return Column(
-      spacing: 4,
-      children: [
-        Text('${controller.score}', style: theme.textStyles.score),
-        Text(status, textAlign: TextAlign.center, style: theme.textStyles.status),
-      ],
+    // Score and speed change every frame: only this part rebuilds and repaints
+    return RepaintBoundary(
+      child: ListenableBuilder(
+        listenable: controller.frame,
+        builder: (context, child) {
+          final status = switch (controller) {
+            DashGameController(isReady: true) => 'Run as far as you can',
+            DashGameController(isGameOver: true) => 'Game over',
+            _ => 'Speed ${(controller.speed / DashGameController.initialSpeed).toStringAsFixed(1)}x',
+          };
+          return Column(
+            spacing: 4,
+            children: [
+              Text('${controller.score}', style: theme.textStyles.score),
+              Text(status, textAlign: TextAlign.center, style: theme.textStyles.status),
+            ],
+          );
+        },
+      ),
     );
   }
 }
